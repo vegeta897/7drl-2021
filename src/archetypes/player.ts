@@ -7,7 +7,7 @@ import { Controller } from '../components/com_controller'
 import { Player } from '../components/com_player'
 
 export function createPlayer(world: World, container: Container, x, y): Entity {
-	const sprite = createSprite(SPRITES.PLAYER)
+	const sprite = createSprite(SPRITES.Player)
 	sprite.tint = 0x22aa99
 	container.addChild(sprite)
 	const player = world.createEntity({

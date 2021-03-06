@@ -49,7 +49,7 @@ world.createEntity({
 	},
 })
 
-const [playerX, playerY] = level.map.getRooms()[0].getCenter()
+const [playerX, playerY] = level.dungeon.getRooms()[0].getCenter()
 const player = createPlayer(world, viewport, playerX, playerY)
 
 world.createEntity({
