@@ -13,18 +13,20 @@ export default class ActionSystem extends System {
 			persist: true,
 		})
 	}
-	update(tick: number) {
+	update(tick) {
 		let actionTaken = false
 		this.controllersUpdated.execute().forEach((entity) => {
 			const tile = entity.c.tile
 			if (tile) {
-				const move = MoveGrids[entity.c.controller.direction]
+				const { direction } = entity.c.controller
+				const move = MoveGrids[direction]
 				if (move) {
 					actionTaken = true
 					entity.addComponent({
 						type: Move.typeName,
 						key: 'move',
 						...move,
+						direction,
 					})
 				}
 			}

@@ -2,6 +2,8 @@ import { Query, System } from 'ape-ecs'
 import { Tile } from '../components/com_tile'
 import { Move } from '../components/com_move'
 import { Entities } from '../types'
+import { Grinding } from '../components/com_grinding'
+import { reverseDirection } from '../assets/util'
 
 export default class MoveSystem extends System {
 	private moves!: Query
@@ -16,10 +18,18 @@ export default class MoveSystem extends System {
 		this.moves.execute().forEach((entity) => {
 			const { tile, move } = entity.c
 			const dest = { x: tile.x + move.x, y: tile.y + move.y }
-			if (level.data.get(dest.x + ':' + dest.y).value === 0) {
+			const destGrid = level.data.get(dest.x + ':' + dest.y)
+			if (destGrid.value !== 1) {
 				tile.update(dest)
+				if (!entity.has(Grinding) && destGrid.value === 2) {
+					entity.addComponent({
+						type: Grinding.typeName,
+						key: 'grinding',
+						from: reverseDirection(move.direction),
+					})
+				}
 			}
-			entity.removeComponent(Move.typeName)
+			entity.removeComponent(move)
 		})
 	}
 }

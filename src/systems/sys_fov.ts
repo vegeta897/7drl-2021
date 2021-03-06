@@ -15,7 +15,7 @@ export default class FOVSystem extends System {
 			persist: true,
 		})
 	}
-	update(tick: number) {
+	update(tick) {
 		const level = this.world.getEntity(Entities.Level)!.c.level
 		this.tilesUpdated.execute().forEach((entity) => {
 			if (entity.c.tile._meta.updated !== tick) return

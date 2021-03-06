@@ -15,6 +15,7 @@ export class Level {
 	dungeon: Dungeon
 	data = new Map()
 	constructor(width = 80, height = 16) {
+		rotJS.RNG.setSeed(897)
 		this.dungeon = new rotJS.Map.Uniform(width, height, {
 			roomDugPercentage: 0.7,
 			roomWidth: [8, 20],
