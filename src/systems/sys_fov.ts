@@ -22,7 +22,7 @@ export default class FOVSystem extends System {
 			const tile = entity.c.tile
 			const fov = new FOV.PreciseShadowcasting((x, y) => {
 				if (!level.level.data.has(x + ':' + y)) return false
-				return level.level.data.get(x + ':' + y).value === 0
+				return level.level.data.get(x + ':' + y).value !== 1
 			})
 			fov.compute(tile.x, tile.y, FOV_RADIUS, (x, y, r, visibility) => {
 				if (!level.level.data.has(x + ':' + y)) return

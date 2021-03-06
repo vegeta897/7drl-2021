@@ -34,6 +34,7 @@ export class Level {
 			grid.sprite = createSprite(gridValues[grid.value])
 			grid.sprite.x = grid.x * TILE_SIZE
 			grid.sprite.y = grid.y * TILE_SIZE
+			grid.sprite.alpha = 0
 			grid.sprite.tint =
 				grid.value === 2 ? 0x303048 : grid.value === 1 ? 0x383020 : 0x141000
 			this.container.addChild(grid.sprite)

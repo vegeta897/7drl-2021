@@ -4,6 +4,8 @@ import { Tile } from '../components/com_tile'
 import { MoveGrids } from '../types'
 import { Move } from '../components/com_move'
 
+// TODO: Add a way to block actions (when tweening movement, grinding, etc)
+
 export default class ActionSystem extends System {
 	private controllersUpdated!: Query
 	init() {
