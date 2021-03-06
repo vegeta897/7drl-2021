@@ -7,9 +7,12 @@ import { createPlayer } from './archetypes/player'
 import { Entities } from './types'
 import Follow from './components/com_follow'
 import { Viewport } from 'pixi-viewport'
+import LevelData from './components/com_level'
 
-const WIDTH = 800
-const HEIGHT = 600
+const WIDTH = 960
+const HEIGHT = 640
+const ZOOM = 2
+export const TILE_SIZE = 16
 
 const { view, stage } = new Application({
 	width: WIDTH,
@@ -31,13 +34,24 @@ stage.addChild(viewport)
 
 const level = new Level()
 
-const room = level.map.getRooms()[0]
 viewport.addChild(level.container)
-viewport.setZoom(2)
+viewport.setZoom(ZOOM)
 
-const [playerX, playerY] = room.getCenter()
 initWorld({ viewport })
+
+world.createEntity({
+	id: Entities.Level,
+	c: {
+		level: {
+			type: LevelData.typeName,
+			level,
+		},
+	},
+})
+
+const [playerX, playerY] = level.map.getRooms()[0].getCenter()
 const player = createPlayer(world, viewport, playerX, playerY)
+
 world.createEntity({
 	id: Entities.Camera,
 	c: {

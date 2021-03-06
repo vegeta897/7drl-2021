@@ -2,6 +2,7 @@ import { BaseTexture, Texture, Rectangle, Sprite } from 'pixi.js'
 import sheetImage from './assets/1bitpack_kenney.png'
 
 export enum SPRITES {
+	FLOOR = 'floor',
 	WALL = 'wall',
 	PLAYER = 'player',
 }
@@ -15,6 +16,7 @@ function loadSheet() {
 		const { key, x, y, w, h } = texture
 		textures[key] = new Texture(baseTexture, new Rectangle(x, y, w, h))
 	}
+	textures[SPRITES.FLOOR] = Texture.WHITE
 }
 
 export function createSprite(spriteName: SPRITES) {

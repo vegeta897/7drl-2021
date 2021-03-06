@@ -1,7 +1,7 @@
 import { Point } from 'pixi.js'
 import { Tween, Easing } from '@tweenjs/tween.js'
 import { System } from 'ape-ecs'
-import { TILE_SIZE } from './sys_tile'
+import { TILE_SIZE } from '../.'
 import { Entities } from '../types'
 import { Viewport } from 'pixi-viewport'
 

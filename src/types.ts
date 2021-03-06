@@ -10,6 +10,7 @@ export enum Tags {
 export enum Entities {
 	Player = 'player',
 	Camera = 'camera',
+	Level = 'level',
 }
 
 export enum Directions {

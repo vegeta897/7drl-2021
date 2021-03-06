@@ -14,9 +14,6 @@ export default class MoveSystem extends System {
 		this.moves.execute().forEach((entity) => {
 			const { tile, move } = entity.c
 			tile.update({ x: tile.x + move.x, y: tile.y + move.y })
-			if (entity.c.player) {
-				// update camera
-			}
 			entity.removeComponent(Move.typeName)
 		})
 	}
