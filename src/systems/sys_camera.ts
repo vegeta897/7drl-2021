@@ -13,7 +13,7 @@ export class CameraSystem extends System {
 		this.viewport = viewport
 	}
 	update(tick) {
-		const camera = this.world.entities.get(Entities.Camera)
+		const camera = this.world.getEntity(Entities.Camera)
 		if (!camera || !camera.c.follow.target) return
 		const { target } = camera.c.follow
 		if (target._meta.updated !== tick) return

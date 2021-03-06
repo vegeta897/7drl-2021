@@ -16,10 +16,10 @@ export default class FOVSystem extends System {
 		})
 	}
 	update(tick: number) {
+		const level = this.world.getEntity(Entities.Level)!.c.level
 		this.tilesUpdated.execute().forEach((entity) => {
 			if (entity.c.tile._meta.updated !== tick) return
 			const tile = entity.c.tile
-			const level = this.world.getEntity(Entities.Level)!.c.level
 			const fov = new FOV.PreciseShadowcasting((x, y) => {
 				if (!level.level.data.has(x + ':' + y)) return false
 				return level.level.data.get(x + ':' + y).value === 0

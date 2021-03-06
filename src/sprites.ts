@@ -20,7 +20,12 @@ function loadSheet() {
 }
 
 export function createSprite(spriteName: SPRITES) {
-	return new Sprite(textures[spriteName])
+	const sprite = new Sprite(textures[spriteName])
+	switch (spriteName) {
+		case SPRITES.PLAYER:
+			break
+	}
+	return sprite
 }
 
 const sheetDefinition = {
