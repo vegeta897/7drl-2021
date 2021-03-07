@@ -3,14 +3,15 @@ import TWEEN from '@tweenjs/tween.js'
 import './style.css'
 import { Level } from './level'
 import { world, updateWorld, initWorld } from './ecs'
-import { createPlayer } from './archetypes/player'
-import { Entities } from './types'
+import { createPlayerComponents } from './archetypes/player'
+import { GlobalEntity, SystemGroup } from './types'
 import Follow from './components/com_follow'
 import { Viewport } from 'pixi-viewport'
 import Game from './components/com_game'
+import Controller from './components/com_controller'
 
 const WIDTH = 960
-const HEIGHT = 640
+const HEIGHT = 720
 const ZOOM = 2
 export const TILE_SIZE = 16
 
@@ -24,6 +25,7 @@ document.body.appendChild(view)
 
 Ticker.shared.add(() => {
 	TWEEN.update()
+	world.runSystems(SystemGroup.Render)
 })
 
 const viewport = new Viewport({
@@ -40,24 +42,38 @@ viewport.setZoom(ZOOM)
 initWorld({ viewport })
 
 world.createEntity({
-	id: Entities.Game,
+	id: GlobalEntity.Game,
 	c: {
 		game: {
 			type: Game.typeName,
 			level,
 		},
+		controller: {
+			type: Controller.typeName,
+		},
 	},
 })
 
 const [playerX, playerY] = level.dungeon.getRooms()[0].getCenter()
-const player = createPlayer(world, viewport, playerX, playerY)
 
+const playerComponents = createPlayerComponents(
+	viewport,
+	playerX - 5, // offset position for debug
+	playerY - 3
+)
 world.createEntity({
-	id: Entities.Camera,
+	id: GlobalEntity.Player,
+	c: playerComponents,
+})
+const FOLLOW = true
+world.createEntity({
+	id: GlobalEntity.Camera,
 	c: {
 		follow: {
 			type: Follow.typeName,
-			target: player.c.tile,
+			target: FOLLOW
+				? playerComponents.pixi.object.position
+				: { x: 200, y: 100 },
 		},
 	},
 })

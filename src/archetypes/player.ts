@@ -1,35 +1,34 @@
-import { Entity, World } from 'ape-ecs'
+import { IComponentConfigValObject } from 'ape-ecs'
 import { Container } from 'pixi.js'
-import Tile from '../components/com_tile'
+import Transform from '../components/com_transform'
 import { createSprite, SPRITES } from '../sprites'
-import { Entities } from '../types'
 import Controller from '../components/com_controller'
 import Player from '../components/com_player'
 import PixiObject from '../components/com_pixi'
 
-export function createPlayer(world: World, container: Container, x, y): Entity {
+export function createPlayerComponents(
+	container: Container,
+	x: number,
+	y: number
+): IComponentConfigValObject {
 	const sprite = createSprite(SPRITES.Player)
 	sprite.tint = 0x22aa99
 	container.addChild(sprite)
-	const player = world.createEntity({
-		c: {
-			tile: {
-				type: Tile.typeName,
-				x,
-				y,
-			},
-			pixi: {
-				type: PixiObject.typeName,
-				object: sprite,
-			},
-			controller: {
-				type: Controller.typeName,
-			},
-			player: {
-				type: Player.typeName,
-			},
+	return {
+		transform: {
+			type: Transform.typeName,
+			x,
+			y,
 		},
-		id: Entities.Player,
-	})
-	return player
+		pixi: {
+			type: PixiObject.typeName,
+			object: sprite,
+		},
+		controller: {
+			type: Controller.typeName,
+		},
+		player: {
+			type: Player.typeName,
+		},
+	}
 }

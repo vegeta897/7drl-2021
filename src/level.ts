@@ -4,6 +4,12 @@ import { createSprite, SPRITES } from './sprites'
 import Dungeon from 'rot-js/lib/map/dungeon'
 import { TILE_SIZE } from './'
 
+export enum Tile {
+	Floor,
+	Wall,
+	Rail,
+}
+
 const gridValues = {
 	0: SPRITES.Floor,
 	1: SPRITES.Wall,
@@ -27,7 +33,7 @@ export class Level {
 		const corridors = this.dungeon.getCorridors()
 		for (const corridor of corridors) {
 			corridor.create((x, y) => {
-				this.data.set(x + ':' + y, { x, y, value: 2 })
+				this.data.set(x + ':' + y, { x, y, value: Tile.Rail })
 			})
 		}
 		this.data.forEach((grid) => {
@@ -36,7 +42,11 @@ export class Level {
 			grid.sprite.y = grid.y * TILE_SIZE
 			grid.sprite.alpha = 0
 			grid.sprite.tint =
-				grid.value === 2 ? 0x303048 : grid.value === 1 ? 0x383020 : 0x141000
+				grid.value === Tile.Rail
+					? 0x303048
+					: grid.value === Tile.Wall
+					? 0x383020
+					: 0x141000
 			this.container.addChild(grid.sprite)
 		})
 	}

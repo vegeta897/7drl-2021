@@ -1,4 +1,5 @@
-import { Directions, Grid } from '../types'
+import { Directions, Grid } from './types'
+import { TILE_SIZE } from './index'
 
 export function reverseDirection(direction: Directions) {
 	switch (direction) {
@@ -32,4 +33,12 @@ export function addGrids(...grids: Grid[]) {
 		sum.y += grid.y
 	}
 	return sum
+}
+
+export function diffGrids(a: Grid, b: Grid) {
+	return { x: a.x - b.x, y: a.y - b.y }
+}
+
+export function tileToSpritePosition(tile) {
+	return { x: tile.x * TILE_SIZE, y: tile.y * TILE_SIZE }
 }

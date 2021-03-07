@@ -1,37 +1,48 @@
 import { Point } from 'pixi.js'
-import { Tween, Easing } from '@tweenjs/tween.js'
 import { System } from 'ape-ecs'
-import { TILE_SIZE } from '../.'
-import { Entities } from '../types'
+import { GlobalEntity } from '../types'
 import { Viewport } from 'pixi-viewport'
+import { addGrids, diffGrids } from '../util'
+import { TILE_SIZE } from '../index'
+import { Util } from 'rot-js'
+
+const CAM_RADIUS = 3
 
 export default class CameraSystem extends System {
 	private viewport: Viewport
-	tween?: Tween<Point>
-
+	private targetLast
 	init(viewport: Viewport) {
 		this.viewport = viewport
 	}
 	update(tick) {
-		const camera = this.world.getEntity(Entities.Camera)
+		const camera = this.world.getEntity(GlobalEntity.Camera)
 		if (!camera || !camera.c.follow.target) return
 		const { target } = camera.c.follow
-		if (target._meta.updated !== tick) return
-		if (this.tween) this.tween.stop()
-		this.tween = new Tween(<Point>{ ...this.viewport.center })
-			.to(
-				{
-					x: target.x * TILE_SIZE + TILE_SIZE / 2,
-					y: target.y * TILE_SIZE + TILE_SIZE / 2,
-				},
-				300
-			)
-			.easing(Easing.Quadratic.Out)
-			.onUpdate((point) => {
-				this.viewport.moveCenter(point)
-			})
-		this.tween.start().onComplete(() => {
-			delete this.tween
+		const targetCenter = addGrids(target, {
+			x: TILE_SIZE / 2,
+			y: TILE_SIZE / 2,
 		})
+		if (!this.targetLast) {
+			this.viewport.moveCenter(<Point>targetCenter)
+		} else {
+			const radius = CAM_RADIUS * TILE_SIZE
+			const camOffset = diffGrids(targetCenter, this.viewport.center)
+			if (Math.abs(camOffset.x) > radius || Math.abs(camOffset.y) > radius) {
+				const moveTo = {
+					x: Util.clamp(
+						this.viewport.center.x,
+						targetCenter.x - radius,
+						targetCenter.x + radius
+					),
+					y: Util.clamp(
+						this.viewport.center.y,
+						targetCenter.y - radius,
+						targetCenter.y + radius
+					),
+				}
+				this.viewport.moveCenter(<Point>moveTo)
+			}
+		}
+		this.targetLast = { ...targetCenter }
 	}
 }

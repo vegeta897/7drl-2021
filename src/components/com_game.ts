@@ -4,13 +4,11 @@ import { Level } from '../level'
 export default class Game extends Component {
 	static typeName = 'Game'
 	level: Level
-	inputLocked: boolean
-	autoUpdate: number | null
-	timeout: number | null
+	wait: boolean
+	autoUpdate: boolean
 	static properties = {
 		level: null,
-		inputLocked: false,
-		autoUpdate: null,
-		timeout: null,
+		wait: false,
+		autoUpdate: false,
 	}
 }

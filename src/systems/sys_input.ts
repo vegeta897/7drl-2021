@@ -1,20 +1,16 @@
-import { Query, System } from 'ape-ecs'
-import { Directions, SystemGroup } from '../types'
-import Controller from '../components/com_controller'
+import { System } from 'ape-ecs'
+import { Directions, GlobalEntity, SystemGroup } from '../types'
 
 // Based on https://github.com/fritzy/7drl2020
 export default class InputSystem extends System {
 	keys = new Set()
 	currentKey: string | null
-	private inputs!: Query
 	init() {
 		window.addEventListener('keydown', this.keyDown.bind(this))
 		window.addEventListener('keyup', this.keyUp.bind(this))
-		this.inputs = this.createQuery({
-			all: [Controller],
-		})
 	}
 	update() {
+		const { controller } = this.world.getEntity(GlobalEntity.Game)!.c
 		let direction: Directions | null = null
 		switch (this.currentKey) {
 			case 'KeyW':
@@ -47,9 +43,7 @@ export default class InputSystem extends System {
 				break
 		}
 		if (direction !== null) {
-			this.inputs.execute().forEach((entity) => {
-				entity.c.controller.direction = direction
-			})
+			controller.direction = direction
 		}
 	}
 	keyDown(e) {

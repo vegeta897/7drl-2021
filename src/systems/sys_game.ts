@@ -1,18 +1,21 @@
 import { System } from 'ape-ecs'
-import { Entities } from '../types'
+import { ControllerState, GlobalEntity } from '../types'
 import { updateWorld } from '../ecs'
 
 export default class GameSystem extends System {
 	update(tick) {
-		const { game } = this.world.getEntity(Entities.Game)!.c
-		if (game.autoUpdate !== null && game.timeout === null) {
-			game.timeout = setTimeout(() => {
-				clearTimeout(game.timeout)
-				game.timeout = null
+		const { game, controller } = this.world.getEntity(GlobalEntity.Game)!.c
+		if (game.wait) {
+			// Waiting for tweens to finish
+		} else {
+			this.world.tick()
+			if (game.autoUpdate) {
+				game.autoUpdate = false
 				updateWorld()
-				this.world.tick()
-			}, game.autoUpdate)
-			game.autoUpdate = null
+			} else {
+				// Wait for input
+				controller.state = ControllerState.Ready
+			}
 		}
 	}
 }
