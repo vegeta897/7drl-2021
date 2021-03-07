@@ -1,9 +1,8 @@
 import { Query, System } from 'ape-ecs'
-import { Tile } from '../components/com_tile'
-import { Move } from '../components/com_move'
+import Tile from '../components/com_tile'
+import Move from '../components/com_move'
 import { Entities } from '../types'
-import { Grinding } from '../components/com_grinding'
-import { reverseDirection } from '../assets/util'
+import Grinding from '../components/com_grinding'
 
 export default class MoveSystem extends System {
 	private moves!: Query
@@ -25,7 +24,7 @@ export default class MoveSystem extends System {
 					entity.addComponent({
 						type: Grinding.typeName,
 						key: 'grinding',
-						from: reverseDirection(move.direction),
+						direction: move.direction,
 					})
 				}
 			}

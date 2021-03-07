@@ -1,5 +1,5 @@
 import { Component } from 'ape-ecs'
-import { Tile } from './com_tile'
+import Tile from './com_tile'
 
 export default class Follow extends Component {
 	static typeName = 'Follow'

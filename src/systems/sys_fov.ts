@@ -1,6 +1,6 @@
 import { Query, System } from 'ape-ecs'
-import { Tile } from '../components/com_tile'
-import { Player } from '../components/com_player'
+import Tile from '../components/com_tile'
+import Player from '../components/com_player'
 import { FOV } from 'rot-js'
 import { Easing } from '@tweenjs/tween.js'
 import { Entities } from '../types'

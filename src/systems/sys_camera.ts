@@ -5,7 +5,7 @@ import { TILE_SIZE } from '../.'
 import { Entities } from '../types'
 import { Viewport } from 'pixi-viewport'
 
-export class CameraSystem extends System {
+export default class CameraSystem extends System {
 	private viewport: Viewport
 	tween?: Tween<Point>
 

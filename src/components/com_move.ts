@@ -2,7 +2,7 @@ import { Component } from 'ape-ecs'
 import { Directions } from '../types'
 import { Tween } from '@tweenjs/tween.js'
 
-export class Move extends Component {
+export default class Move extends Component {
 	static typeName = 'Move'
 	x: number
 	y: number

@@ -8,6 +8,7 @@ import { Entities } from './types'
 import Follow from './components/com_follow'
 import { Viewport } from 'pixi-viewport'
 import LevelData from './components/com_level'
+import Game from './components/com_game'
 
 const WIDTH = 960
 const HEIGHT = 640
@@ -38,6 +39,15 @@ viewport.addChild(level.container)
 viewport.setZoom(ZOOM)
 
 initWorld({ viewport })
+
+world.createEntity({
+	id: Entities.Game,
+	c: {
+		game: {
+			type: Game.typeName,
+		},
+	},
+})
 
 world.createEntity({
 	id: Entities.Level,

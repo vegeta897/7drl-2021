@@ -1,7 +1,7 @@
 import { Component } from 'ape-ecs'
 import { Container } from 'pixi.js'
 
-export class PixiObject extends Component {
+export default class PixiObject extends Component {
 	static typeName = 'PixiObject'
 	object: Container
 	static properties = {

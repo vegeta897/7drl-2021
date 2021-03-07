@@ -1,10 +1,10 @@
 import { Component } from 'ape-ecs'
 import { Directions } from '../types'
 
-export class Grinding extends Component {
+export default class Grinding extends Component {
 	static typeName = 'Grinding'
-	from: Directions
+	direction: Directions
 	static properties = {
-		from: null,
+		direction: null,
 	}
 }

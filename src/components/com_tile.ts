@@ -1,6 +1,6 @@
 import { Component } from 'ape-ecs'
 
-export class Tile extends Component {
+export default class Tile extends Component {
 	static typeName = 'Tile'
 	x!: number
 	y!: number

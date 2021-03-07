@@ -1,7 +1,6 @@
 import { Query, System } from 'ape-ecs'
 import { Directions, SystemGroup } from '../types'
-import { Controller } from '../components/com_controller'
-import { updateWorld } from '../ecs'
+import Controller from '../components/com_controller'
 
 // Based on https://github.com/fritzy/7drl2020
 export default class InputSystem extends System {
@@ -51,7 +50,6 @@ export default class InputSystem extends System {
 			this.inputs.execute().forEach((entity) => {
 				entity.c.controller.direction = direction
 			})
-			updateWorld()
 		}
 	}
 	keyDown(e) {

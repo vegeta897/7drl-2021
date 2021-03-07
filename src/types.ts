@@ -8,6 +8,7 @@ export enum Tags {
 }
 
 export enum Entities {
+	Game = 'game',
 	Player = 'player',
 	Camera = 'camera',
 	Level = 'level',
