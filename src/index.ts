@@ -7,7 +7,6 @@ import { createPlayer } from './archetypes/player'
 import { Entities } from './types'
 import Follow from './components/com_follow'
 import { Viewport } from 'pixi-viewport'
-import LevelData from './components/com_level'
 import Game from './components/com_game'
 
 const WIDTH = 960
@@ -45,15 +44,6 @@ world.createEntity({
 	c: {
 		game: {
 			type: Game.typeName,
-		},
-	},
-})
-
-world.createEntity({
-	id: Entities.Level,
-	c: {
-		level: {
-			type: LevelData.typeName,
 			level,
 		},
 	},

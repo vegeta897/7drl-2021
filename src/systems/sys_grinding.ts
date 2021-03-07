@@ -16,11 +16,10 @@ export default class GrindingSystem extends System {
 		})
 	}
 	update(tick) {
-		const { level } = this.world.getEntity(Entities.Level)!.c.level
 		const { game } = this.world.getEntity(Entities.Game)!.c
 		this.grinding.execute().forEach((entity) => {
 			const { tile, grinding } = entity.c
-			if (level.data.get(tile.x + ':' + tile.y).value === 2) {
+			if (game.level.data.get(tile.x + ':' + tile.y).value === 2) {
 				for (const direction of [
 					grinding.direction,
 					turnDirection(grinding.direction, 1),
@@ -31,7 +30,7 @@ export default class GrindingSystem extends System {
 						MoveGrids[direction]
 					)
 					// Check for wall
-					if (level.data.get(destMove.x + ':' + destMove.y).value === 1)
+					if (game.level.data.get(destMove.x + ':' + destMove.y).value === 1)
 						continue
 					// Grinding continues
 					game.inputLocked = true

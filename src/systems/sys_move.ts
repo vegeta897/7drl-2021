@@ -13,7 +13,7 @@ export default class MoveSystem extends System {
 		})
 	}
 	update(tick) {
-		const { level } = this.world.getEntity(Entities.Level)!.c.level
+		const { level } = this.world.getEntity(Entities.Game)!.c.game
 		this.moves.execute().forEach((entity) => {
 			const { tile, move } = entity.c
 			const dest = { x: tile.x + move.x, y: tile.y + move.y }

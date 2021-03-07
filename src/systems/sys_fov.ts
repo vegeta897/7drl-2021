@@ -16,17 +16,17 @@ export default class FOVSystem extends System {
 		})
 	}
 	update(tick) {
-		const level = this.world.getEntity(Entities.Level)!.c.level
+		const { level } = this.world.getEntity(Entities.Game)!.c.game
 		this.tilesUpdated.execute().forEach((entity) => {
 			if (entity.c.tile._meta.updated !== tick) return
 			const tile = entity.c.tile
 			const fov = new FOV.PreciseShadowcasting((x, y) => {
-				if (!level.level.data.has(x + ':' + y)) return false
-				return level.level.data.get(x + ':' + y).value !== 1
+				if (!level.data.has(x + ':' + y)) return false
+				return level.data.get(x + ':' + y).value !== 1
 			})
 			fov.compute(tile.x, tile.y, FOV_RADIUS, (x, y, r, visibility) => {
-				if (!level.level.data.has(x + ':' + y)) return
-				const { sprite } = level.level.data.get(x + ':' + y)
+				if (!level.data.has(x + ':' + y)) return
+				const { sprite } = level.data.get(x + ':' + y)
 				sprite.alpha = Math.max(
 					sprite.alpha,
 					visibility * Easing.Exponential.Out((FOV_RADIUS - r) / FOV_RADIUS)
