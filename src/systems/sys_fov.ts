@@ -2,7 +2,7 @@ import { Query, System } from 'ape-ecs'
 import Transform from '../components/com_transform'
 import Player from '../components/com_player'
 import { FOV } from 'rot-js'
-import { Easing } from '@tweenjs/tween.js'
+import { Easing, Tween } from '@tweenjs/tween.js'
 import { GlobalEntity } from '../types'
 import { Tile } from '../level'
 
@@ -32,10 +32,12 @@ export default class FOVSystem extends System {
 				(x, y, r, visibility) => {
 					if (!level.data.has(x + ':' + y)) return
 					const { sprite } = level.data.get(x + ':' + y)
-					sprite.alpha = Math.max(
+					const newAlpha = Math.max(
 						sprite.alpha,
 						visibility * Easing.Exponential.Out((FOV_RADIUS - r) / FOV_RADIUS)
 					)
+					if (sprite.alpha !== newAlpha)
+						new Tween(sprite).to({ alpha: newAlpha }, 100).start()
 				}
 			)
 		})

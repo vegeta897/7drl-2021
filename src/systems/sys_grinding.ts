@@ -39,9 +39,7 @@ export default class GrindingSystem extends System {
 		})
 		grinding.forEach((entity) => {
 			const { transform, grinding } = entity.c
-			if (
-				game.level.data.get(transform.x + ':' + transform.y).value === Tile.Rail
-			) {
+			if (grinding.state !== GrindState.End) {
 				for (const direction of [
 					grinding.direction,
 					turnDirection(grinding.direction, 1),
