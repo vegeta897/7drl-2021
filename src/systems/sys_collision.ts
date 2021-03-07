@@ -17,8 +17,8 @@ export default class CollisionSystem extends System {
 		this.moves.execute().forEach((entity) => {
 			const { transform, move } = entity.c
 			const dest = { x: transform.x + move.x, y: transform.y + move.y }
-			const destGrid = level.data.get(dest.x + ':' + dest.y)
-			if (destGrid.value === Tile.Wall) {
+			const destGrid = level.getTileAt(dest.x, dest.y)
+			if (destGrid.type === Tile.Wall) {
 				// Wall, cancel move
 				entity.removeComponent(move)
 			}

@@ -1,7 +1,7 @@
 import { IComponentConfigValObject } from 'ape-ecs'
 import { Container } from 'pixi.js'
 import Transform from '../components/com_transform'
-import { createSprite, SPRITES } from '../sprites'
+import { createSprite, TextureName } from '../sprites'
 import Controller from '../components/com_controller'
 import Player from '../components/com_player'
 import PixiObject from '../components/com_pixi'
@@ -11,7 +11,7 @@ export function createPlayerComponents(
 	x: number,
 	y: number
 ): IComponentConfigValObject {
-	const sprite = createSprite(SPRITES.Player)
+	const sprite = createSprite(TextureName.Player)
 	sprite.tint = 0x22aa99
 	container.addChild(sprite)
 	return {

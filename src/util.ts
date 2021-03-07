@@ -1,4 +1,4 @@
-import { Directions, Grid } from './types'
+import { Directions, Grid, MoveGrids } from './types'
 import { TILE_SIZE } from './index'
 
 export function reverseDirection(direction: Directions) {
@@ -14,10 +14,23 @@ export function reverseDirection(direction: Directions) {
 	}
 }
 
+function getClockwiseDirection(direction: Directions) {
+	switch (direction) {
+		case Directions.Up:
+			return Directions.Right
+		case Directions.Right:
+			return Directions.Down
+		case Directions.Down:
+			return Directions.Left
+		case Directions.Left:
+			return Directions.Up
+	}
+}
+
 export function turnDirection(direction: Directions, turns: number) {
 	let turned = direction
 	for (let i = 0; i < turns; i++) {
-		turned = (turned + 1) % 4
+		turned = getClockwiseDirection(turned)
 	}
 	return turned
 }
@@ -37,6 +50,15 @@ export function addGrids(...grids: Grid[]) {
 
 export function diffGrids(a: Grid, b: Grid) {
 	return { x: a.x - b.x, y: a.y - b.y }
+}
+
+export function getNeighbors(grid) {
+	return new Set([
+		addGrids(grid, MoveGrids[Directions.Up]),
+		addGrids(grid, MoveGrids[Directions.Down]),
+		addGrids(grid, MoveGrids[Directions.Left]),
+		addGrids(grid, MoveGrids[Directions.Right]),
+	])
 }
 
 export function tileToSpritePosition(tile) {

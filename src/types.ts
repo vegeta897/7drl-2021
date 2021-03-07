@@ -23,9 +23,9 @@ export enum GlobalEntity {
 
 export enum Directions {
 	Up,
-	Right,
 	Down,
 	Left,
+	Right,
 }
 
 export type Grid = {
