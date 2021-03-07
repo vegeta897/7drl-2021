@@ -6,8 +6,8 @@ import { GlobalEntity, GrindState } from '../types'
 import { addGrids } from '../util'
 import { afterUpdateWorld } from '../ecs'
 
-export const PLAYER_SPEED = 80
-export const GRIND_SPEED = 80
+export const PLAYER_SPEED = 100
+export const GRIND_SPEED = 100
 
 export default class TweenSystem extends System {
 	private moving!: Query
@@ -33,13 +33,17 @@ export default class TweenSystem extends System {
 				positionTween.duration(PLAYER_SPEED)
 			}
 			if (grinding) {
-				positionTween.duration(GRIND_SPEED)
 				switch (grinding.state) {
 					case GrindState.Start:
-						this.addHop(game, transform)
+						positionTween.duration(GRIND_SPEED * 2)
+						this.addHop(game, transform, 2)
 						break
 					case GrindState.End:
-						this.addHop(game, transform)
+						positionTween.duration(GRIND_SPEED * 2)
+						this.addHop(game, transform, 1.5)
+						break
+					default:
+						positionTween.duration(GRIND_SPEED)
 						break
 				}
 			}
@@ -74,13 +78,13 @@ export default class TweenSystem extends System {
 			afterUpdateWorld()
 		}
 	}
-	addHop(game, transform) {
+	addHop(game, transform, size = 1) {
 		const hopUp = this.createTween(game, transform)
-			.duration(PLAYER_SPEED / 2)
-			.to({ yOff: 0.2 })
+			.duration((PLAYER_SPEED / 2) * size * 0.8)
+			.to({ yOff: 0.2 * size })
 			.easing(Easing.Circular.Out)
 		const hopDown = this.createTween(game, transform)
-			.duration(PLAYER_SPEED / 2)
+			.duration((PLAYER_SPEED / 2) * size * 0.8)
 			.to({ yOff: 0 })
 			.easing(Easing.Circular.In)
 		hopUp.chain(hopDown).start()

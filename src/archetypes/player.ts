@@ -12,7 +12,7 @@ export function createPlayerComponents(
 	y: number
 ): IComponentConfigValObject {
 	const sprite = createSprite(TextureName.Player)
-	sprite.tint = 0x22aa99
+	sprite.tint = 0xc0c741
 	container.addChild(sprite)
 	return {
 		transform: {

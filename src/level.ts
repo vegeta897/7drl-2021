@@ -5,6 +5,13 @@ import Dungeon from 'rot-js/lib/map/dungeon'
 import { TILE_SIZE } from './'
 import { createRails, RailTile } from './rail'
 
+const SEED = 23
+const DEFAULT_WIDTH = 100
+const DEFAULT_HEIGHT = 20
+const ROOM_DUG_PERCENT = 0.8
+const ROOM_WIDTH: [number, number] = [3, 8]
+const ROOM_HEIGHT: [number, number] = [3, 6]
+
 export enum Tile {
 	Floor,
 	Wall,
@@ -24,12 +31,12 @@ export class Level {
 	container = new Container()
 	dungeon: Dungeon
 	data: Map<string, TileData> = new Map()
-	constructor(width = 80, height = 16) {
-		rotJS.RNG.setSeed(897)
+	constructor(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT) {
+		rotJS.RNG.setSeed(SEED)
 		this.dungeon = new rotJS.Map.Uniform(width, height, {
-			roomDugPercentage: 0.7,
-			roomWidth: [8, 20],
-			roomHeight: [6, 12],
+			roomDugPercentage: ROOM_DUG_PERCENT,
+			roomWidth: ROOM_WIDTH,
+			roomHeight: ROOM_HEIGHT,
 		})
 		this.dungeon.create((x, y, value) => {
 			this.data.set(x + ':' + y, {
@@ -41,7 +48,7 @@ export class Level {
 		})
 		createRails(this)
 		this.data.forEach((tile) => {
-			let tint = 0x141000
+			let tint = 0x3e2137 // Floor
 			let texture = TextureName.Floor
 			if (tile.type === Tile.Rail) {
 				texture = TextureName.RailCross
@@ -69,10 +76,10 @@ export class Level {
 						texture = TextureName.RailDownRight
 						break
 				}
-				tint = 0x303048
+				tint = 0x9a6348
 			} else if (tile.type === Tile.Wall) {
 				texture = TextureName.Wall
-				tint = 0x383020
+				tint = 0x584563
 			}
 			tile.sprite = createSprite(texture)
 			tile.sprite.x = tile.x * TILE_SIZE

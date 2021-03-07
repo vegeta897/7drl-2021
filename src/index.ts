@@ -18,6 +18,7 @@ export const TILE_SIZE = 16
 const { view, stage } = new Application({
 	width: WIDTH,
 	height: HEIGHT,
+	backgroundColor: 0x1f0e1c,
 })
 view.id = 'viewport'
 view.addEventListener('contextmenu', (e) => e.preventDefault())
@@ -56,15 +57,12 @@ world.createEntity({
 
 const [playerX, playerY] = level.dungeon.getRooms()[0].getCenter()
 
-const playerComponents = createPlayerComponents(
-	viewport,
-	playerX - 5, // offset position for debug
-	playerY - 3
-)
+const playerComponents = createPlayerComponents(viewport, playerX, playerY)
 world.createEntity({
 	id: GlobalEntity.Player,
 	c: playerComponents,
 })
+
 const FOLLOW = true
 world.createEntity({
 	id: GlobalEntity.Camera,
@@ -77,4 +75,5 @@ world.createEntity({
 		},
 	},
 })
+
 updateWorld()
