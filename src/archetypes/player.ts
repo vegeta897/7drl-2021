@@ -5,6 +5,7 @@ import { createSprite, SPRITES } from '../sprites'
 import { Entities } from '../types'
 import { Controller } from '../components/com_controller'
 import { Player } from '../components/com_player'
+import { PixiObject } from '../components/com_pixi'
 
 export function createPlayer(world: World, container: Container, x, y): Entity {
 	const sprite = createSprite(SPRITES.Player)
@@ -14,9 +15,12 @@ export function createPlayer(world: World, container: Container, x, y): Entity {
 		c: {
 			tile: {
 				type: Tile.typeName,
-				sprite,
 				x,
 				y,
+			},
+			pixi: {
+				type: PixiObject.typeName,
+				object: sprite,
 			},
 			controller: {
 				type: Controller.typeName,

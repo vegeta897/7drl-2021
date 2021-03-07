@@ -14,13 +14,17 @@ import FOVSystem from './systems/sys_fov'
 import LevelData from './components/com_level'
 import { Grinding } from './components/com_grinding'
 import GrindingSystem from './systems/sys_grinding'
+import { PixiObject } from './components/com_pixi'
+import { Tweening } from './components/com_tweening'
 
 export const world = new World()
 
 export function initWorld({ viewport }) {
 	world.registerComponent(Controller, 1)
+	world.registerComponent(PixiObject, 100)
 	world.registerComponent(Move, 20)
 	world.registerComponent(Tile, 1000)
+	world.registerComponent(Tweening, 100)
 	world.registerComponent(Player, 1)
 	world.registerComponent(Follow, 1)
 	world.registerComponent(LevelData, 1)
