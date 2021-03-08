@@ -15,7 +15,9 @@ export default class PixiSystem extends System {
 
 	update(tick) {
 		this.dirtyTransforms.execute().forEach((entity) => {
-			const { transform, pixi } = entity.c
+			const { transform, pixi } = <{ transform: Transform; pixi: PixiObject }>(
+				entity.c
+			)
 			if (!transform.dirty) return
 			transform.dirty = false
 			const spritePosition = tileToSpritePosition(transform)

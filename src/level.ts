@@ -32,7 +32,9 @@ export class Level {
 	dungeon: Dungeon
 	data: Map<string, TileData> = new Map()
 	constructor(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT) {
+		console.time('Total level generation')
 		rotJS.RNG.setSeed(SEED)
+		console.time('Room generation')
 		this.dungeon = new rotJS.Map.Uniform(width, height, {
 			roomDugPercentage: ROOM_DUG_PERCENT,
 			roomWidth: ROOM_WIDTH,
@@ -46,7 +48,11 @@ export class Level {
 				seeThrough: value !== Tile.Wall,
 			})
 		})
+		console.timeEnd('Room generation')
+		console.time('Rail generation')
 		createRails(this)
+		console.timeEnd('Rail generation')
+		console.time('Sprite creation')
 		this.data.forEach((tile) => {
 			let tint = 0x3e2137 // Floor
 			let texture = TextureName.Floor
@@ -88,6 +94,8 @@ export class Level {
 			tile.sprite.tint = tint
 			this.container.addChild(tile.sprite)
 		})
+		console.timeEnd('Sprite creation')
+		console.timeEnd('Total level generation')
 	}
 	getTileAt(x: number, y: number): TileData | undefined {
 		return this.data.get(x + ':' + y)

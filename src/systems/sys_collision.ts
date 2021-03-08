@@ -2,7 +2,8 @@ import { Query, System } from 'ape-ecs'
 import Transform from '../components/com_transform'
 import Move from '../components/com_move'
 import { GlobalEntity } from '../types'
-import { Tile } from '../level'
+import { Level, Tile } from '../level'
+import { addGrids } from '../util'
 
 export default class CollisionSystem extends System {
 	private moves!: Query
@@ -13,12 +14,12 @@ export default class CollisionSystem extends System {
 		})
 	}
 	update(tick) {
-		const { level } = this.world.getEntity(GlobalEntity.Game)!.c.game
+		const level = <Level>this.world.getEntity(GlobalEntity.Game)!.c.game.level
 		this.moves.execute().forEach((entity) => {
-			const { transform, move } = entity.c
-			const dest = { x: transform.x + move.x, y: transform.y + move.y }
+			const { transform, move } = <{ transform: Transform; move: Move }>entity.c
+			const dest = addGrids(transform, move)
 			const destGrid = level.getTileAt(dest.x, dest.y)
-			if (destGrid.type === Tile.Wall) {
+			if (destGrid?.type === Tile.Wall) {
 				// Wall, cancel move
 				entity.removeComponent(move)
 			}

@@ -4,6 +4,7 @@ import Player from '../components/com_player'
 import { FOV } from 'rot-js'
 import { Easing, Tween } from '@tweenjs/tween.js'
 import { GlobalEntity } from '../types'
+import { Level } from '../level'
 
 const FOV_RADIUS = 10
 
@@ -16,27 +17,28 @@ export default class FOVSystem extends System {
 		})
 	}
 	update(tick) {
-		const { level } = this.world.getEntity(GlobalEntity.Game)!.c.game
+		const level = <Level>this.world.getEntity(GlobalEntity.Game)!.c.game.level
 		this.updatedTransforms.execute().forEach((entity) => {
 			if (entity.c.transform._meta.updated !== tick) return
-			const transform = entity.c.transform
+			const transform = <Transform>entity.c.transform
 			const fov = new FOV.PreciseShadowcasting((x, y) => {
-				if (!level.getTileAt(x, y)) return false
-				return level.getTileAt(x, y).seeThrough
+				const tile = level.getTileAt(x, y)
+				if (!tile) return false
+				return tile.seeThrough
 			})
 			fov.compute(
 				transform.x,
 				transform.y,
 				FOV_RADIUS,
 				(x, y, r, visibility) => {
-					if (!level.getTileAt(x, y)) return
-					const { sprite } = level.getTileAt(x, y)
+					const tile = level.getTileAt(x, y)
+					if (!tile || !tile.sprite) return
 					const newAlpha = Math.max(
-						sprite.alpha,
+						tile.sprite.alpha,
 						visibility * Easing.Exponential.Out((FOV_RADIUS - r) / FOV_RADIUS)
 					)
-					if (sprite.alpha !== newAlpha)
-						new Tween(sprite).to({ alpha: newAlpha }, 100).start()
+					if (tile.sprite.alpha !== newAlpha)
+						new Tween(tile.sprite).to({ alpha: newAlpha }, 100).start()
 				}
 			)
 		})

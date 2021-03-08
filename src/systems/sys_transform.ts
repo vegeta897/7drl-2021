@@ -14,10 +14,8 @@ export default class TransformSystem extends System {
 
 	update(tick) {
 		this.moving.execute().forEach((entity) => {
-			const { transform, move } = entity.c
-			transform.update(
-				addGrids({ x: transform.x, y: transform.y }, { x: move.x, y: move.y })
-			)
+			const { transform, move } = <{ transform: Transform; move: Move }>entity.c
+			transform.update(addGrids(transform, move))
 			entity.removeComponent(move)
 		})
 	}

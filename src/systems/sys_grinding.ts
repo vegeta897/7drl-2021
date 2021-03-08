@@ -2,20 +2,21 @@ import { Query, System } from 'ape-ecs'
 import Grinding from '../components/com_grinding'
 import { GlobalEntity, GrindState, MoveGrids } from '../types'
 import Move from '../components/com_move'
-import { reverseDirection } from '../util'
+import { addGrids, reverseDirection } from '../util'
 import { Tile } from '../level'
+import Transform from '../components/com_transform'
 
 export default class GrindingSystem extends System {
 	private noGrindMoving!: Query
 	private grinding!: Query
 	init() {
 		this.noGrindMoving = this.createQuery({
-			all: [Move],
+			all: [Transform, Move],
 			not: [Grinding],
 			persist: true,
 		})
 		this.grinding = this.createQuery({
-			all: [Grinding],
+			all: [Transform, Grinding],
 			persist: true,
 		})
 	}
@@ -24,8 +25,8 @@ export default class GrindingSystem extends System {
 		const noGrindMoving = this.noGrindMoving.execute()
 		const grinding = this.grinding.execute()
 		noGrindMoving.forEach((entity) => {
-			const { move, transform } = entity.c
-			const dest = { x: transform.x + move.x, y: transform.y + move.y }
+			const { move, transform } = <{ transform: Transform; move: Move }>entity.c
+			const dest = addGrids(move, transform)
 			const destGrid = game.level.getTileAt(dest.x, dest.y)
 			if (destGrid.type === Tile.Rail) {
 				// Begin grind
@@ -38,7 +39,9 @@ export default class GrindingSystem extends System {
 			}
 		})
 		grinding.forEach((entity) => {
-			const { transform, grinding } = entity.c
+			const { transform, grinding } = <
+				{ transform: Transform; grinding: Grinding }
+			>entity.c
 			if (grinding.state !== GrindState.End) {
 				const tile = game.level.getTileAt(transform.x, transform.y)
 				const fromDirection = reverseDirection(grinding.direction)

@@ -29,13 +29,12 @@ function loadSheet() {
 	textures[TextureName.Floor] = Texture.WHITE
 }
 
-export function createSprite(spriteName: TextureName) {
-	const sprite = new Sprite(textures[spriteName])
-	switch (spriteName) {
-		case TextureName.Player:
-			break
-	}
-	return sprite
+export function createSprite(textureName: TextureName): Sprite {
+	return new Sprite(textures[textureName])
+}
+
+export function changeSpriteTexture(sprite: Sprite, textureName: TextureName) {
+	sprite.texture = textures[textureName]
 }
 
 const sheetDefinition = {

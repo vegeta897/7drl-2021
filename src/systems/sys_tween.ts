@@ -5,6 +5,9 @@ import { Easing, Tween } from '@tweenjs/tween.js'
 import { GlobalEntity, GrindState } from '../types'
 import { addGrids } from '../util'
 import { afterUpdateWorld } from '../ecs'
+import Game from '../components/com_game'
+import Player from '../components/com_player'
+import Grinding from '../components/com_grinding'
 
 export const PLAYER_SPEED = 100
 export const GRIND_SPEED = 100
@@ -19,13 +22,17 @@ export default class TweenSystem extends System {
 		})
 	}
 	update(tick) {
-		const { game } = this.world.getEntity(GlobalEntity.Game)!.c
+		const { game } = <Game>this.world.getEntity(GlobalEntity.Game)!.c
 		this.moving.execute().forEach((entity) => {
-			const { move, transform, player, grinding } = entity.c
-			const moveDest = addGrids(
-				{ x: transform.x, y: transform.y },
-				{ x: move.x, y: move.y }
-			)
+			const { move, transform, player, grinding } = <
+				{
+					move: Move
+					transform: Transform
+					player: Player | undefined
+					grinding: Grinding | undefined
+				}
+			>entity.c
+			const moveDest = addGrids(move, transform)
 			const positionTween = this.createTween(game, transform).to(moveDest)
 			if (player && !grinding) {
 				this.addHop(game, transform)
@@ -57,7 +64,7 @@ export default class TweenSystem extends System {
 			game.wait = true
 		}
 	}
-	createTween(game, tweenObject) {
+	createTween(game: Game, tweenObject: Transform): Tween<Transform> {
 		const tween = new Tween(tweenObject)
 		const remove = () => {
 			tweenObject.update()

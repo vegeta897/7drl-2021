@@ -10,7 +10,6 @@ export default class InputSystem extends System {
 		window.addEventListener('keyup', this.keyUp.bind(this))
 	}
 	update() {
-		const { controller } = this.world.getEntity(GlobalEntity.Game)!.c
 		let direction: Directions | null = null
 		switch (this.currentKey) {
 			case 'KeyW':
@@ -43,7 +42,9 @@ export default class InputSystem extends System {
 				break
 		}
 		if (direction !== null) {
-			controller.direction = direction
+			this.world.getEntity(
+				GlobalEntity.Game
+			)!.c.controller.direction = direction
 		}
 	}
 	keyDown(e) {

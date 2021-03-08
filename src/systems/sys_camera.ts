@@ -5,6 +5,7 @@ import { Viewport } from 'pixi-viewport'
 import { addGrids, diffGrids } from '../util'
 import { TILE_SIZE } from '../index'
 import { Util } from 'rot-js'
+import Follow from '../components/com_follow'
 
 const CAM_RADIUS = 3
 
@@ -15,10 +16,9 @@ export default class CameraSystem extends System {
 		this.viewport = viewport
 	}
 	update(tick) {
-		const camera = this.world.getEntity(GlobalEntity.Camera)
-		if (!camera || !camera.c.follow.target) return
-		const { target } = camera.c.follow
-		const targetCenter = addGrids(target, {
+		const follow = <Follow>this.world.getEntity(GlobalEntity.Camera)!.c.follow
+		if (!follow.target) return
+		const targetCenter = addGrids(follow.target, {
 			x: TILE_SIZE / 2,
 			y: TILE_SIZE / 2,
 		})
