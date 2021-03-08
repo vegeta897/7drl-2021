@@ -22,7 +22,7 @@ export default class FOVSystem extends System {
 			if (entity.c.transform._meta.updated !== tick) return
 			const transform = <Transform>entity.c.transform
 			const fov = new FOV.PreciseShadowcasting((x, y) => {
-				const tile = level.getTileAt(x, y)
+				const tile = level.getTileAt({ x, y })
 				if (!tile) return false
 				return tile.seeThrough
 			})
@@ -31,7 +31,7 @@ export default class FOVSystem extends System {
 				transform.y,
 				FOV_RADIUS,
 				(x, y, r, visibility) => {
-					const tile = level.getTileAt(x, y)
+					const tile = level.getTileAt({ x, y })
 					if (!tile || !tile.sprite) return
 					const newAlpha = Math.max(
 						tile.sprite.alpha,

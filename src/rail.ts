@@ -1,56 +1,48 @@
+import * as rotJS from 'rot-js'
 import { Level, Tile, TileData } from './level'
-import { Directions, MoveGrids } from './types'
+import { Directions, Grid, MoveGrids } from './types'
 import { addGrids } from './util'
 
 export type RailTile = {
-	linkedTo: TileData[]
-	variation: number
+	directions: Directions[]
+	linkage: number
 }
 
-// TODO: Don't store linked rails, get them during runtime so it can be dynamic
-// If jumping on to rail laterally, don't start grinding
-// The floor where a rail ending leads to/from is special!
-
 export function createRails(level: Level) {
-	const corridors = level.dungeon.getCorridors()
-	const rails: Set<TileData> = new Set()
-	for (const corridor of corridors) {
-		if (!corridor._endsWithAWall) continue
-		if (
-			corridor._startX === corridor._endX &&
-			corridor._startY === corridor._endY
-		)
-			continue
-		corridor.create((x, y) => {
+	const rooms = level.dungeon.getRooms()
+	for (const room of rooms) {
+		const roomWidth = room._x2 - room._x1
+		const roomHeight = room._y2 - room._y1
+		// Maze must have odd dimensions
+		const mazeWidth = roomWidth - ((roomWidth + 1) % 2)
+		const mazeHeight = roomHeight - ((roomHeight + 1) % 2)
+		const maze = new rotJS.Map.IceyMaze(mazeWidth, mazeHeight, 2)
+		const mazeRailTiles: Map<string, Grid> = new Map()
+		maze.create((x, y, value) => {
+			if (value === 0) mazeRailTiles.set(x + ':' + y, { x, y })
+		})
+		mazeRailTiles.forEach((tile, grid) => {
+			const { x, y } = tile
+			let linkage = 0
+			const directions: RailTile['directions'] = []
+			for (let dir: Directions = 0; dir < 4; dir++) {
+				const { x: nx, y: ny } = addGrids({ x, y }, MoveGrids[dir])
+				if (mazeRailTiles.has(nx + ':' + ny)) {
+					linkage += 1 << dir
+					directions.push(dir)
+				}
+			}
 			const railTile: TileData = {
-				x,
-				y,
+				x: room._x1 + x, // Include room X,Y to get global position
+				y: room._y1 + y,
 				type: Tile.Rail,
 				seeThrough: true,
 				rail: {
-					linkedTo: [],
-					variation: 0,
+					directions,
+					linkage,
 				},
 			}
-			level.data.set(x + ':' + y, railTile)
-			rails.add(railTile)
+			level.data.set(railTile.x + ':' + railTile.y, railTile)
 		})
 	}
-	rails.forEach((railTile) => {
-		let linkage = 0
-		for (const direction of [
-			Directions.Up,
-			Directions.Down,
-			Directions.Left,
-			Directions.Right,
-		]) {
-			const neighborGrid = addGrids(railTile, MoveGrids[direction])
-			const neighborTile = level.getTileAt(neighborGrid.x, neighborGrid.y)
-			if (neighborTile?.type === Tile.Rail) {
-				railTile.rail!.linkedTo[direction] = neighborTile
-				linkage += 1 << direction
-			}
-		}
-		railTile.rail!.variation = linkage
-	})
 }

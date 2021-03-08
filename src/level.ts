@@ -1,16 +1,19 @@
 import * as rotJS from 'rot-js'
 import { Container, Sprite } from 'pixi.js'
-import { createSprite, TextureName } from './sprites'
+import { createSprite, TextureID } from './sprites'
 import Dungeon from 'rot-js/lib/map/dungeon'
 import { TILE_SIZE } from './'
 import { createRails, RailTile } from './rail'
+import { Grid } from './types'
 
-const SEED = 23
-const DEFAULT_WIDTH = 100
-const DEFAULT_HEIGHT = 20
-const ROOM_DUG_PERCENT = 0.8
-const ROOM_WIDTH: [number, number] = [3, 8]
-const ROOM_HEIGHT: [number, number] = [3, 6]
+const RANDOM_SEED = true
+const SEED = RANDOM_SEED ? rotJS.RNG.getUniformInt(0, 0xffffff) : 23
+const DEFAULT_WIDTH = 120
+const DEFAULT_HEIGHT = 60
+const DUG_PERCENT = 0.8
+const ROOM_WIDTH: [number, number] = [20, 40]
+const ROOM_HEIGHT: [number, number] = [16, 28]
+const CORRIDOR_LENGTH: [number, number] = [1, 3]
 
 export enum Tile {
 	Floor,
@@ -35,10 +38,11 @@ export class Level {
 		console.time('Total level generation')
 		rotJS.RNG.setSeed(SEED)
 		console.time('Room generation')
-		this.dungeon = new rotJS.Map.Uniform(width, height, {
-			roomDugPercentage: ROOM_DUG_PERCENT,
+		this.dungeon = new rotJS.Map.Digger(width, height, {
+			dugPercentage: DUG_PERCENT,
 			roomWidth: ROOM_WIDTH,
 			roomHeight: ROOM_HEIGHT,
+			corridorLength: CORRIDOR_LENGTH,
 		})
 		this.dungeon.create((x, y, value) => {
 			this.data.set(x + ':' + y, {
@@ -55,36 +59,48 @@ export class Level {
 		console.time('Sprite creation')
 		this.data.forEach((tile) => {
 			let tint = 0x3e2137 // Floor
-			let texture = TextureName.Floor
+			let texture = TextureID.Floor
 			if (tile.type === Tile.Rail) {
-				texture = TextureName.RailCross
-				switch (tile.rail!.variation) {
+				texture = TextureID.RailCross
+				switch (tile.rail!.linkage) {
 					case 0b0001:
 					case 0b0010:
 					case 0b0011:
-						texture = TextureName.RailUpDown
+						texture = TextureID.RailUpDown
 						break
 					case 0b0100:
 					case 0b1000:
 					case 0b1100:
-						texture = TextureName.RailLeftRight
+						texture = TextureID.RailLeftRight
 						break
 					case 0b0101:
-						texture = TextureName.RailUpLeft
-						break
-					case 0b0110:
-						texture = TextureName.RailDownLeft
+						texture = TextureID.RailUpLeft
 						break
 					case 0b1001:
-						texture = TextureName.RailUpRight
+						texture = TextureID.RailUpRight
+						break
+					case 0b0110:
+						texture = TextureID.RailDownLeft
 						break
 					case 0b1010:
-						texture = TextureName.RailDownRight
+						texture = TextureID.RailDownRight
+						break
+					case 0b0111:
+						texture = TextureID.RailUpDownLeft
+						break
+					case 0b1011:
+						texture = TextureID.RailUpDownRight
+						break
+					case 0b1101:
+						texture = TextureID.RailUpLeftRight
+						break
+					case 0b1110:
+						texture = TextureID.RailDownLeftRight
 						break
 				}
 				tint = 0x9a6348
 			} else if (tile.type === Tile.Wall) {
-				texture = TextureName.Wall
+				texture = TextureID.Wall
 				tint = 0x584563
 			}
 			tile.sprite = createSprite(texture)
@@ -97,7 +113,7 @@ export class Level {
 		console.timeEnd('Sprite creation')
 		console.timeEnd('Total level generation')
 	}
-	getTileAt(x: number, y: number): TileData | undefined {
-		return this.data.get(x + ':' + y)
+	getTileAt(grid: Grid): TileData | undefined {
+		return this.data.get(grid.x + ':' + grid.y)
 	}
 }

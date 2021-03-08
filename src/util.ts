@@ -1,41 +1,22 @@
 import { Directions, Grid, MoveGrids } from './types'
 import { TILE_SIZE } from './index'
 
+const clockwise = [
+	Directions.Up,
+	Directions.Right,
+	Directions.Down,
+	Directions.Left,
+]
+
 export function reverseDirection(direction: Directions): Directions {
-	switch (direction) {
-		case Directions.Up:
-			return Directions.Down
-		case Directions.Down:
-			return Directions.Up
-		case Directions.Left:
-			return Directions.Right
-		case Directions.Right:
-			return Directions.Left
-	}
+	return clockwise[(clockwise.indexOf(direction) + 2) % 4]
 }
 
-function getClockwiseDirection(direction: Directions): Directions {
-	switch (direction) {
-		case Directions.Up:
-			return Directions.Right
-		case Directions.Right:
-			return Directions.Down
-		case Directions.Down:
-			return Directions.Left
-		case Directions.Left:
-			return Directions.Up
-	}
-}
-
-export function turnDirection(
+export function turnClockwise(
 	direction: Directions,
-	turns: number
+	turns: number = 1
 ): Directions {
-	let turned = direction
-	for (let i = 0; i < turns; i++) {
-		turned = getClockwiseDirection(turned)
-	}
-	return turned
+	return clockwise[(clockwise.indexOf(direction) + turns) % 4]
 }
 
 export function reverseMove(move: Grid): Grid {

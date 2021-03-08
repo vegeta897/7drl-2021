@@ -1,17 +1,21 @@
 import { BaseTexture, Texture, Rectangle, Sprite } from 'pixi.js'
 import sheetImage from './assets/1bitpack_kenney.png'
 
-export enum TextureName {
-	Floor = 'floor',
-	Wall = 'wall',
-	Player = 'player',
-	RailCross = 'railCross',
-	RailUpDown = 'railUpDown',
-	RailLeftRight = 'railLeftRight',
-	RailUpLeft = 'railUpLeft',
-	RailUpRight = 'railUpRight',
-	RailDownLeft = 'railDownLeft',
-	RailDownRight = 'railDownRight',
+export enum TextureID {
+	Floor,
+	Wall,
+	Player,
+	RailCross,
+	RailUpDown,
+	RailLeftRight,
+	RailUpLeft,
+	RailUpRight,
+	RailDownLeft,
+	RailDownRight,
+	RailUpDownLeft,
+	RailUpDownRight,
+	RailUpLeftRight,
+	RailDownLeftRight,
 }
 
 const textures = <Texture[]>[]
@@ -23,17 +27,17 @@ function loadSheet() {
 		const { key, x, y, w, h, rotate } = textureData
 		textures[key] = new Texture(baseTexture, new Rectangle(x, y, w, h))
 		if (rotate) {
-			textures[key].rotate = rotate * 2 // Packing rotation, 1 = 45 degrees
+			textures[key].rotate = rotate * 2 // Packing rotation, 1 = 45 degrees CCW
 		}
 	}
-	textures[TextureName.Floor] = Texture.WHITE
+	textures[TextureID.Floor] = Texture.WHITE
 }
 
-export function createSprite(textureName: TextureName): Sprite {
+export function createSprite(textureName: TextureID): Sprite {
 	return new Sprite(textures[textureName])
 }
 
-export function changeSpriteTexture(sprite: Sprite, textureName: TextureName) {
+export function changeSpriteTexture(sprite: Sprite, textureName: TextureID) {
 	sprite.texture = textures[textureName]
 }
 
@@ -41,35 +45,35 @@ const sheetDefinition = {
 	filename: sheetImage,
 	textures: [
 		{
-			key: TextureName.Wall,
+			key: TextureID.Wall,
 			x: 51,
 			y: 306,
 			w: 16,
 			h: 16,
 		},
 		{
-			key: TextureName.Player,
+			key: TextureID.Player,
 			x: 476,
 			y: 0,
 			w: 16,
 			h: 16,
 		},
 		{
-			key: TextureName.RailCross,
+			key: TextureID.RailCross,
 			x: 51,
 			y: 85,
 			w: 16,
 			h: 16,
 		},
 		{
-			key: TextureName.RailUpDown,
+			key: TextureID.RailUpDown,
 			x: 0,
 			y: 85,
 			w: 16,
 			h: 16,
 		},
 		{
-			key: TextureName.RailLeftRight,
+			key: TextureID.RailLeftRight,
 			x: 0,
 			y: 85,
 			w: 16,
@@ -77,7 +81,7 @@ const sheetDefinition = {
 			rotate: 1,
 		},
 		{
-			key: TextureName.RailUpLeft,
+			key: TextureID.RailUpLeft,
 			x: 17,
 			y: 85,
 			w: 16,
@@ -85,7 +89,7 @@ const sheetDefinition = {
 			rotate: 2,
 		},
 		{
-			key: TextureName.RailUpRight,
+			key: TextureID.RailUpRight,
 			x: 17,
 			y: 85,
 			w: 16,
@@ -93,7 +97,7 @@ const sheetDefinition = {
 			rotate: 1,
 		},
 		{
-			key: TextureName.RailDownLeft,
+			key: TextureID.RailDownLeft,
 			x: 17,
 			y: 85,
 			w: 16,
@@ -101,11 +105,42 @@ const sheetDefinition = {
 			rotate: 3,
 		},
 		{
-			key: TextureName.RailDownRight,
+			key: TextureID.RailDownRight,
 			x: 17,
 			y: 85,
 			w: 16,
 			h: 16,
+		},
+		{
+			key: TextureID.RailUpDownLeft,
+			x: 34,
+			y: 85,
+			w: 16,
+			h: 16,
+			rotate: 2,
+		},
+		{
+			key: TextureID.RailUpDownRight,
+			x: 34,
+			y: 85,
+			w: 16,
+			h: 16,
+		},
+		{
+			key: TextureID.RailUpLeftRight,
+			x: 34,
+			y: 85,
+			w: 16,
+			h: 16,
+			rotate: 1,
+		},
+		{
+			key: TextureID.RailDownLeftRight,
+			x: 34,
+			y: 85,
+			w: 16,
+			h: 16,
+			rotate: 3,
 		},
 	],
 }

@@ -1,10 +1,15 @@
 import { Query, System } from 'ape-ecs'
 import Grinding from '../components/com_grinding'
-import { GlobalEntity, GrindState, MoveGrids } from '../types'
+import { Directions, GlobalEntity, GrindState, MoveGrids } from '../types'
 import Move from '../components/com_move'
-import { addGrids, reverseDirection } from '../util'
-import { Tile } from '../level'
+import { addGrids, turnClockwise } from '../util'
+import { Level, Tile } from '../level'
 import Transform from '../components/com_transform'
+import Game from '../components/com_game'
+import { RNG } from 'rot-js'
+import { RailTile } from '../rail'
+
+const rng = RNG.clone()
 
 export default class GrindingSystem extends System {
 	private noGrindMoving!: Query
@@ -21,14 +26,17 @@ export default class GrindingSystem extends System {
 		})
 	}
 	update(tick) {
-		const { game } = this.world.getEntity(GlobalEntity.Game)!.c
+		const { game } = <Game>this.world.getEntity(GlobalEntity.Game)!.c
+		const level = <Level>game.level
 		const noGrindMoving = this.noGrindMoving.execute()
 		const grinding = this.grinding.execute()
 		noGrindMoving.forEach((entity) => {
 			const { move, transform } = <{ transform: Transform; move: Move }>entity.c
-			const dest = addGrids(move, transform)
-			const destGrid = game.level.getTileAt(dest.x, dest.y)
-			if (destGrid.type === Tile.Rail) {
+			const destGrid = level.getTileAt(addGrids(move, transform))
+			if (
+				destGrid?.type === Tile.Rail &&
+				destGrid.rail?.directions.includes(move.direction)
+			) {
 				// Begin grind
 				entity.addComponent({
 					type: Grinding.typeName,
@@ -43,25 +51,31 @@ export default class GrindingSystem extends System {
 				{ transform: Transform; grinding: Grinding }
 			>entity.c
 			if (grinding.state !== GrindState.End) {
-				const tile = game.level.getTileAt(transform.x, transform.y)
-				const fromDirection = reverseDirection(grinding.direction)
-				// Get next rail by filtering linked rails
-				const nextRail = tile.rail.linkedTo.filter(
-					(linked, dir) => linked && dir !== fromDirection
-				)[0]
-				let state = GrindState.End
-				let { direction } = grinding
-				if (nextRail) {
-					// Continue grinding to next rail
-					state = GrindState.Continue
-					direction = tile.rail.linkedTo.indexOf(nextRail)
+				const rail = <RailTile>level.getTileAt(transform)!.rail
+				console.assert(rail)
+				let state = GrindState.Continue
+				let newDirection = grinding.direction
+				if (rail?.directions.includes(newDirection)) {
+					// Continue forward
+				} else if (rail?.directions.length > 1) {
+					// Try turning
+					const turns = [
+						turnClockwise(newDirection),
+						turnClockwise(newDirection, 3),
+					].filter((turnDirection) => rail?.directions.includes(turnDirection))
+					if (turns.length > 0) {
+						// Turn
+						newDirection = <Directions>rng.getItem(turns)
+					}
+				} else {
+					state = GrindState.End
 				}
-				grinding.update({ direction, state })
+				grinding.update({ direction: newDirection, state })
 				entity.addComponent({
 					type: Move.typeName,
 					key: 'move',
-					...MoveGrids[direction],
-					direction,
+					...MoveGrids[newDirection],
+					direction: newDirection,
 				})
 				game.autoUpdate = true
 			} else {
