@@ -8,6 +8,8 @@ import Transform from '../components/com_transform'
 import Game from '../components/com_game'
 import { RNG } from 'rot-js'
 import { RailTile } from '../rail'
+import Particles from '../components/com_particles'
+import { createSparkEmitter } from '../particles'
 
 const rng = RNG.clone()
 
@@ -51,6 +53,16 @@ export default class GrindingSystem extends System {
 				{ transform: Transform; grinding: Grinding }
 			>entity.c
 			if (grinding.state !== GrindState.End) {
+				if (grinding.state === GrindState.Start) {
+					entity.addComponent({
+						type: Particles.typeName,
+						emitter: createSparkEmitter(game.viewport, { x: 4, y: 13 }),
+					})
+					entity.addComponent({
+						type: Particles.typeName,
+						emitter: createSparkEmitter(game.viewport, { x: 12, y: 13 }),
+					})
+				}
 				const rail = <RailTile>level.getTileAt(transform)!.rail
 				console.assert(rail)
 				let state = GrindState.Continue
@@ -69,6 +81,9 @@ export default class GrindingSystem extends System {
 					}
 				} else {
 					state = GrindState.End
+					entity
+						.getComponents(Particles)
+						.forEach((p) => (p.emitter.emit = false))
 				}
 				grinding.update({ direction: newDirection, state })
 				entity.addComponent({
@@ -80,6 +95,9 @@ export default class GrindingSystem extends System {
 				game.autoUpdate = true
 			} else {
 				entity.removeComponent(grinding)
+				entity
+					.getComponents(Particles)
+					.forEach((p) => entity.removeComponent(p))
 			}
 		})
 	}

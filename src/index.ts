@@ -19,6 +19,7 @@ const { view, stage } = new Application({
 	width: WIDTH,
 	height: HEIGHT,
 	backgroundColor: 0x1f0e1c,
+	sharedTicker: true,
 })
 view.id = 'viewport'
 view.addEventListener('contextmenu', (e) => e.preventDefault())
@@ -28,10 +29,10 @@ Ticker.shared.add(() => {
 	TWEEN.update()
 	world.runSystems(SystemGroup.Render)
 })
-
 const viewport = new Viewport({
 	screenWidth: view.width,
 	screenHeight: view.height,
+	noTicker: true,
 })
 stage.addChild(viewport)
 
@@ -48,6 +49,7 @@ world.createEntity({
 		game: {
 			type: Game.typeName,
 			level,
+			viewport,
 		},
 		controller: {
 			type: Controller.typeName,

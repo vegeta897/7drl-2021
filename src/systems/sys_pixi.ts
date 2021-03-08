@@ -2,6 +2,7 @@ import { Query, System } from 'ape-ecs'
 import Transform from '../components/com_transform'
 import PixiObject from '../components/com_pixi'
 import { tileToSpritePosition } from '../util'
+import Particles from '../components/com_particles'
 
 export default class PixiSystem extends System {
 	private dirtyTransforms!: Query
@@ -27,6 +28,11 @@ export default class PixiSystem extends System {
 			})
 			Object.assign(pixi.object.position, spritePosition)
 			Object.assign(pixi.object.pivot, spriteOffset)
+			entity
+				.getComponents(Particles)
+				.forEach((particles) =>
+					particles.emitter.updateOwnerPos(pixi.object.x, pixi.object.y)
+				)
 		})
 	}
 }

@@ -18,6 +18,7 @@ import Game from './components/com_game'
 import GameSystem from './systems/sys_game'
 import TweenSystem from './systems/sys_tween'
 import PixiSystem from './systems/sys_pixi'
+import Particles from './components/com_particles'
 
 export const world = new World()
 
@@ -30,6 +31,7 @@ export function initWorld({ viewport }) {
 	world.registerComponent(Player, 1)
 	world.registerComponent(Follow, 1)
 	world.registerComponent(Grinding, 10)
+	world.registerComponent(Particles, 20)
 	world.registerTags(...Object.values(Tags))
 
 	world.registerSystem(SystemGroup.Input, InputSystem)
