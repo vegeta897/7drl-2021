@@ -11,8 +11,8 @@ export type RailTile = {
 export function createRails(level: Level) {
 	const rooms = level.dungeon.getRooms()
 	for (const room of rooms) {
-		const roomWidth = room._x2 - room._x1
-		const roomHeight = room._y2 - room._y1
+		const roomWidth = room._x2 - room._x1 + 1
+		const roomHeight = room._y2 - room._y1 + 1
 		// Maze must have odd dimensions
 		const mazeWidth = roomWidth - ((roomWidth + 1) % 2)
 		const mazeHeight = roomHeight - ((roomHeight + 1) % 2)

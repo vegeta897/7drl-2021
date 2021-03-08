@@ -85,7 +85,11 @@ export default class GrindingSystem extends System {
 						.getComponents(Particles)
 						.forEach((p) => (p.emitter.emit = false))
 				}
-				grinding.update({ direction: newDirection, state })
+				grinding.update({
+					direction: newDirection,
+					state,
+					distance: grinding.distance + 1,
+				})
 				entity.addComponent({
 					type: Move.typeName,
 					key: 'move',

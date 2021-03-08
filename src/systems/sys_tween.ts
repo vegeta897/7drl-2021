@@ -10,7 +10,8 @@ import Player from '../components/com_player'
 import Grinding from '../components/com_grinding'
 
 export const PLAYER_SPEED = 100
-export const GRIND_SPEED = 100
+export const GRIND_SPEED = 120
+export const GRIND_SPEED_GAIN = 60
 
 export default class TweenSystem extends System {
 	private moving!: Query
@@ -50,7 +51,10 @@ export default class TweenSystem extends System {
 						this.addHop(game, transform, 1.5)
 						break
 					default:
-						positionTween.duration(GRIND_SPEED)
+						positionTween.duration(
+							GRIND_SPEED *
+								(GRIND_SPEED_GAIN / (grinding.distance + GRIND_SPEED_GAIN))
+						)
 						break
 				}
 			}
