@@ -11,7 +11,7 @@ export default class ActionSystem extends System {
 		)
 		if (controller.state !== ControllerState.Ready) return
 		const player = this.world.getEntity(GlobalEntity.Player)!
-		if (controller.direction) {
+		if (controller.direction !== null) {
 			const move = MoveGrids[controller.direction]
 			player.addComponent({
 				type: Move.typeName,
