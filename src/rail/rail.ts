@@ -33,6 +33,7 @@ export function createMainline(): Map<string, TileData> {
 				? [prevStretch.direction, reverseDirection(prevStretch.direction)]
 				: []
 		)
+		// TODO: Try extending stretch if valid direction not found
 		const stretchLength = getUpperNormal(minRoomSize, targetRoomSize / 2)
 		let validStretch
 		let stretchDirection

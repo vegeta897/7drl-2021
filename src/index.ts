@@ -1,4 +1,4 @@
-import { Application, Ticker } from 'pixi.js'
+import { Application, Ticker, Container } from 'pixi.js'
 import TWEEN from '@tweenjs/tween.js'
 import './style.css'
 import { Level } from './level'
@@ -42,6 +42,9 @@ viewport.setZoom(DEFAULT_ZOOM)
 
 initWorld({ viewport })
 
+const entityContainer = new Container()
+viewport.addChild(entityContainer)
+
 world.createEntity({
 	id: GlobalEntity.Game,
 	c: {
@@ -49,6 +52,7 @@ world.createEntity({
 			type: Game.typeName,
 			level,
 			viewport,
+			entityContainer,
 		},
 		controller: {
 			type: Controller.typeName,
@@ -58,7 +62,7 @@ world.createEntity({
 
 //const [playerX, playerY] = level.dungeon.getRooms()[0].getCenter()
 
-const playerComponents = createPlayerComponents(viewport, 0, 0)
+const playerComponents = createPlayerComponents(entityContainer, 0, 0)
 world.createEntity({
 	id: GlobalEntity.Player,
 	c: playerComponents,

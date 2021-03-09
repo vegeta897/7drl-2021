@@ -71,11 +71,11 @@ export default class GrindingSystem extends System {
 				if (grinding.state === GrindState.Start) {
 					entity.addComponent({
 						type: Particles.typeName,
-						emitter: createSparkEmitter(game.viewport, { x: 4, y: 13 }),
+						emitter: createSparkEmitter(game.entityContainer, { x: 4, y: 13 }),
 					})
 					entity.addComponent({
 						type: Particles.typeName,
-						emitter: createSparkEmitter(game.viewport, { x: 12, y: 13 }),
+						emitter: createSparkEmitter(game.entityContainer, { x: 12, y: 13 }),
 					})
 				}
 				const rail = <RailData>level.getTileAt(transform)!.rail
