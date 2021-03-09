@@ -7,11 +7,10 @@ import { TILE_SIZE } from '../index'
 import { Util } from 'rot-js'
 import Follow from '../components/com_follow'
 
-const CAM_RADIUS = 3
+const PADDING = 1.25 / 3 // Portion of screen to pad
 
 export default class CameraSystem extends System {
 	private viewport: Viewport
-	private targetLast
 	init(viewport: Viewport) {
 		this.viewport = viewport
 	}
@@ -22,27 +21,37 @@ export default class CameraSystem extends System {
 			x: TILE_SIZE / 2,
 			y: TILE_SIZE / 2,
 		})
-		if (!this.targetLast) {
+		if (follow.newTarget) {
 			this.viewport.moveCenter(<Point>targetCenter)
+			follow.newTarget = false
 		} else {
-			const radius = CAM_RADIUS * TILE_SIZE
+			const xPadding = Math.floor(
+				this.viewport.screenWidthInWorldPixels / 2 -
+					this.viewport.screenWidthInWorldPixels * PADDING
+			)
+			const yPadding = Math.floor(
+				this.viewport.screenHeightInWorldPixels / 2 -
+					this.viewport.screenHeightInWorldPixels * PADDING
+			)
 			const camOffset = diffGrids(targetCenter, this.viewport.center)
-			if (Math.abs(camOffset.x) > radius || Math.abs(camOffset.y) > radius) {
+			if (
+				Math.abs(camOffset.x) > xPadding ||
+				Math.abs(camOffset.y) > yPadding
+			) {
 				const moveTo = {
 					x: Util.clamp(
 						this.viewport.center.x,
-						targetCenter.x - radius,
-						targetCenter.x + radius
+						targetCenter.x - xPadding,
+						targetCenter.x + xPadding
 					),
 					y: Util.clamp(
 						this.viewport.center.y,
-						targetCenter.y - radius,
-						targetCenter.y + radius
+						targetCenter.y - yPadding,
+						targetCenter.y + yPadding
 					),
 				}
 				this.viewport.moveCenter(<Point>moveTo)
 			}
 		}
-		this.targetLast = { ...targetCenter }
 	}
 }
