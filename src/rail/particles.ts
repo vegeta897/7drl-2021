@@ -1,6 +1,6 @@
 import { Emitter } from 'pixi-particles'
 import { Container, Texture } from 'pixi.js'
-import { Grid } from './types'
+import { Grid } from '../types'
 
 export function createSparkEmitter(parent: Container, pos: Grid): Emitter {
 	return new Emitter(parent, Texture.WHITE, {

@@ -3,17 +3,18 @@ import { Container, Sprite } from 'pixi.js'
 import { createSprite, TextureID } from './sprites'
 import Dungeon from 'rot-js/lib/map/dungeon'
 import { TILE_SIZE } from './'
-import { createRails, RailTile } from './rail'
+import { createMainline } from './rail/rail'
 import { Grid } from './types'
+import { RailData } from './rail/types'
 
 const RANDOM_SEED = true
 const SEED = RANDOM_SEED ? rotJS.RNG.getUniformInt(0, 0xffffff) : 23
 const DEFAULT_WIDTH = 120
 const DEFAULT_HEIGHT = 60
-const DUG_PERCENT = 0.8
-const ROOM_WIDTH: [number, number] = [20, 40]
-const ROOM_HEIGHT: [number, number] = [16, 28]
-const CORRIDOR_LENGTH: [number, number] = [1, 3]
+// const DUG_PERCENT = 0.8
+// const ROOM_WIDTH: [number, number] = [20, 40]
+// const ROOM_HEIGHT: [number, number] = [16, 28]
+// const CORRIDOR_LENGTH: [number, number] = [1, 3]
 
 export enum Tile {
 	Floor,
@@ -27,7 +28,8 @@ export type TileData = {
 	y: number
 	type: Tile
 	seeThrough: boolean
-	rail?: RailTile
+	rail?: RailData
+	tint?: number
 }
 
 export class Level {
@@ -38,23 +40,25 @@ export class Level {
 		console.time('Total level generation')
 		rotJS.RNG.setSeed(SEED)
 		console.time('Room generation')
-		this.dungeon = new rotJS.Map.Digger(width, height, {
-			dugPercentage: DUG_PERCENT,
-			roomWidth: ROOM_WIDTH,
-			roomHeight: ROOM_HEIGHT,
-			corridorLength: CORRIDOR_LENGTH,
-		})
-		this.dungeon.create((x, y, value) => {
-			this.data.set(x + ':' + y, {
-				x,
-				y,
-				type: value,
-				seeThrough: value !== Tile.Wall,
-			})
-		})
+		// this.dungeon = new rotJS.Map.Digger(width, height, {
+		// 	dugPercentage: DUG_PERCENT,
+		// 	roomWidth: ROOM_WIDTH,
+		// 	roomHeight: ROOM_HEIGHT,
+		// 	corridorLength: CORRIDOR_LENGTH,
+		// })
+		// this.dungeon.create((x, y, value) => {
+		// 	this.data.set(x + ':' + y, {
+		// 		x,
+		// 		y,
+		// 		type: value,
+		// 		seeThrough: value !== Tile.Wall,
+		// 	})
+		// })
 		console.timeEnd('Room generation')
 		console.time('Rail generation')
-		createRails(this)
+		createMainline().forEach((railTile, gridKey) =>
+			this.data.set(gridKey, railTile)
+		)
 		console.timeEnd('Rail generation')
 		console.time('Sprite creation')
 		this.data.forEach((tile) => {
@@ -106,8 +110,8 @@ export class Level {
 			tile.sprite = createSprite(texture)
 			tile.sprite.x = tile.x * TILE_SIZE
 			tile.sprite.y = tile.y * TILE_SIZE
-			tile.sprite.alpha = 0
-			tile.sprite.tint = tint
+			// tile.sprite.alpha = 0
+			tile.sprite.tint = tile.tint ?? tint
 			this.container.addChild(tile.sprite)
 		})
 		console.timeEnd('Sprite creation')

@@ -1,8 +1,9 @@
 import { System } from 'ape-ecs'
-import { ControllerState, GlobalEntity, MoveGrids } from '../types'
+import { ControllerState, GlobalEntity } from '../types'
 import Move from '../components/com_move'
 import { updateWorld } from '../ecs'
 import Controller from '../components/com_controller'
+import { moveDirectional } from '../util'
 
 export default class ActionSystem extends System {
 	update(tick) {
@@ -12,11 +13,10 @@ export default class ActionSystem extends System {
 		if (controller.state !== ControllerState.Ready) return
 		const player = this.world.getEntity(GlobalEntity.Player)!
 		if (controller.direction !== null) {
-			const move = { ...MoveGrids[controller.direction] }
 			player.addComponent({
 				type: Move.typeName,
 				key: 'move',
-				...(controller.boost ? { x: move.x * 8, y: move.y * 8 } : move),
+				...moveDirectional(controller.direction, controller.boost ? 8 : 1),
 				noClip: controller.boost,
 				direction: controller.direction,
 			})
