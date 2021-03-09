@@ -1,17 +1,27 @@
 import { Query, System } from 'ape-ecs'
 import Grinding from '../components/com_grinding'
-import { Directions, GlobalEntity, GrindState, MoveGrids } from '../types'
+import { Directions, GlobalEntity, GrindState } from '../types'
 import Move from '../components/com_move'
-import { addGrids, turnClockwise } from '../util'
+import {
+	addGrids,
+	moveDirectional,
+	reverseDirection,
+	turnClockwise,
+} from '../util'
 import { Level, Tile } from '../level'
 import Transform from '../components/com_transform'
 import Game from '../components/com_game'
 import { RNG } from 'rot-js'
-import { RailTile } from '../rail'
+import { RailData } from '../rail/types'
 import Particles from '../components/com_particles'
-import { createSparkEmitter } from '../particles'
+import { createSparkEmitter } from '../rail/particles'
+import { DEFAULT_ZOOM } from '../index'
+import { AnimateOptions } from 'pixi-viewport'
 
 const rng = RNG.clone()
+
+const GRIND_ZOOM = 5
+const ZOOM_TIME = 500
 
 export default class GrindingSystem extends System {
 	private noGrindMoving!: Query
@@ -45,6 +55,11 @@ export default class GrindingSystem extends System {
 					key: 'grinding',
 					direction: move.direction,
 				})
+				game.viewport.animate(<AnimateOptions>{
+					scale: GRIND_ZOOM,
+					time: ZOOM_TIME,
+					ease: 'easeInCubic', // Penner's easing
+				})
 				game.autoUpdate = true
 			}
 		})
@@ -63,13 +78,11 @@ export default class GrindingSystem extends System {
 						emitter: createSparkEmitter(game.viewport, { x: 12, y: 13 }),
 					})
 				}
-				const rail = <RailTile>level.getTileAt(transform)!.rail
+				const rail = <RailData>level.getTileAt(transform)!.rail
 				console.assert(rail)
 				let state = GrindState.Continue
 				let newDirection = grinding.direction
-				if (rail?.directions.includes(newDirection)) {
-					// Continue forward
-				} else if (rail?.directions.length > 1) {
+				if (!rail?.directions.includes(newDirection)) {
 					// Try turning
 					const turns = [
 						turnClockwise(newDirection),
@@ -79,21 +92,32 @@ export default class GrindingSystem extends System {
 						// Turn
 						newDirection = <Directions>rng.getItem(turns)
 					}
+				}
+				const moveGrid = moveDirectional(newDirection)
+				const nextTile = level.getTileAt(addGrids(transform, moveGrid))
+				if (
+					nextTile?.rail?.directions.includes(reverseDirection(newDirection))
+				) {
 				} else {
 					state = GrindState.End
 					entity
 						.getComponents(Particles)
 						.forEach((p) => (p.emitter.emit = false))
+					game.viewport.animate({
+						scale: DEFAULT_ZOOM,
+						time: ZOOM_TIME / 2,
+						ease: 'easeInOutCubic', // Penner's easing
+					})
 				}
 				grinding.update({
 					direction: newDirection,
 					state,
-					distance: grinding.distance + 1,
+					distance: grinding.distance + (state === GrindState.End ? 0 : 1),
 				})
 				entity.addComponent({
 					type: Move.typeName,
 					key: 'move',
-					...MoveGrids[newDirection],
+					...moveGrid,
 					direction: newDirection,
 				})
 				game.autoUpdate = true

@@ -12,7 +12,7 @@ import Controller from './components/com_controller'
 
 const WIDTH = 960
 const HEIGHT = 720
-const ZOOM = 2
+export const DEFAULT_ZOOM = 3
 export const TILE_SIZE = 16
 
 const { view, stage } = new Application({
@@ -32,14 +32,13 @@ Ticker.shared.add(() => {
 const viewport = new Viewport({
 	screenWidth: view.width,
 	screenHeight: view.height,
-	noTicker: true,
 })
 stage.addChild(viewport)
 
 const level = new Level()
 
 viewport.addChild(level.container)
-viewport.setZoom(ZOOM)
+viewport.setZoom(DEFAULT_ZOOM)
 
 initWorld({ viewport })
 
@@ -57,9 +56,9 @@ world.createEntity({
 	},
 })
 
-const [playerX, playerY] = level.dungeon.getRooms()[0].getCenter()
+//const [playerX, playerY] = level.dungeon.getRooms()[0].getCenter()
 
-const playerComponents = createPlayerComponents(viewport, playerX, playerY)
+const playerComponents = createPlayerComponents(viewport, 0, 0)
 world.createEntity({
 	id: GlobalEntity.Player,
 	c: playerComponents,

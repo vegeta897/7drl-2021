@@ -9,9 +9,10 @@ import Game from '../components/com_game'
 import Player from '../components/com_player'
 import Grinding from '../components/com_grinding'
 
+// Higher is slower
 export const PLAYER_SPEED = 100
 export const GRIND_SPEED = 120
-export const GRIND_SPEED_GAIN = 60
+export const GRIND_SPEED_GAIN = 80
 
 export default class TweenSystem extends System {
 	private moving!: Query
