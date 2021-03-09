@@ -1,5 +1,6 @@
 import { System } from 'ape-ecs'
 import { Directions, GlobalEntity, SystemGroup } from '../types'
+import Controller from '../components/com_controller'
 
 // Based on https://github.com/fritzy/7drl2020
 export default class InputSystem extends System {
@@ -42,9 +43,12 @@ export default class InputSystem extends System {
 				break
 		}
 		if (direction !== null) {
-			this.world.getEntity(
-				GlobalEntity.Game
-			)!.c.controller.direction = direction
+			const controller = <Controller>(
+				this.world.getEntity(GlobalEntity.Game)!.c.controller
+			)
+			controller.direction = direction
+			controller.boost =
+				this.keys.has('ShiftLeft') || this.keys.has('ShiftRight')
 		}
 	}
 	keyDown(e) {

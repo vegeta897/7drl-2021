@@ -17,7 +17,10 @@ export default class CollisionSystem extends System {
 		const level = <Level>this.world.getEntity(GlobalEntity.Game)!.c.game.level
 		this.moves.execute().forEach((entity) => {
 			const { transform, move } = <{ transform: Transform; move: Move }>entity.c
-			if (level.getTileAt(addGrids(transform, move))?.type === Tile.Wall) {
+			if (
+				!move.noClip &&
+				level.getTileAt(addGrids(transform, move))?.type === Tile.Wall
+			) {
 				// Wall, cancel move
 				entity.removeComponent(move)
 			}
