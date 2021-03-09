@@ -11,8 +11,8 @@ import Grinding from '../components/com_grinding'
 
 // Higher is slower
 export const PLAYER_SPEED = 100
-export const GRIND_SPEED = 120
-export const GRIND_SPEED_GAIN = 80
+export const GRIND_SPEED = 180
+export const GRIND_SPEED_GAIN = 50
 
 export default class TweenSystem extends System {
 	private moving!: Query

@@ -5,11 +5,11 @@ import { createSprite, TextureID } from '../sprites'
 import Controller from '../components/com_controller'
 import Player from '../components/com_player'
 import PixiObject from '../components/com_pixi'
+import { Grid } from '../types'
 
 export function createPlayerComponents(
 	container: Container,
-	x: number,
-	y: number
+	grid: Grid
 ): IComponentConfigValObject {
 	const sprite = createSprite(TextureID.Player)
 	// sprite.tint = 0xc0c741
@@ -17,8 +17,7 @@ export function createPlayerComponents(
 	return {
 		transform: {
 			type: Transform.typeName,
-			x,
-			y,
+			...grid,
 		},
 		pixi: {
 			type: PixiObject.typeName,

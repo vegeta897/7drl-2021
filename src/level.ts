@@ -1,7 +1,6 @@
 import * as rotJS from 'rot-js'
 import { Container, Sprite } from 'pixi.js'
 import { createSprite, TextureID } from './sprites'
-import Dungeon from 'rot-js/lib/map/dungeon'
 import { TILE_SIZE } from './'
 import { createMainline } from './rail/rail'
 import { Grid } from './types'
@@ -34,34 +33,30 @@ export type TileData = {
 
 export class Level {
 	container = new Container()
-	dungeon: Dungeon
-	data: Map<string, TileData> = new Map()
+	levelStart: Grid
+	tiles: Map<string, TileData> = new Map()
 	constructor(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT) {
 		console.time('Total level generation')
 		rotJS.RNG.setSeed(SEED)
-		console.time('Room generation')
-		// this.dungeon = new rotJS.Map.Digger(width, height, {
-		// 	dugPercentage: DUG_PERCENT,
-		// 	roomWidth: ROOM_WIDTH,
-		// 	roomHeight: ROOM_HEIGHT,
-		// 	corridorLength: CORRIDOR_LENGTH,
-		// })
-		// this.dungeon.create((x, y, value) => {
-		// 	this.data.set(x + ':' + y, {
-		// 		x,
-		// 		y,
-		// 		type: value,
-		// 		seeThrough: value !== Tile.Wall,
-		// 	})
-		// })
-		console.timeEnd('Room generation')
 		console.time('Rail generation')
-		createMainline().forEach((railTile, gridKey) =>
-			this.data.set(gridKey, railTile)
+		let mainLine
+		let attempts = 0
+		do {
+			attempts++
+			mainLine = createMainline()
+		} while (!mainLine)
+		console.log('mainline generated in', attempts, 'attempts')
+		mainLine.tiles.forEach((railTile, gridKey) =>
+			this.tiles.set(gridKey, railTile)
 		)
+		const finalRoom = mainLine.rooms[mainLine.rooms.length - 1]
+		this.levelStart = {
+			x: finalRoom.x1 + Math.floor(finalRoom.width / 2),
+			y: finalRoom.y1 + Math.floor(finalRoom.height / 2),
+		}
 		console.timeEnd('Rail generation')
 		console.time('Sprite creation')
-		this.data.forEach((tile) => {
+		this.tiles.forEach((tile) => {
 			let tint = 0x3e2137 // Floor
 			let texture = TextureID.Floor
 			if (tile.type === Tile.Rail) {
@@ -118,6 +113,6 @@ export class Level {
 		console.timeEnd('Total level generation')
 	}
 	getTileAt(grid: Grid): TileData | undefined {
-		return this.data.get(grid.x + ':' + grid.y)
+		return this.tiles.get(grid.x + ':' + grid.y)
 	}
 }

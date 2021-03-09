@@ -91,6 +91,10 @@ export function tileToSpritePosition(tile: Grid): Grid {
 export function getNormalWithMin(mean: number, min: number): number {
 	return Math.max(min, Math.round(RNG.getNormal(mean, mean / 2)))
 }
-export function getUpperNormal(min: number, stdDev: number): number {
-	return min + Math.floor(Math.abs(RNG.getNormal(0, stdDev)))
+export function getUpperNormal(
+	min: number,
+	stdDev: number,
+	max: number = Infinity
+): number {
+	return Math.min(max, min + Math.floor(Math.abs(RNG.getNormal(0, stdDev))))
 }

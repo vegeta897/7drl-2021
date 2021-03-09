@@ -1,4 +1,5 @@
 import { Directions, Grid } from '../types'
+import { TileData } from '../level'
 
 export const Tints = [
 	0x990000,
@@ -19,15 +20,17 @@ export type Stretch = {
 	possibleDirections: Directions[]
 	startGrid: Grid
 	endGrid?: Grid
+	rails: Map<string, Grid & RailData>
 	length: number
 	room?: Room
 }
 
 export type Room = {
 	width: number
-	length: number
+	height: number
 	x1: number
 	x2: number
 	y1: number
 	y2: number
+	tiles: TileData[]
 }

@@ -113,6 +113,7 @@ export default class GrindingSystem extends System {
 					direction: newDirection,
 					state,
 					distance: grinding.distance + (state === GrindState.End ? 0 : 1),
+					speedup: true,
 				})
 				entity.addComponent({
 					type: Move.typeName,

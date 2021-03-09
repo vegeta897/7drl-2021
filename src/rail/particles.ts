@@ -45,7 +45,7 @@ export function createSparkEmitter(parent: Container, pos: Grid): Emitter {
 		blendMode: 'normal',
 		frequency: 0.008,
 		emitterLifetime: -1,
-		maxParticles: 40,
+		maxParticles: 10,
 		pos,
 		addAtBack: true,
 		spawnType: 'point',

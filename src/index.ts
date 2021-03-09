@@ -60,9 +60,12 @@ world.createEntity({
 	},
 })
 
-//const [playerX, playerY] = level.dungeon.getRooms()[0].getCenter()
+// TODO: Show title card on first long grind on first level
 
-const playerComponents = createPlayerComponents(entityContainer, 0, 0)
+const playerComponents = createPlayerComponents(
+	entityContainer,
+	level.levelStart
+)
 world.createEntity({
 	id: GlobalEntity.Player,
 	c: playerComponents,

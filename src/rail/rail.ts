@@ -1,6 +1,6 @@
 import { RNG } from 'rot-js'
 import { TileData } from '../level'
-import { Grid } from '../types'
+import { Directions, Grid } from '../types'
 import {
 	addGrids,
 	equalGrid,
@@ -9,40 +9,47 @@ import {
 	moveDirectional,
 	reverseDirection,
 } from '../util'
-import { RailData, Stretch, Tints } from './types'
-import { createRailTile, getLinkage } from './util'
+import { RailData, Room, Stretch, Tints } from './types'
+import { createFloorTile, createRailTile, getLinkage } from './util'
+
+const REMOVE_RAILS = false
 
 const crossLinkages = [0b1100, 0b1100, 0b0011, 0b0011]
-const directionNames = ['Up', 'Down', 'Left', 'Right']
+// const directionNames = ['Up', 'Down', 'Left', 'Right']
 
-// TODO: Encourage turning in on itself a few times, and then striking out
-
-export function createMainline(): Map<string, TileData> {
-	const targetMainlineLength = 200
-	const minRoomSize = 5 // NOT including walls
-	const targetRoomSize = 8
-	const railTiles: Map<string, TileData> = new Map()
-	const stretches: Set<Stretch> = new Set()
+export function createMainline():
+	| { tiles: Map<string, TileData>; stretches: Stretch[]; rooms: Room[] }
+	| false {
+	const targetMainlineLength = 150
+	const minStretchLength = 7 // NOT including walls
+	const stretchLengthStdDev = 4
+	const tiles: Map<string, TileData> = new Map()
+	const stretches: Stretch[] = []
+	const rooms: Room[] = []
 	let totalMainlineLength = 0
+	let finalStretch = false
 	do {
-		console.log('##################################################')
-		const prevStretch = [...stretches].pop()
+		const prevStretch = stretches[stretches.length - 1]
 		const startGrid: Grid = prevStretch?.endGrid || { x: 0, y: 0 }
+		let stretchLength = getUpperNormal(minStretchLength, stretchLengthStdDev)
 		const possibleDirections = getDirections(
 			prevStretch
 				? [prevStretch.direction, reverseDirection(prevStretch.direction)]
 				: []
 		)
-		// TODO: Try extending stretch if valid direction not found
-		const stretchLength = getUpperNormal(minRoomSize, targetRoomSize / 2)
+		finalStretch =
+			totalMainlineLength + stretchLength >= targetMainlineLength &&
+			(possibleDirections.includes(Directions.Right) ||
+				possibleDirections.includes(Directions.Left))
+		if (finalStretch) {
+			stretchLength = 120
+		}
 		let validStretch
 		let stretchDirection
-		const stretchRailTiles: Map<string, Grid & RailData> = new Map()
-		console.log('creating stretch at', startGrid, 'with length', stretchLength)
+		const stretchRails: Map<string, Grid & RailData> = new Map()
 		do {
 			validStretch = true
 			stretchDirection = RNG.getItem(possibleDirections)!
-			console.log('trying direction:', directionNames[stretchDirection])
 			possibleDirections.splice(possibleDirections.indexOf(stretchDirection), 1)
 			// Check full rail path is clear
 			for (let i = 0; i < stretchLength; i++) {
@@ -51,23 +58,21 @@ export function createMainline(): Map<string, TileData> {
 					moveDirectional(stretchDirection, i)
 				)
 				const gridKey = x + ':' + y
-				const railTile = railTiles.get(gridKey)
-				if (railTile) console.log('rail tile collision', railTile)
-				if (
-					railTile &&
-					i > 0 &&
-					(i === stretchLength - 1 ||
-						railTile.rail?.linkage !== crossLinkages[stretchDirection])
-				) {
-					// Invalid direction
-					console.log('invalid direction')
-					stretchRailTiles.clear()
-					validStretch = false
-					break
+				const railTile = tiles.get(gridKey)
+				if (i > 0 && railTile?.rail) {
+					// Check if intersecting rail is perpendicular
+					if (railTile.rail?.linkage !== crossLinkages[stretchDirection]) {
+						// Invalid direction
+						stretchRails.clear()
+						validStretch = false
+						break
+					} else if (i === stretchLength - 1) {
+						stretchLength++
+					}
 				}
-				// Update linkage of first tile
 				let linkage, directions
 				if (i === 0 && prevStretch) {
+					// Make first tile match previous tile direction
 					directions = [
 						stretchDirection,
 						reverseDirection(prevStretch.direction),
@@ -77,29 +82,69 @@ export function createMainline(): Map<string, TileData> {
 					directions = [stretchDirection, reverseDirection(stretchDirection)]
 					linkage = getLinkage(directions)
 				}
-				stretchRailTiles.set(gridKey, { x, y, linkage, directions })
+				stretchRails.set(gridKey, { x, y, linkage, directions })
 			}
 		} while (!validStretch && possibleDirections.length > 0)
 		if (!validStretch) {
 			// No valid stretch could be created
-			console.log('no valid stretch could be created, aborting mainline')
-			break
+			return false
 		} else {
+			// Create room for stretch
+			const roomCenterDistance = finalStretch
+				? stretchLength - 4
+				: getUpperNormal(1, stretchLength / 2, stretchLength - 2)
+			addGrids(startGrid, moveDirectional(stretchDirection, roomCenterDistance))
+			const roomBreadth = finalStretch ? 5 : getUpperNormal(5, 3)
+			const roomLength = finalStretch
+				? 8
+				: getUpperNormal(3, stretchLength / 2, stretchLength)
+			const roomOffset = finalStretch ? 5 : RNG.getUniformInt(0, roomBreadth)
+			const roomTiles: TileData[] = []
+			let x1, x2, y1, y2
+			for (let rw = 0; rw < roomBreadth; rw++) {
+				for (let rl = 0; rl < roomLength; rl++) {
+					const { x, y } = addGrids(
+						startGrid,
+						moveDirectional(
+							stretchDirection,
+							rl + roomCenterDistance - Math.floor(roomLength / 2),
+							rw - roomOffset
+						)
+					)
+					x1 = x < x1 ? x : x1 ?? x
+					x2 = x > x2 ? x : x2 ?? x
+					y1 = y < y1 ? y : y1 ?? y
+					y2 = y > y2 ? y : y2 ?? y
+					if (tiles.has(x + ':' + y)) continue
+					const roomTile = createFloorTile(x, y, stretches.length)
+					roomTiles.push(roomTile)
+					tiles.set(x + ':' + y, roomTile)
+				}
+			}
+			const room = {
+				width: x2 - x1,
+				height: y2 - y1,
+				tiles: roomTiles,
+				x1,
+				x2,
+				y1,
+				y2,
+			}
+			rooms.push(room)
 			// Add rail tiles to map
-			console.log('stretch valid, creating tiles')
-			stretchRailTiles.forEach((railTile, gridKey) => {
-				const tile = createRailTile(railTile.x, railTile.y, railTile)
+			stretchRails.forEach((railTile, gridKey) => {
+				let tile = createRailTile(railTile.x, railTile.y, railTile)
 				const existingRailTile =
-					!equalGrid(railTile, startGrid) && railTiles.get(gridKey)
-				if (existingRailTile) {
+					!equalGrid(railTile, startGrid) && tiles.get(gridKey)
+				if (existingRailTile && existingRailTile.rail) {
 					tile.rail!.directions = getDirections()
 					tile.rail!.linkage = 0b1111
 				}
-				tile.tint = Tints[stretches.size % Tints.length]
-				railTiles.set(gridKey, tile)
+				tile.tint = Tints[stretches.length % Tints.length]
+				tiles.set(gridKey, tile)
 			})
 			// Add stretch to stretches
-			stretches.add({
+			stretches.push({
 				direction: stretchDirection,
 				possibleDirections,
 				startGrid,
@@ -107,20 +152,34 @@ export function createMainline(): Map<string, TileData> {
 					startGrid,
 					moveDirectional(stretchDirection, stretchLength - 1)
 				),
+				rails: stretchRails,
 				length: stretchLength,
+				room,
 			})
 		}
 		totalMainlineLength += stretchLength
-	} while (totalMainlineLength < targetMainlineLength)
-	return railTiles
+	} while (!finalStretch)
+	if (REMOVE_RAILS) {
+		stretches.forEach((stretch, stretchNum) => {
+			// Try to remove a tile from each stretch
+			if (stretchNum === stretches.length - 1) return
+			const stretchRails = new Map([...stretch.rails])
+			do {
+				const [gridKey] = RNG.getItem([...stretchRails])!
+				stretchRails.delete(gridKey)
+				const railTile = tiles.get(gridKey)
+				if (!railTile || !railTile.rail) continue
+				if ([0b0011, 0b1100].includes(railTile.rail.linkage)) {
+					tiles.set(gridKey, createFloorTile(railTile!.x, railTile!.y))
+					break
+				}
+			} while (stretchRails.size > 0)
+		})
+	}
+	return { tiles, stretches, rooms }
 }
 
 // export function createMainlineOld(level: Level) {
-// 	// TODO: Rooms include walls. Mainline rail will overwrite walls after rooms.
-// 	// Adjacent rooms will have a double wall, deal with it
-//
-// 	// TODO: Allow rooms and rails to overlap. The player still has to fill all the rail gaps to complete the floor. Just make sure short circuits aren't created
-//
 // 	const TARGET_ROOM_COUNT = 16
 // 	const MIN_ROOM_SIZE = 5 // Including walls
 // 	const TARGET_ROOM_SIZE = 7
@@ -169,7 +228,7 @@ export function createMainline(): Map<string, TileData> {
 // 			// Check full rail path is clear
 // 			for (let i = 1; i < stretch.distance; i++) {
 // 				const { x, y } = moveDirectional(stretch.direction, i)
-// 				if (level.data.has(x + ':' + y)) {
+// 				if (level.tiles.has(x + ':' + y)) {
 // 					// Pick new direction
 // 				}
 // 			}
@@ -193,7 +252,7 @@ export function createMainline(): Map<string, TileData> {
 // 					)
 // 					if (
 // 						(x !== stretch.startGrid.x || y !== stretch.startGrid.y) &&
-// 						level.data.has(x + ':' + y)
+// 						level.tiles.has(x + ':' + y)
 // 					) {
 // 						// Room collided with existing tile
 // 						validSideOffset = false
@@ -223,7 +282,7 @@ export function createMainline(): Map<string, TileData> {
 // 				for (let i = startOffset; i < startOffset + roomWidth; i++) {
 // 					// Create floor tiles
 // 					validSideOffsets[i].forEach((grid) =>
-// 						level.data.set(
+// 						level.tiles.set(
 // 							grid.x + ':' + grid.y,
 // 							createFloorTile(grid.x, grid.y, stretchNum)
 // 						)
@@ -277,7 +336,7 @@ export function createMainline(): Map<string, TileData> {
 // 				)
 // 				const railTile = createRailTile(x, y, { directions: [], linkage: 0 })
 // 				railTile.tint = Tints[stretchNum % Tints.length]
-// 				level.data.set(x + ':' + y, railTile)
+// 				level.tiles.set(x + ':' + y, railTile)
 // 			}
 // 		} else {
 // 			console.log('invalid stretch')

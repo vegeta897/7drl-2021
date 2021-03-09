@@ -33,7 +33,7 @@ export function createRailMazesInRooms(level: Level) {
 				directions,
 				linkage,
 			})
-			level.data.set(railTile.x + ':' + railTile.y, railTile)
+			level.tiles.set(railTile.x + ':' + railTile.y, railTile)
 		})
 	}
 }
