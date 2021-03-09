@@ -1,6 +1,37 @@
 import { Emitter } from 'pixi-particles'
 import { Container, Texture } from 'pixi.js'
-import { Grid } from '../types'
+import { Directions, Grid } from '../types'
+
+export function getEmitterCoords(dir: Directions): [Grid, Grid] {
+	switch (dir) {
+		case Directions.Up:
+		case Directions.Down:
+			return [
+				{ x: 4, y: 16 },
+				{ x: 12, y: 16 },
+			]
+		case Directions.Left:
+			return [
+				{ x: 10, y: 4 },
+				{ x: 10, y: 12 },
+			]
+		case Directions.Right:
+			return [
+				{ x: 6, y: 4 },
+				{ x: 6, y: 12 },
+			]
+	}
+}
+
+export function intensifySparks(emitter: Emitter): void {
+	emitter.maxParticles++
+	emitter.maxLifetime += 0.01
+	emitter.minimumSpeedMultiplier += 0.05
+	emitter.minStartRotation = Math.max(200, emitter.minStartRotation - 0.3)
+	emitter.maxStartRotation = Math.min(340, emitter.maxStartRotation + 0.3)
+	emitter.maxStartRotation += 0.25
+	emitter.frequency *= 0.95
+}
 
 export function createSparkEmitter(parent: Container, pos: Grid): Emitter {
 	return new Emitter(parent, Texture.WHITE, {
@@ -30,8 +61,8 @@ export function createSparkEmitter(parent: Container, pos: Grid): Emitter {
 		},
 		maxSpeed: 0,
 		startRotation: {
-			min: 255,
-			max: 285,
+			min: 250,
+			max: 290,
 		},
 		noRotation: true,
 		rotationSpeed: {
@@ -43,9 +74,9 @@ export function createSparkEmitter(parent: Container, pos: Grid): Emitter {
 			max: 0.1,
 		},
 		blendMode: 'normal',
-		frequency: 0.008,
+		frequency: 0.01,
 		emitterLifetime: -1,
-		maxParticles: 10,
+		maxParticles: 5,
 		pos,
 		addAtBack: true,
 		spawnType: 'point',

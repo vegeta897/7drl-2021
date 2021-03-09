@@ -36,16 +36,15 @@ export class Level {
 	levelStart: Grid
 	tiles: Map<string, TileData> = new Map()
 	constructor(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT) {
-		console.time('Total level generation')
 		rotJS.RNG.setSeed(SEED)
-		console.time('Rail generation')
+		console.time('Level generation')
 		let mainLine
 		let attempts = 0
 		do {
 			attempts++
 			mainLine = createMainline()
 		} while (!mainLine)
-		console.log('mainline generated in', attempts, 'attempts')
+		console.log('Level generated in', attempts, 'attempts')
 		mainLine.tiles.forEach((railTile, gridKey) =>
 			this.tiles.set(gridKey, railTile)
 		)
@@ -54,7 +53,7 @@ export class Level {
 			x: finalRoom.x1 + Math.floor(finalRoom.width / 2),
 			y: finalRoom.y1 + Math.floor(finalRoom.height / 2),
 		}
-		console.timeEnd('Rail generation')
+		console.timeEnd('Level generation')
 		console.time('Sprite creation')
 		this.tiles.forEach((tile) => {
 			let tint = 0x3e2137 // Floor
@@ -110,7 +109,6 @@ export class Level {
 			this.container.addChild(tile.sprite)
 		})
 		console.timeEnd('Sprite creation')
-		console.timeEnd('Total level generation')
 	}
 	getTileAt(grid: Grid): TileData | undefined {
 		return this.tiles.get(grid.x + ':' + grid.y)

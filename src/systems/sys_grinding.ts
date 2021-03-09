@@ -14,7 +14,11 @@ import Game from '../components/com_game'
 import { RNG } from 'rot-js'
 import { RailData } from '../rail/types'
 import Particles from '../components/com_particles'
-import { createSparkEmitter } from '../rail/particles'
+import {
+	createSparkEmitter,
+	getEmitterCoords,
+	intensifySparks,
+} from '../rail/particles'
 import { DEFAULT_ZOOM } from '../index'
 import { AnimateOptions } from 'pixi-viewport'
 
@@ -69,13 +73,14 @@ export default class GrindingSystem extends System {
 			>entity.c
 			if (grinding.state !== GrindState.End) {
 				if (grinding.state === GrindState.Start) {
+					const emitterCoords = getEmitterCoords(grinding.direction)
 					entity.addComponent({
 						type: Particles.typeName,
-						emitter: createSparkEmitter(game.entityContainer, { x: 4, y: 13 }),
+						emitter: createSparkEmitter(game.entityContainer, emitterCoords[0]),
 					})
 					entity.addComponent({
 						type: Particles.typeName,
-						emitter: createSparkEmitter(game.entityContainer, { x: 12, y: 13 }),
+						emitter: createSparkEmitter(game.entityContainer, emitterCoords[1]),
 					})
 				}
 				const rail = <RailData>level.getTileAt(transform)!.rail
@@ -109,12 +114,25 @@ export default class GrindingSystem extends System {
 						ease: 'easeInOutCubic',
 					})
 				}
+				const particles = entity.getComponents(Particles)
+				if (newDirection !== grinding.direction) {
+					const emitterCoords = getEmitterCoords(newDirection)
+					;[...particles].forEach(({ emitter }, p) => {
+						emitter.updateSpawnPos(emitterCoords[p].x, emitterCoords[p].y)
+					})
+				}
 				grinding.update({
 					direction: newDirection,
 					state,
 					distance: grinding.distance + (state === GrindState.End ? 0 : 1),
 					speedup: true,
 				})
+				if (grinding.distance % 8 === 0) {
+					// Grinding intensifies
+					particles.forEach(({ emitter }) => {
+						intensifySparks(emitter)
+					})
+				}
 				entity.addComponent({
 					type: Move.typeName,
 					key: 'move',
