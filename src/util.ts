@@ -49,6 +49,10 @@ export function diffGrids(a: Grid, b: Grid): Grid {
 	return { x: a.x - b.x, y: a.y - b.y }
 }
 
+export function equalGrid(a: Grid, b: Grid): boolean {
+	return a.x === b.x && a.y === b.y
+}
+
 function _moveDir(dir: Directions, distance: number = 1): Grid {
 	switch (dir) {
 		case Directions.Up:

@@ -3,17 +3,19 @@ import { TileData } from '../level'
 import { Grid } from '../types'
 import {
 	addGrids,
+	equalGrid,
 	getDirections,
 	getUpperNormal,
 	moveDirectional,
 	reverseDirection,
-	turnClockwise,
 } from '../util'
 import { RailData, Stretch, Tints } from './types'
 import { createRailTile, getLinkage } from './util'
 
 const crossLinkages = [0b1100, 0b1100, 0b0011, 0b0011]
 const directionNames = ['Up', 'Down', 'Left', 'Right']
+
+// TODO: Encourage turning in on itself a few times, and then striking out
 
 export function createMainline(): Map<string, TileData> {
 	const targetMainlineLength = 200
@@ -52,7 +54,8 @@ export function createMainline(): Map<string, TileData> {
 				if (railTile) console.log('rail tile collision', railTile)
 				if (
 					railTile &&
-					(i === stretchLength ||
+					i > 0 &&
+					(i === stretchLength - 1 ||
 						railTile.rail?.linkage !== crossLinkages[stretchDirection])
 				) {
 					// Invalid direction
@@ -61,6 +64,7 @@ export function createMainline(): Map<string, TileData> {
 					validStretch = false
 					break
 				}
+				// Update linkage of first tile
 				let linkage, directions
 				if (i === 0 && prevStretch) {
 					directions = [
@@ -69,10 +73,7 @@ export function createMainline(): Map<string, TileData> {
 					]
 					linkage = getLinkage(directions)
 				} else {
-					directions = getDirections([
-						turnClockwise(stretchDirection),
-						turnClockwise(stretchDirection, 3),
-					])
+					directions = [stretchDirection, reverseDirection(stretchDirection)]
 					linkage = getLinkage(directions)
 				}
 				stretchRailTiles.set(gridKey, { x, y, linkage, directions })
@@ -87,7 +88,8 @@ export function createMainline(): Map<string, TileData> {
 			console.log('stretch valid, creating tiles')
 			stretchRailTiles.forEach((railTile, gridKey) => {
 				const tile = createRailTile(railTile.x, railTile.y, railTile)
-				const existingRailTile = railTiles.get(gridKey)
+				const existingRailTile =
+					!equalGrid(railTile, startGrid) && railTiles.get(gridKey)
 				if (existingRailTile) {
 					tile.rail!.directions = getDirections()
 					tile.rail!.linkage = 0b1111
@@ -102,7 +104,7 @@ export function createMainline(): Map<string, TileData> {
 				startGrid,
 				endGrid: addGrids(
 					startGrid,
-					moveDirectional(stretchDirection, stretchLength)
+					moveDirectional(stretchDirection, stretchLength - 1)
 				),
 				length: stretchLength,
 			})

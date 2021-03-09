@@ -58,7 +58,7 @@ export default class GrindingSystem extends System {
 				game.viewport.animate(<AnimateOptions>{
 					scale: GRIND_ZOOM,
 					time: ZOOM_TIME,
-					ease: 'easeInCubic', // Penner's easing
+					ease: 'easeInCubic', // Penner's easing https://github.com/bcherny/penner
 				})
 				game.autoUpdate = true
 			}
@@ -106,7 +106,7 @@ export default class GrindingSystem extends System {
 					game.viewport.animate({
 						scale: DEFAULT_ZOOM,
 						time: ZOOM_TIME / 2,
-						ease: 'easeInOutCubic', // Penner's easing
+						ease: 'easeInOutCubic',
 					})
 				}
 				grinding.update({

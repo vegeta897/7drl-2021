@@ -12,7 +12,7 @@ import Controller from './components/com_controller'
 
 const WIDTH = 960
 const HEIGHT = 720
-export const DEFAULT_ZOOM = 3
+export const DEFAULT_ZOOM = 1
 export const TILE_SIZE = 16
 
 const { view, stage } = new Application({
