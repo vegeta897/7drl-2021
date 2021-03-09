@@ -5,7 +5,7 @@ import Controller from '../components/com_controller'
 // Based on https://github.com/fritzy/7drl2020
 export default class InputSystem extends System {
 	keys = new Set()
-	currentKey: string | null
+	currentKey: typeof gameKeys[number] | null
 	init() {
 		window.addEventListener('keydown', this.keyDown.bind(this))
 		window.addEventListener('keyup', this.keyUp.bind(this))
@@ -56,11 +56,35 @@ export default class InputSystem extends System {
 			this.keys.add(e.code)
 			this.currentKey = e.code
 			this.world.runSystems(SystemGroup.Input)
+			if (gameKeys.includes(e.code)) e.preventDefault()
 		}
 	}
 
 	keyUp(e) {
 		this.keys.delete(e.code)
 		this.currentKey = null
+		if (gameKeys.includes(e.code)) e.preventDefault()
 	}
 }
+
+// Events for these keys are consumed by the game
+const gameKeys = [
+	'KeyW',
+	'KeyA',
+	'KeyS',
+	'KeyD',
+	'KeyK',
+	'KeyJ',
+	'KeyH',
+	'KeyL',
+	'ArrowUp',
+	'ArrowDown',
+	'ArrowLeft',
+	'ArrowRight',
+	'Numpad8',
+	'Numpad2',
+	'Numpad4',
+	'Numpad6',
+	'ShiftLeft',
+	'ShiftRight',
+]
