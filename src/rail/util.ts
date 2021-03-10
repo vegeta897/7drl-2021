@@ -8,6 +8,7 @@ export function createTile(x, y, type, seeThrough = true) {
 		y,
 		type,
 		seeThrough,
+		revealed: 0,
 	}
 }
 

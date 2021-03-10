@@ -1,4 +1,4 @@
-import { Application, Ticker, Container } from 'pixi.js'
+import { Application, Ticker, Container, Sprite } from 'pixi.js'
 import TWEEN from '@tweenjs/tween.js'
 import './style.css'
 import { Level } from './level'
@@ -9,10 +9,11 @@ import Follow from './components/com_follow'
 import { Viewport } from 'pixi-viewport'
 import Game from './components/com_game'
 import Controller from './components/com_controller'
+import { spawnEnemies } from './archetypes/enemy'
 
 const WIDTH = 960
 const HEIGHT = 720
-export const DEFAULT_ZOOM = 3
+export const DEFAULT_ZOOM = 1
 export const TILE_SIZE = 16
 
 const { view, stage } = new Application({
@@ -35,7 +36,9 @@ const viewport = new Viewport({
 })
 stage.addChild(viewport)
 
-const level = new Level()
+const worldSprites: Set<Sprite> = new Set()
+
+const level = new Level(worldSprites)
 
 viewport.addChild(level.container)
 viewport.setZoom(DEFAULT_ZOOM)
@@ -53,6 +56,7 @@ world.createEntity({
 			level,
 			viewport,
 			entityContainer,
+			worldSprites,
 		},
 		controller: {
 			type: Controller.typeName,
@@ -64,6 +68,8 @@ world.createEntity({
 
 // TODO: Create gate on rail before first room after arriving in dungeon, to prevent player from grinding all the way back to the start and dying before they finished the whole track
 
+// TODO: Final boss will be in a big room with a rail maze (use rotJS maze-gen)
+
 const playerComponents = createPlayerComponents(
 	entityContainer,
 	// level.levelStart
@@ -73,6 +79,8 @@ world.createEntity({
 	id: GlobalEntity.Player,
 	c: playerComponents,
 })
+
+spawnEnemies(world, 8)
 
 const FOLLOW = true
 world.createEntity({

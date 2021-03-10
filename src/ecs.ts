@@ -2,7 +2,7 @@ import { World } from 'ape-ecs'
 import Controller from './components/com_controller'
 import Move from './components/com_move'
 import Transform from './components/com_transform'
-import { SystemGroup, Tags } from './types'
+import { GlobalEntity, SystemGroup, Tags } from './types'
 import InputSystem from './systems/sys_input'
 import ActionSystem from './systems/sys_action'
 import CollisionSystem from './systems/sys_collision'
@@ -36,20 +36,20 @@ export function initWorld({ viewport }) {
 
 	world.registerSystem(SystemGroup.Input, InputSystem)
 	world.registerSystem(SystemGroup.Input, ActionSystem)
-	world.registerSystem(SystemGroup.Update, GrindingSystem)
-	world.registerSystem(SystemGroup.Update, CollisionSystem)
-	world.registerSystem(SystemGroup.Update, TweenSystem)
-	world.registerSystem(SystemGroup.Update, TransformSystem)
-	world.registerSystem(SystemGroup.AfterUpdate, FOVSystem)
-	world.registerSystem(SystemGroup.AfterUpdate, GameSystem)
+	world.registerSystem(SystemGroup.AfterInput, GrindingSystem)
+	world.registerSystem(SystemGroup.AfterInput, CollisionSystem)
+	world.registerSystem(SystemGroup.AfterInput, TweenSystem)
+	world.registerSystem(SystemGroup.AfterInput, TransformSystem)
+	world.registerSystem(SystemGroup.AfterTween, FOVSystem)
+	world.registerSystem(SystemGroup.AfterTween, GameSystem)
 	world.registerSystem(SystemGroup.Render, PixiSystem)
 	world.registerSystem(SystemGroup.Render, CameraSystem, [viewport])
 }
 
 export function updateWorld() {
-	world.runSystems(SystemGroup.Update)
-	afterUpdateWorld()
+	world.runSystems(SystemGroup.AfterInput)
+	if (!world.getEntity(GlobalEntity.Game)!.c.game.tweening) afterUpdateWorld()
 }
 export function afterUpdateWorld() {
-	world.runSystems(SystemGroup.AfterUpdate)
+	world.runSystems(SystemGroup.AfterTween)
 }

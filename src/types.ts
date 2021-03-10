@@ -1,7 +1,7 @@
 export enum SystemGroup {
 	Input = 'input',
-	Update = 'update',
-	AfterUpdate = 'afterUpdate',
+	AfterInput = 'beforeTween',
+	AfterTween = 'afterTween',
 	Render = 'render',
 }
 

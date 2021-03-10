@@ -66,7 +66,7 @@ export default class TweenSystem extends System {
 			// No tweens added
 		} else {
 			// Tweens added
-			game.wait = true
+			game.tweening = true
 		}
 	}
 	createTween(game: Game, tweenObject: Transform): Tween<Transform> {
@@ -86,7 +86,7 @@ export default class TweenSystem extends System {
 		this.tweens.delete(tween)
 		if (this.tweens.size === 0) {
 			// All tweens done
-			game.wait = false
+			game.tweening = false
 			afterUpdateWorld()
 		}
 	}

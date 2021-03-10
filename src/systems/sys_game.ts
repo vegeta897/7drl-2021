@@ -9,17 +9,13 @@ export default class GameSystem extends System {
 		const { game, controller } = <{ game: Game; controller: Controller }>(
 			this.world.getEntity(GlobalEntity.Game)!.c
 		)
-		if (game.wait) {
-			// Waiting for tweens to finish
+		this.world.tick()
+		if (game.autoUpdate) {
+			game.autoUpdate = false
+			updateWorld()
 		} else {
-			this.world.tick()
-			if (game.autoUpdate) {
-				game.autoUpdate = false
-				updateWorld()
-			} else {
-				// Wait for input
-				controller.state = ControllerState.Ready
-			}
+			// Wait for input
+			controller.state = ControllerState.Ready
 		}
 	}
 }

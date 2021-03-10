@@ -6,14 +6,9 @@ import { createMainline } from './rail/rail'
 import { Grid } from './types'
 import { RailData, Room } from './rail/types'
 
-const RANDOM_SEED = true
-const SEED = RANDOM_SEED ? rotJS.RNG.getUniformInt(0, 0xffffff) : 23
-const DEFAULT_WIDTH = 120
-const DEFAULT_HEIGHT = 60
-// const DUG_PERCENT = 0.8
-// const ROOM_WIDTH: [number, number] = [20, 40]
-// const ROOM_HEIGHT: [number, number] = [16, 28]
-// const CORRIDOR_LENGTH: [number, number] = [1, 3]
+const RANDOM_SEED = false
+const SEED = !RANDOM_SEED ? 23 : rotJS.RNG.getUniformInt(0, 0xffffff)
+const DEBUG_VISIBILITY = false
 
 export enum Tile {
 	Floor,
@@ -29,6 +24,7 @@ export type TileData = {
 	seeThrough: boolean
 	rail?: RailData
 	tint?: number
+	revealed: number
 }
 
 export class Level {
@@ -36,7 +32,7 @@ export class Level {
 	levelStart: Grid
 	rooms: Room[]
 	tiles: Map<string, TileData> = new Map()
-	constructor(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT) {
+	constructor(worldSprites: Set<Sprite>) {
 		rotJS.RNG.setSeed(SEED)
 		console.time('Level generation')
 		let mainLine
@@ -106,9 +102,10 @@ export class Level {
 			tile.sprite = createSprite(texture)
 			tile.sprite.x = tile.x * TILE_SIZE
 			tile.sprite.y = tile.y * TILE_SIZE
-			tile.sprite.alpha = 0
+			if (!DEBUG_VISIBILITY) tile.sprite.alpha = 0
 			tile.sprite.tint = tile.tint ?? tint
 			this.container.addChild(tile.sprite)
+			worldSprites.add(tile.sprite)
 		})
 		console.timeEnd('Sprite creation')
 	}
