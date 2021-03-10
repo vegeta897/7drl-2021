@@ -22,6 +22,7 @@ import {
 import { Tween } from '@tweenjs/tween.js'
 import { GRIND_SPEED } from './sys_tween'
 import Controller from '../components/com_controller'
+import Player from '../components/com_player'
 // import { DEFAULT_ZOOM } from '../index'
 // import { AnimateOptions } from 'pixi-viewport'
 
@@ -36,12 +37,12 @@ export default class GrindingSystem extends System {
 	private grinding!: Query
 	init() {
 		this.noGrindMoving = this.createQuery({
-			all: [Transform, Move],
+			all: [Transform, Move, Player],
 			not: [Grinding],
 			persist: true,
 		})
 		this.grinding = this.createQuery({
-			all: [Transform, Grinding],
+			all: [Transform, Grinding, Player],
 			persist: true,
 		})
 	}

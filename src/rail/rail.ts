@@ -18,7 +18,6 @@ import {
 	getLinkage,
 } from './util'
 
-const DEBUG_RAIL = false
 const DEBUG_COLORS = false
 
 const crossLinkages = [0b1100, 0b1100, 0b0011, 0b0011]
@@ -159,13 +158,13 @@ export function createMainline():
 				if (existingRailTile && existingRailTile.rail) {
 					tile.rail!.directions = getDirections()
 					tile.rail!.linkage = 0b1111
-					// TODO Should be able to remove this line
-					tile.rail!.booster = existingRailTile.rail.booster
 				}
 				if (DEBUG_COLORS) tile.tint = Tints[stretches.length % Tints.length]
 				tiles.set(gridKey, tile)
 			})
 			// Add stretch to stretches
+			const width = x2 - x1
+			const height = y2 - y1
 			const stretch = {
 				direction: stretchDirection,
 				possibleDirections,
@@ -176,15 +175,7 @@ export function createMainline():
 				),
 				rails: stretchRails,
 				length: stretchLength,
-				room: {
-					width: x2 - x1,
-					height: y2 - y1,
-					tiles: roomTiles,
-					x1,
-					x2,
-					y1,
-					y2,
-				},
+				room: { width, height, tiles: roomTiles, x1, x2, y1, y2 },
 			}
 			stretches.push(stretch)
 			rooms.push(stretch.room)
@@ -199,29 +190,5 @@ export function createMainline():
 			if (!tiles.has(gridKey)) tiles.set(gridKey, createWallTile(x, y))
 		})
 	})
-	if (!DEBUG_RAIL) {
-		// New meta, don't remove tiles
-		// stretches.forEach((stretch, stretchNum) => {
-		// 	// Try to remove a tile from each stretch
-		// 	if (stretchNum === stretches.length - 1) return
-		// 	const stretchRails = new Map([...stretch.rails])
-		// 	do {
-		// 		const [gridKey, tile] = RNG.getItem([...stretchRails])!
-		// 		stretchRails.delete(gridKey)
-		// 		if (
-		// 			!getNeighbors(tile).some(
-		// 				(t) => tiles.get(t.x + ':' + t.y)?.type === Tile.Floor
-		// 			)
-		// 		)
-		// 			continue
-		// 		const railTile = tiles.get(gridKey)
-		// 		if (!railTile || !railTile.rail) continue
-		// 		if ([0b0011, 0b1100].includes(railTile.rail.linkage)) {
-		// 			tiles.set(gridKey, createFloorTile(railTile!.x, railTile!.y))
-		// 			break
-		// 		}
-		// 	} while (stretchRails.size > 0)
-		// })
-	}
 	return { tiles, stretches, rooms }
 }

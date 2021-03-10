@@ -1,4 +1,4 @@
-import { Query, System } from 'ape-ecs'
+import { Entity, Query, System } from 'ape-ecs'
 import Transform from '../components/com_transform'
 import Move from '../components/com_move'
 import { Easing, Tween } from '@tweenjs/tween.js'
@@ -13,6 +13,7 @@ import Grinding from '../components/com_grinding'
 export const PLAYER_SPEED = 100
 export const GRIND_SPEED = 120
 export const GRIND_SPEED_GAIN = 60
+export const ENEMY_SPEED = 150
 
 export default class TweenSystem extends System {
 	private moving!: Query
@@ -35,9 +36,11 @@ export default class TweenSystem extends System {
 				}
 			>entity.c
 			const moveDest = addGrids(move, transform)
-			const positionTween = this.createTween(game, transform).to(moveDest)
+			const positionTween = this.createTween(game, transform, entity).to(
+				moveDest
+			)
 			if (player && !grinding) {
-				this.addHop(game, transform)
+				this.addHop(game, transform, entity)
 				positionTween.easing(Easing.Quadratic.Out)
 				positionTween.duration(PLAYER_SPEED)
 			}
@@ -45,11 +48,11 @@ export default class TweenSystem extends System {
 				switch (grinding.state) {
 					case GrindState.Start:
 						positionTween.duration(GRIND_SPEED * 2)
-						this.addHop(game, transform, 2)
+						this.addHop(game, transform, entity, 2)
 						break
 					case GrindState.End:
 						positionTween.duration(GRIND_SPEED * 2)
-						if (grinding.speed > 0) this.addHop(game, transform, 1.5)
+						if (grinding.speed > 0) this.addHop(game, transform, entity, 1.5)
 						break
 					default:
 						positionTween.duration(
@@ -59,20 +62,24 @@ export default class TweenSystem extends System {
 						break
 				}
 			}
+			if (!player) {
+				positionTween.duration(ENEMY_SPEED)
+			}
 			positionTween.start()
 			entity.removeComponent(move)
 		})
-		if (this.tweens.size === 0) {
-			// No tweens added
-		} else {
-			// Tweens added
-			game.tweening = true
-		}
+		if (this.tweens.size > 0) game.tweening = true
 	}
-	createTween(game: Game, tweenObject: Transform): Tween<Transform> {
+	createTween(
+		game: Game,
+		tweenObject: Transform,
+		entity: Entity
+	): Tween<Transform> {
 		const tween = new Tween(tweenObject)
 		const remove = () => {
 			tweenObject.update()
+			game.level.entityMap.delete(tweenObject.x + ':' + tweenObject.y)
+			game.level.entityMap.set(tweenObject.x + ':' + tweenObject.y, entity)
 			this.onTweenEnd(game, tween)
 		}
 		tween
@@ -90,12 +97,12 @@ export default class TweenSystem extends System {
 			afterUpdateWorld()
 		}
 	}
-	addHop(game, transform, size = 1) {
-		const hopUp = this.createTween(game, transform)
+	addHop(game: Game, transform: Transform, entity: Entity, size = 1) {
+		const hopUp = this.createTween(game, transform, entity)
 			.duration((PLAYER_SPEED / 2) * size * 0.8)
 			.to({ yOff: 0.2 * size })
 			.easing(Easing.Circular.Out)
-		const hopDown = this.createTween(game, transform)
+		const hopDown = this.createTween(game, transform, entity)
 			.duration((PLAYER_SPEED / 2) * size * 0.8)
 			.to({ yOff: 0 })
 			.easing(Easing.Circular.In)

@@ -41,10 +41,9 @@ export default class FOVSystem extends System {
 		if (playerTransform._meta.updated === tick) {
 			visibilityUpdated = true
 			const newVisibilityMap: VisibilityMap = new Map()
-			const fov = new FOV.PreciseShadowcasting((x, y) => {
-				const tile = level.getTileAt({ x, y })
-				return !tile || tile.seeThrough
-			})
+			const fov = new FOV.PreciseShadowcasting((x, y) =>
+				level.isTileSeeThrough(x, y)
+			)
 			fov.compute(
 				playerTransform.x,
 				playerTransform.y,

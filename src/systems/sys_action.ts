@@ -12,14 +12,15 @@ export default class ActionSystem extends System {
 		)
 		if (controller.state !== ControllerState.Ready) return
 		const player = this.world.getEntity(GlobalEntity.Player)!
-		if (controller.direction !== null) {
-			player.addComponent({
-				type: Move.typeName,
-				key: 'move',
-				...moveDirectional(controller.direction, controller.boost ? 8 : 1),
-				noClip: controller.boost,
-				direction: controller.direction,
-			})
+		if (controller.direction !== null || controller.wait) {
+			if (controller.direction !== null)
+				player.addComponent({
+					type: Move.typeName,
+					key: 'move',
+					...moveDirectional(controller.direction, controller.boost ? 8 : 1),
+					noClip: controller.boost,
+					direction: controller.direction,
+				})
 			controller.state = ControllerState.Processing
 			updateWorld()
 		}

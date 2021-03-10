@@ -50,17 +50,19 @@ export function spawnEnemies(world: World, count: number) {
 			if (roomIndex === level.rooms.length - 1) return
 			if (RNG.getUniform() > 0.05) return
 			console.log('spawn enemy in room', roomIndex)
+			const x = room.x1 + RNG.getUniformInt(0, room.x2 - room.x1)
+			const y = room.y1 + RNG.getUniformInt(0, room.y2 - room.y1)
 			const enemyComponents = createEnemyComponents(
 				entityContainer,
-				{
-					x: room.x1 + RNG.getUniformInt(0, room.x2 - room.x1),
-					y: room.y1 + RNG.getUniformInt(0, room.y2 - room.y1),
-				},
+				{ x, y },
 				player
 			)
-			world.createEntity({
-				c: enemyComponents,
-			})
+			level.entityMap.set(
+				x + ':' + y,
+				world.createEntity({
+					c: enemyComponents,
+				})
+			)
 			worldSprites.add(enemyComponents.pixi.object)
 			spawned++
 		})

@@ -12,6 +12,7 @@ export default class InputSystem extends System {
 	}
 	update() {
 		let direction: Directions | null = null
+		let wait = false
 		switch (this.currentKey) {
 			case 'KeyW':
 			case 'KeyK':
@@ -41,12 +42,17 @@ export default class InputSystem extends System {
 				// Right
 				direction = Directions.Right
 				break
+			case 'Space':
+			case 'Numpad5':
+				// Wait
+				wait = true
 		}
-		if (direction !== null) {
+		if (direction !== null || wait) {
 			const controller = <Controller>(
 				this.world.getEntity(GlobalEntity.Game)!.c.controller
 			)
 			controller.direction = direction
+			controller.wait = wait
 			controller.sneak =
 				this.keys.has('ShiftLeft') || this.keys.has('ShiftRight')
 			controller.boost =
@@ -91,4 +97,6 @@ const gameKeys = [
 	'ShiftRight',
 	'ControlLeft',
 	'ControlRight',
+	'Space',
+	'Numpad5',
 ]

@@ -20,6 +20,8 @@ import TweenSystem from './systems/sys_tween'
 import PixiSystem from './systems/sys_pixi'
 import Particles from './components/com_particles'
 import FollowSystem from './systems/sys_follow'
+import Attack from './components/com_attack'
+import AttackSystem from './systems/sys_attack'
 
 export const world = new World()
 
@@ -33,15 +35,22 @@ export function initWorld({ viewport }) {
 	world.registerComponent(Follow, 20)
 	world.registerComponent(Grinding, 10)
 	world.registerComponent(Particles, 20)
+	world.registerComponent(Attack, 10)
 	world.registerTags(...Object.values(Tags))
+
+	// TODO: Need to figure out the order of these systems and player/enemy movement
+	// Enemy move needs to happen after player moves, but in the same tick
+	// Possibly related, maybe make tween system not consume the transform system,
+	// 		and make FOVSystem run in AfterInput
 
 	world.registerSystem(SystemGroup.Input, InputSystem)
 	world.registerSystem(SystemGroup.Input, ActionSystem)
 	world.registerSystem(SystemGroup.AfterInput, GrindingSystem)
 	world.registerSystem(SystemGroup.AfterInput, CollisionSystem)
+	world.registerSystem(SystemGroup.AfterInput, AttackSystem)
 	world.registerSystem(SystemGroup.AfterInput, TweenSystem)
 	world.registerSystem(SystemGroup.AfterInput, TransformSystem)
-	world.registerSystem(SystemGroup.AfterInput, FollowSystem)
+	world.registerSystem(SystemGroup.AfterTween, FollowSystem)
 	world.registerSystem(SystemGroup.AfterTween, FOVSystem)
 	world.registerSystem(SystemGroup.AfterTween, GameSystem)
 	world.registerSystem(SystemGroup.Render, PixiSystem)

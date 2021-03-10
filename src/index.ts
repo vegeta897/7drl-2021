@@ -73,16 +73,23 @@ world.createEntity({
 // Player gains initial grinding momentum during game (killing monsters)
 // In starting room, there is a rail with booster that links into the main rail with a turn leading toward the dungeon rooms
 // In starting room of first level, put some small rails of different lengths so the player can learn the basics. also put a dummy enemy on a couple of them so they can learn how to grind into enemies
+// Put enemies on the long line just before the dungeon
+// Make the long line turn off to the side when reaching the dungeon, so it doesn't take you all the way to the end booster
 
+const px = level.rooms[0].x1 + 1
+const py = level.rooms[0].y1 + 1
 const playerComponents = createPlayerComponents(
 	entityContainer,
 	// level.levelStart
-	{ x: level.rooms[0].x1 + 1, y: level.rooms[0].y1 + 1 }
+	{ x: px, y: py }
 )
-world.createEntity({
-	id: GlobalEntity.Player,
-	c: playerComponents,
-})
+level.entityMap.set(
+	px + ':' + py,
+	world.createEntity({
+		id: GlobalEntity.Player,
+		c: playerComponents,
+	})
+)
 
 spawnEnemies(world, 8)
 

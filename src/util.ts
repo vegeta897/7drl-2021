@@ -93,6 +93,17 @@ export function getNeighbors(
 	return neighbors
 }
 
+export function getDirectionFromMove(move: Grid): Directions {
+	if (Math.abs(move.x) > Math.abs(move.y)) {
+		if (move.x > 0) return Directions.Right
+		if (move.x < 0) return Directions.Left
+	} else {
+		if (move.y > 0) return Directions.Down
+		if (move.y < 0) return Directions.Up
+	}
+	throw 'Invalid move'
+}
+
 export function tileToSpritePosition(tile: Grid): Grid {
 	return { x: tile.x * TILE_SIZE, y: tile.y * TILE_SIZE }
 }

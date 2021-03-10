@@ -5,9 +5,12 @@ import { TILE_SIZE } from './'
 import { createMainline } from './rail/rail'
 import { Grid } from './types'
 import { RailData, Room } from './rail/types'
+import Dijkstra from 'rot-js/lib/path/dijkstra'
+import { getSpriteProperties } from './rail/util'
+import { Entity } from 'ape-ecs'
 
-const RANDOM_SEED = true
-const SEED = !RANDOM_SEED ? 23 : rotJS.RNG.getUniformInt(0, 0xffffff)
+const RANDOM_SEED = false
+const SEED = !RANDOM_SEED ? 8 : rotJS.RNG.getUniformInt(0, 0xffffff)
 const DEBUG_VISIBILITY = false
 
 export enum Tile {
@@ -22,6 +25,7 @@ export type TileData = {
 	y: number
 	type: Tile
 	seeThrough: boolean
+	solid: boolean
 	rail?: RailData
 	tint?: number
 	revealed: number
@@ -32,6 +36,8 @@ export class Level {
 	levelStart: Grid
 	rooms: Room[]
 	tiles: Map<string, TileData> = new Map()
+	entityMap: Map<string, Entity> = new Map()
+	private dijkstraMaps: Map<string, Dijkstra> = new Map()
 	constructor(worldSprites: Set<Sprite>) {
 		rotJS.RNG.setSeed(SEED)
 		console.time('Level generation')
@@ -57,44 +63,9 @@ export class Level {
 			let tint = 0x3e2137 // Floor
 			let texture = TextureID.Floor
 			if (tile.type === Tile.Rail) {
-				texture = TextureID.RailCross
-				switch (tile.rail!.linkage) {
-					case 0b0001:
-					case 0b0010:
-					case 0b0011:
-						texture = TextureID.RailUpDown
-						break
-					case 0b0100:
-					case 0b1000:
-					case 0b1100:
-						texture = TextureID.RailLeftRight
-						break
-					case 0b0101:
-						texture = TextureID.RailUpLeft
-						break
-					case 0b1001:
-						texture = TextureID.RailUpRight
-						break
-					case 0b0110:
-						texture = TextureID.RailDownLeft
-						break
-					case 0b1010:
-						texture = TextureID.RailDownRight
-						break
-					case 0b0111:
-						texture = TextureID.RailUpDownLeft
-						break
-					case 0b1011:
-						texture = TextureID.RailUpDownRight
-						break
-					case 0b1101:
-						texture = TextureID.RailUpLeftRight
-						break
-					case 0b1110:
-						texture = TextureID.RailDownLeftRight
-						break
-				}
-				tint = tile.rail!.booster ? 0xbf1d30 : 0x9a6348
+				const railSpriteProps = getSpriteProperties(tile.rail!)
+				texture = railSpriteProps.texture
+				tint = railSpriteProps.tint
 			} else if (tile.type === Tile.Wall) {
 				texture = TextureID.Wall
 				tint = 0x584563
@@ -111,5 +82,30 @@ export class Level {
 	}
 	getTileAt(grid: Grid): TileData | undefined {
 		return this.tiles.get(grid.x + ':' + grid.y)
+	}
+	isTileSeeThrough(x: number, y: number): boolean {
+		const tile = this.getTileAt({ x, y })
+		return !tile || tile.seeThrough
+	}
+	isTileWalkable(x: number, y: number): boolean {
+		const tile = this.getTileAt({ x, y })
+		return !!tile && !tile.solid
+	}
+	getPath(from: Grid, to: Grid, distance: number = 1): Grid[] {
+		const toGridKey = to.x + ':' + to.y
+		let map = this.dijkstraMaps.get(toGridKey)
+		if (!map) {
+			map = new Dijkstra(to.x, to.y, (x, y) => this.isTileWalkable(x, y), {
+				topology: 4,
+			})
+			this.dijkstraMaps.set(toGridKey, map)
+		}
+		const path: Grid[] = []
+		map.compute(
+			from.x,
+			from.y,
+			(x, y) => path.length <= distance && path.push({ x, y })
+		)
+		return path
 	}
 }
