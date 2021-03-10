@@ -1,18 +1,25 @@
 import { RNG } from 'rot-js'
-import { TileData } from '../level'
+import { Tile, TileData } from '../level'
 import { Directions, Grid } from '../types'
 import {
 	addGrids,
 	equalGrid,
 	getDirections,
+	getNeighbors,
 	getUpperNormal,
 	moveDirectional,
 	reverseDirection,
 } from '../util'
 import { RailData, Room, Stretch, Tints } from './types'
-import { createFloorTile, createRailTile, getLinkage } from './util'
+import {
+	createFloorTile,
+	createRailTile,
+	createWallTile,
+	getLinkage,
+} from './util'
 
-const REMOVE_RAILS = false
+const DEBUG_RAIL = false
+const DEBUG_COLORS = false
 
 const crossLinkages = [0b1100, 0b1100, 0b0011, 0b0011]
 // const directionNames = ['Up', 'Down', 'Left', 'Right']
@@ -116,21 +123,13 @@ export function createMainline():
 					y1 = y < y1 ? y : y1 ?? y
 					y2 = y > y2 ? y : y2 ?? y
 					if (tiles.has(x + ':' + y)) continue
-					const roomTile = createFloorTile(x, y, stretches.length)
+					const roomTile = createFloorTile(x, y)
+					if (DEBUG_COLORS)
+						roomTile.tint = Tints[stretches.length % Tints.length]
 					roomTiles.push(roomTile)
 					tiles.set(x + ':' + y, roomTile)
 				}
 			}
-			const room = {
-				width: x2 - x1,
-				height: y2 - y1,
-				tiles: roomTiles,
-				x1,
-				x2,
-				y1,
-				y2,
-			}
-			rooms.push(room)
 			// Add rail tiles to map
 			stretchRails.forEach((railTile, gridKey) => {
 				let tile = createRailTile(railTile.x, railTile.y, railTile)
@@ -140,11 +139,11 @@ export function createMainline():
 					tile.rail!.directions = getDirections()
 					tile.rail!.linkage = 0b1111
 				}
-				tile.tint = Tints[stretches.length % Tints.length]
+				if (DEBUG_COLORS) tile.tint = Tints[stretches.length % Tints.length]
 				tiles.set(gridKey, tile)
 			})
 			// Add stretch to stretches
-			stretches.push({
+			const stretch = {
 				direction: stretchDirection,
 				possibleDirections,
 				startGrid,
@@ -154,19 +153,43 @@ export function createMainline():
 				),
 				rails: stretchRails,
 				length: stretchLength,
-				room,
-			})
+				room: {
+					width: x2 - x1,
+					height: y2 - y1,
+					tiles: roomTiles,
+					x1,
+					x2,
+					y1,
+					y2,
+				},
+			}
+			stretches.push(stretch)
+			rooms.push(stretch.room)
 		}
 		totalMainlineLength += stretchLength
 	} while (!finalStretch)
-	if (REMOVE_RAILS) {
+	// Wall it up
+	tiles.forEach((tile) => {
+		if (tile.type === Tile.Wall) return
+		getNeighbors(tile, true).forEach(({ x, y }) => {
+			const gridKey = x + ':' + y
+			if (!tiles.has(gridKey)) tiles.set(gridKey, createWallTile(x, y))
+		})
+	})
+	if (!DEBUG_RAIL) {
 		stretches.forEach((stretch, stretchNum) => {
 			// Try to remove a tile from each stretch
 			if (stretchNum === stretches.length - 1) return
 			const stretchRails = new Map([...stretch.rails])
 			do {
-				const [gridKey] = RNG.getItem([...stretchRails])!
+				const [gridKey, tile] = RNG.getItem([...stretchRails])!
 				stretchRails.delete(gridKey)
+				if (
+					!getNeighbors(tile).some(
+						(t) => tiles.get(t.x + ':' + t.y)?.type === Tile.Floor
+					)
+				)
+					continue
 				const railTile = tiles.get(gridKey)
 				if (!railTile || !railTile.rail) continue
 				if ([0b0011, 0b1100].includes(railTile.rail.linkage)) {
@@ -178,168 +201,3 @@ export function createMainline():
 	}
 	return { tiles, stretches, rooms }
 }
-
-// export function createMainlineOld(level: Level) {
-// 	const TARGET_ROOM_COUNT = 16
-// 	const MIN_ROOM_SIZE = 5 // Including walls
-// 	const TARGET_ROOM_SIZE = 7
-// 	const stretches: Set<Stretch> = new Set()
-// 	for (let stretchNum = 0; stretchNum < TARGET_ROOM_COUNT; stretchNum++) {
-// 		console.log('#####################################')
-// 		// Width and length are relative to the stretch direction
-// 		const roomWidth = getNormalWithMin(TARGET_ROOM_SIZE, MIN_ROOM_SIZE)
-// 		const roomLength = getNormalWithMin(TARGET_ROOM_SIZE, MIN_ROOM_SIZE)
-// 		// Begin stretch
-// 		const prevStretch = [...stretches].pop()
-// 		const newDirections = getDirections(
-// 			prevStretch ? [reverseDirection(prevStretch.direction)] : []
-// 		)
-// 		const direction = RNG.getItem(newDirections)!
-// 		const startGrid = prevStretch?.endGrid
-// 			? { ...prevStretch.endGrid }
-// 			: { x: 0, y: 0 }
-// 		console.log(
-// 			'generating stretch',
-// 			stretchNum + 1,
-// 			'starting at:',
-// 			startGrid,
-// 			'room width',
-// 			roomWidth,
-// 			'length',
-// 			roomLength
-// 		)
-// 		const distBeforeRoom = RNG.getUniformInt(0, 8)
-// 		const distAfterRoom = RNG.getUniformInt(0, 8)
-// 		const stretch: Stretch = {
-// 			direction,
-// 			possibleDirections: newDirections.filter((dir) => dir !== direction),
-// 			startGrid,
-// 			distanceBeforeRoom: distBeforeRoom,
-// 			distanceAfterRoom: distAfterRoom,
-// 			distance: distBeforeRoom + roomLength + distAfterRoom,
-// 		}
-// 		do {
-// 			console.log('direction', stretch.direction)
-// 			console.log(
-// 				'distance before and after room',
-// 				stretch.distanceBeforeRoom,
-// 				stretch.distanceAfterRoom
-// 			)
-// 			// Check full rail path is clear
-// 			for (let i = 1; i < stretch.distance; i++) {
-// 				const { x, y } = moveDirectional(stretch.direction, i)
-// 				if (level.tiles.has(x + ':' + y)) {
-// 					// Pick new direction
-// 				}
-// 			}
-// 			// Try to add a room
-// 			const validSideOffsets: Grid[][] = []
-// 			for (
-// 				let sideOffset = -roomWidth + 1;
-// 				sideOffset < roomWidth;
-// 				sideOffset++
-// 			) {
-// 				let validSideOffset = true
-// 				const sideGrids: Grid[] = []
-// 				for (let fwdOff = 0; fwdOff < roomLength; fwdOff++) {
-// 					const { x, y } = addGrids(
-// 						stretch.startGrid,
-// 						moveDirectional(
-// 							stretch.direction,
-// 							stretch.distanceBeforeRoom + fwdOff,
-// 							sideOffset
-// 						)
-// 					)
-// 					if (
-// 						(x !== stretch.startGrid.x || y !== stretch.startGrid.y) &&
-// 						level.tiles.has(x + ':' + y)
-// 					) {
-// 						// Room collided with existing tile
-// 						validSideOffset = false
-// 					} else {
-// 						sideGrids.push({ x, y })
-// 					}
-// 				}
-// 				if (validSideOffset) {
-// 					// Add side to array
-// 					validSideOffsets.push(sideGrids)
-// 				} else {
-// 					// Reset valid side offsets
-// 					validSideOffsets.length = 0
-// 				}
-// 			}
-// 			if (validSideOffsets.length >= roomWidth) {
-// 				// Room can be created
-// 				console.log(
-// 					'room can be created, available offset space',
-// 					validSideOffsets.length
-// 				)
-// 				// Pick a random starting offset
-// 				const startOffset = RNG.getUniformInt(
-// 					0,
-// 					validSideOffsets.length - roomWidth
-// 				)
-// 				for (let i = startOffset; i < startOffset + roomWidth; i++) {
-// 					// Create floor tiles
-// 					validSideOffsets[i].forEach((grid) =>
-// 						level.tiles.set(
-// 							grid.x + ':' + grid.y,
-// 							createFloorTile(grid.x, grid.y, stretchNum)
-// 						)
-// 					)
-// 				}
-// 				stretch.endGrid = addGrids(
-// 					stretch.startGrid,
-// 					moveDirectional(stretch.direction, stretch.distance)
-// 				)
-// 				console.log('stretch distance', stretch.distance)
-// 				console.log('set end grid to', stretch.endGrid.x, stretch.endGrid.y)
-// 			} else if (stretch.distanceBeforeRoom === roomLength * 2) {
-// 				// Room cannot be created in this direction
-// 				console.log('room could not be created in this direction')
-// 				if (stretch.possibleDirections.length > 0) {
-// 					// Pick new direction on this stretch
-// 					console.log('pick new direction for stretch')
-// 					stretch.direction = RNG.getItem(stretch.possibleDirections)!
-// 					stretch.possibleDirections = stretch.possibleDirections.filter(
-// 						(dir) => dir !== stretch.direction
-// 					)
-// 					stretch.distanceBeforeRoom = RNG.getUniformInt(0, 8)
-// 					stretch.distance =
-// 						stretch.distanceBeforeRoom + roomLength + stretch.distanceAfterRoom
-// 				} else {
-// 					// We're done with this level
-// 					console.log('no previous stretch to fall back to')
-// 					break
-// 				}
-// 			} else {
-// 				stretch.distanceBeforeRoom++
-// 				stretch.distance++
-// 			}
-// 		} while (
-// 			!stretch.endGrid &&
-// 			(stretch.possibleDirections.length > 0 ||
-// 				stretch.distanceBeforeRoom < roomLength * 2)
-// 		)
-// 		if (stretch.endGrid) {
-// 			console.log('valid stretch', stretch)
-// 			stretches.add(stretch)
-// 			// Place rail tiles
-// 			for (
-// 				let i = 0;
-// 				i < stretch.distanceBeforeRoom + roomLength + stretch.distanceAfterRoom;
-// 				i++
-// 			) {
-// 				const { x, y } = addGrids(
-// 					stretch.startGrid,
-// 					moveDirectional(stretch.direction, i)
-// 				)
-// 				const railTile = createRailTile(x, y, { directions: [], linkage: 0 })
-// 				railTile.tint = Tints[stretchNum % Tints.length]
-// 				level.tiles.set(x + ':' + y, railTile)
-// 			}
-// 		} else {
-// 			console.log('invalid stretch')
-// 		}
-// 	}
-// }

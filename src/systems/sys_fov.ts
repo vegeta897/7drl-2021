@@ -6,7 +6,7 @@ import { Easing, Tween } from '@tweenjs/tween.js'
 import { GlobalEntity } from '../types'
 import { Level } from '../level'
 
-const FOV_RADIUS = 10
+const FOV_RADIUS = 12
 
 export default class FOVSystem extends System {
 	private updatedTransforms!: Query
@@ -23,8 +23,7 @@ export default class FOVSystem extends System {
 			const transform = <Transform>entity.c.transform
 			const fov = new FOV.PreciseShadowcasting((x, y) => {
 				const tile = level.getTileAt({ x, y })
-				if (!tile) return false
-				return tile.seeThrough
+				return !tile || tile.seeThrough
 			})
 			fov.compute(
 				transform.x,

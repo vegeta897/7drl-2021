@@ -75,13 +75,22 @@ export function moveDirectional(
 	return addGrids(_moveDir(dir, distance), _moveDir(turnClockwise(dir), offset))
 }
 
-export function getNeighbors(grid: Grid): Set<Grid> {
-	return new Set([
+export function getNeighbors(
+	grid: Grid,
+	includeDiagonal: boolean = false
+): Grid[] {
+	const neighbors = [
 		addGrids(grid, _moveDir(Directions.Up)),
 		addGrids(grid, _moveDir(Directions.Down)),
 		addGrids(grid, _moveDir(Directions.Left)),
 		addGrids(grid, _moveDir(Directions.Right)),
-	])
+	]
+	if (includeDiagonal) {
+		clockwise.forEach((dir) =>
+			neighbors.push(addGrids(grid, moveDirectional(dir, 1, 1)))
+		)
+	}
+	return neighbors
 }
 
 export function tileToSpritePosition(tile: Grid): Grid {

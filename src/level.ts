@@ -4,7 +4,7 @@ import { createSprite, TextureID } from './sprites'
 import { TILE_SIZE } from './'
 import { createMainline } from './rail/rail'
 import { Grid } from './types'
-import { RailData } from './rail/types'
+import { RailData, Room } from './rail/types'
 
 const RANDOM_SEED = true
 const SEED = RANDOM_SEED ? rotJS.RNG.getUniformInt(0, 0xffffff) : 23
@@ -34,6 +34,7 @@ export type TileData = {
 export class Level {
 	container = new Container()
 	levelStart: Grid
+	rooms: Room[]
 	tiles: Map<string, TileData> = new Map()
 	constructor(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT) {
 		rotJS.RNG.setSeed(SEED)
@@ -48,6 +49,7 @@ export class Level {
 		mainLine.tiles.forEach((railTile, gridKey) =>
 			this.tiles.set(gridKey, railTile)
 		)
+		this.rooms = mainLine.rooms
 		const finalRoom = mainLine.rooms[mainLine.rooms.length - 1]
 		this.levelStart = {
 			x: finalRoom.x1 + Math.floor(finalRoom.width / 2),
@@ -104,7 +106,7 @@ export class Level {
 			tile.sprite = createSprite(texture)
 			tile.sprite.x = tile.x * TILE_SIZE
 			tile.sprite.y = tile.y * TILE_SIZE
-			// tile.sprite.alpha = 0
+			tile.sprite.alpha = 0
 			tile.sprite.tint = tile.tint ?? tint
 			this.container.addChild(tile.sprite)
 		})

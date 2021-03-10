@@ -12,7 +12,7 @@ import Controller from './components/com_controller'
 
 const WIDTH = 960
 const HEIGHT = 720
-export const DEFAULT_ZOOM = 1
+export const DEFAULT_ZOOM = 3
 export const TILE_SIZE = 16
 
 const { view, stage } = new Application({
@@ -62,9 +62,12 @@ world.createEntity({
 
 // TODO: Show title card on first long grind on first level
 
+// TODO: Create gate on rail before first room after arriving in dungeon, to prevent player from grinding all the way back to the start and dying before they finished the whole track
+
 const playerComponents = createPlayerComponents(
 	entityContainer,
-	level.levelStart
+	// level.levelStart
+	{ x: level.rooms[0].x1 + 1, y: level.rooms[0].y1 + 1 }
 )
 world.createEntity({
 	id: GlobalEntity.Player,

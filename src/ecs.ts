@@ -36,8 +36,8 @@ export function initWorld({ viewport }) {
 
 	world.registerSystem(SystemGroup.Input, InputSystem)
 	world.registerSystem(SystemGroup.Input, ActionSystem)
-	world.registerSystem(SystemGroup.Update, CollisionSystem)
 	world.registerSystem(SystemGroup.Update, GrindingSystem)
+	world.registerSystem(SystemGroup.Update, CollisionSystem)
 	world.registerSystem(SystemGroup.Update, TweenSystem)
 	world.registerSystem(SystemGroup.Update, TransformSystem)
 	world.registerSystem(SystemGroup.AfterUpdate, FOVSystem)

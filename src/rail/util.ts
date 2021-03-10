@@ -1,6 +1,15 @@
-import { RailData, Tints } from './types'
+import { RailData } from './types'
 import { Tile, TileData } from '../level'
 import { Directions } from '../types'
+
+export function createTile(x, y, type, seeThrough = true) {
+	return {
+		x,
+		y,
+		type,
+		seeThrough,
+	}
+}
 
 export function createRailTile(
 	x: number,
@@ -8,22 +17,17 @@ export function createRailTile(
 	railData: RailData
 ): TileData {
 	return {
-		x,
-		y,
-		type: Tile.Rail,
-		seeThrough: true,
+		...createTile(x, y, Tile.Rail),
 		rail: railData,
 	}
 }
 
-export function createFloorTile(x: number, y: number, tint?: number): TileData {
-	return {
-		x,
-		y,
-		type: Tile.Floor,
-		seeThrough: true,
-		tint: tint !== undefined ? Tints[tint % Tints.length] : undefined,
-	}
+export function createFloorTile(x: number, y: number): TileData {
+	return createTile(x, y, Tile.Floor)
+}
+
+export function createWallTile(x: number, y: number): TileData {
+	return createTile(x, y, Tile.Wall, false)
 }
 
 export function getLinkage(dirs: Directions[]): number {

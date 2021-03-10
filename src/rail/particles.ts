@@ -1,24 +1,62 @@
 import { Emitter } from 'pixi-particles'
 import { Container, Texture } from 'pixi.js'
 import { Directions, Grid } from '../types'
+import { Entity } from 'ape-ecs'
+import Particles from '../components/com_particles'
 
-export function getEmitterCoords(dir: Directions): [Grid, Grid] {
+export function addSparkComponents(
+	entity: Entity,
+	direction: Directions,
+	container: Container
+) {
+	const emitterOptions = getEmitterOptions(direction)
+	entity.addComponent({
+		type: Particles.typeName,
+		emitter: createSparkEmitter(container, emitterOptions[0]),
+	})
+	entity.addComponent({
+		type: Particles.typeName,
+		emitter: createSparkEmitter(container, emitterOptions[1]),
+	})
+}
+
+export function updateSparkComponents(
+	particles: Set<Particles>,
+	dir: Directions
+) {
+	const emitterOptions = getEmitterOptions(dir)
+	;[...particles].forEach(({ emitter }, p) => {
+		emitter.updateSpawnPos(emitterOptions[p].pos.x, emitterOptions[p].pos.y)
+		emitter.addAtBack = emitterOptions[p].addAtBack
+	})
+}
+
+type EmitterOptions = {
+	pos: Grid
+	addAtBack: boolean
+}
+
+function getEmitterOptions(dir: Directions): EmitterOptions[] {
 	switch (dir) {
 		case Directions.Up:
+			return [
+				{ pos: { x: 4, y: 16 }, addAtBack: false },
+				{ pos: { x: 12, y: 16 }, addAtBack: false },
+			]
 		case Directions.Down:
 			return [
-				{ x: 4, y: 16 },
-				{ x: 12, y: 16 },
+				{ pos: { x: 4, y: 8 }, addAtBack: true },
+				{ pos: { x: 12, y: 8 }, addAtBack: true },
 			]
 		case Directions.Left:
 			return [
-				{ x: 10, y: 4 },
-				{ x: 10, y: 12 },
+				{ pos: { x: 10, y: 4 }, addAtBack: true },
+				{ pos: { x: 10, y: 12 }, addAtBack: false },
 			]
 		case Directions.Right:
 			return [
-				{ x: 6, y: 4 },
-				{ x: 6, y: 12 },
+				{ pos: { x: 6, y: 4 }, addAtBack: true },
+				{ pos: { x: 6, y: 12 }, addAtBack: false },
 			]
 	}
 }
@@ -33,7 +71,10 @@ export function intensifySparks(emitter: Emitter): void {
 	emitter.frequency *= 0.95
 }
 
-export function createSparkEmitter(parent: Container, pos: Grid): Emitter {
+export function createSparkEmitter(
+	parent: Container,
+	options: EmitterOptions
+): Emitter {
 	return new Emitter(parent, Texture.WHITE, {
 		emit: true,
 		autoUpdate: true,
@@ -77,8 +118,7 @@ export function createSparkEmitter(parent: Container, pos: Grid): Emitter {
 		frequency: 0.01,
 		emitterLifetime: -1,
 		maxParticles: 5,
-		pos,
-		addAtBack: true,
+		...options,
 		spawnType: 'point',
 	})
 }
