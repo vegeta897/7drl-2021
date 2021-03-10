@@ -8,11 +8,11 @@ import Player from '../components/com_player'
 import PixiObject from '../components/com_pixi'
 
 const FOV_RADIUS = 12
-const FOG_VISIBILITY = 0.5 // Max visibility of previously seen tiles
+const FOG_VISIBILITY = 0.3 // Max visibility of previously seen tiles
 const TWEEN_TIME = 80
 
 function getEasedVisibility(visibility: number, radius: number): number {
-	return visibility * Easing.Exponential.Out((FOV_RADIUS - radius) / FOV_RADIUS)
+	return visibility * Easing.Sinusoidal.Out((FOV_RADIUS - radius) / FOV_RADIUS)
 }
 
 function getVisibilityTweenTime(distance: number, factor: number = 1): number {

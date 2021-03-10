@@ -6,11 +6,13 @@ export default class Grinding extends Component {
 	direction: Directions
 	state: GrindState
 	distance: number
-	speedup: boolean
+	speed: number
+	boosted: boolean
 	static properties = {
 		direction: null,
 		state: GrindState.Start,
 		distance: 0,
-		speedup: false,
+		speed: 1,
+		boosted: false,
 	}
 }

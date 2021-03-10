@@ -38,7 +38,9 @@ export function createMainline():
 	do {
 		const prevStretch = stretches[stretches.length - 1]
 		const startGrid: Grid = prevStretch?.endGrid || { x: 0, y: 0 }
-		let stretchLength = getUpperNormal(minStretchLength, stretchLengthStdDev)
+		let stretchLength = !prevStretch
+			? 20
+			: getUpperNormal(minStretchLength, stretchLengthStdDev)
 		const possibleDirections = getDirections(
 			prevStretch
 				? [prevStretch.direction, reverseDirection(prevStretch.direction)]
@@ -64,6 +66,15 @@ export function createMainline():
 					startGrid,
 					moveDirectional(stretchDirection, i)
 				)
+				if (
+					prevStretch &&
+					Math.abs(stretches[0].startGrid.x - x) < 4 &&
+					Math.abs(stretches[0].startGrid.y - y)
+				) {
+					// Don't allow rails near starting rail
+					validStretch = false
+					break
+				}
 				const gridKey = x + ':' + y
 				const railTile = tiles.get(gridKey)
 				if (i > 0 && railTile?.rail) {
@@ -89,7 +100,8 @@ export function createMainline():
 					directions = [stretchDirection, reverseDirection(stretchDirection)]
 					linkage = getLinkage(directions)
 				}
-				stretchRails.set(gridKey, { x, y, linkage, directions })
+				const booster = !prevStretch && i === 0
+				stretchRails.set(gridKey, { x, y, linkage, directions, booster })
 			}
 		} while (!validStretch && possibleDirections.length > 0)
 		if (!validStretch) {
@@ -97,15 +109,24 @@ export function createMainline():
 			return false
 		} else {
 			// Create room for stretch
-			const roomCenterDistance = finalStretch
+			const roomCenterDistance = !prevStretch
+				? 0
+				: finalStretch
 				? stretchLength - 4
 				: getUpperNormal(1, stretchLength / 2, stretchLength - 2)
 			addGrids(startGrid, moveDirectional(stretchDirection, roomCenterDistance))
-			const roomBreadth = finalStretch ? 5 : getUpperNormal(5, 3)
-			const roomLength = finalStretch
+			const roomBreadth =
+				!prevStretch || finalStretch ? 5 : getUpperNormal(5, 3)
+			const roomLength = !prevStretch
+				? 5
+				: finalStretch
 				? 8
 				: getUpperNormal(3, stretchLength / 2, stretchLength)
-			const roomOffset = finalStretch ? 5 : RNG.getUniformInt(0, roomBreadth)
+			const roomOffset = !prevStretch
+				? 2
+				: finalStretch
+				? 5
+				: RNG.getUniformInt(0, roomBreadth)
 			const roomTiles: TileData[] = []
 			let x1, x2, y1, y2
 			for (let rw = 0; rw < roomBreadth; rw++) {
@@ -138,6 +159,8 @@ export function createMainline():
 				if (existingRailTile && existingRailTile.rail) {
 					tile.rail!.directions = getDirections()
 					tile.rail!.linkage = 0b1111
+					// TODO Should be able to remove this line
+					tile.rail!.booster = existingRailTile.rail.booster
 				}
 				if (DEBUG_COLORS) tile.tint = Tints[stretches.length % Tints.length]
 				tiles.set(gridKey, tile)
@@ -177,27 +200,28 @@ export function createMainline():
 		})
 	})
 	if (!DEBUG_RAIL) {
-		stretches.forEach((stretch, stretchNum) => {
-			// Try to remove a tile from each stretch
-			if (stretchNum === stretches.length - 1) return
-			const stretchRails = new Map([...stretch.rails])
-			do {
-				const [gridKey, tile] = RNG.getItem([...stretchRails])!
-				stretchRails.delete(gridKey)
-				if (
-					!getNeighbors(tile).some(
-						(t) => tiles.get(t.x + ':' + t.y)?.type === Tile.Floor
-					)
-				)
-					continue
-				const railTile = tiles.get(gridKey)
-				if (!railTile || !railTile.rail) continue
-				if ([0b0011, 0b1100].includes(railTile.rail.linkage)) {
-					tiles.set(gridKey, createFloorTile(railTile!.x, railTile!.y))
-					break
-				}
-			} while (stretchRails.size > 0)
-		})
+		// New meta, don't remove tiles
+		// stretches.forEach((stretch, stretchNum) => {
+		// 	// Try to remove a tile from each stretch
+		// 	if (stretchNum === stretches.length - 1) return
+		// 	const stretchRails = new Map([...stretch.rails])
+		// 	do {
+		// 		const [gridKey, tile] = RNG.getItem([...stretchRails])!
+		// 		stretchRails.delete(gridKey)
+		// 		if (
+		// 			!getNeighbors(tile).some(
+		// 				(t) => tiles.get(t.x + ':' + t.y)?.type === Tile.Floor
+		// 			)
+		// 		)
+		// 			continue
+		// 		const railTile = tiles.get(gridKey)
+		// 		if (!railTile || !railTile.rail) continue
+		// 		if ([0b0011, 0b1100].includes(railTile.rail.linkage)) {
+		// 			tiles.set(gridKey, createFloorTile(railTile!.x, railTile!.y))
+		// 			break
+		// 		}
+		// 	} while (stretchRails.size > 0)
+		// })
 	}
 	return { tiles, stretches, rooms }
 }

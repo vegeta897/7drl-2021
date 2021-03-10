@@ -13,6 +13,7 @@ export const Tints = [
 export type RailData = {
 	directions: Directions[]
 	linkage: number
+	booster: boolean
 }
 
 export type Stretch = {

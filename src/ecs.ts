@@ -19,6 +19,7 @@ import GameSystem from './systems/sys_game'
 import TweenSystem from './systems/sys_tween'
 import PixiSystem from './systems/sys_pixi'
 import Particles from './components/com_particles'
+import FollowSystem from './systems/sys_follow'
 
 export const world = new World()
 
@@ -29,7 +30,7 @@ export function initWorld({ viewport }) {
 	world.registerComponent(Move, 20)
 	world.registerComponent(Transform, 1000)
 	world.registerComponent(Player, 1)
-	world.registerComponent(Follow, 1)
+	world.registerComponent(Follow, 20)
 	world.registerComponent(Grinding, 10)
 	world.registerComponent(Particles, 20)
 	world.registerTags(...Object.values(Tags))
@@ -40,6 +41,7 @@ export function initWorld({ viewport }) {
 	world.registerSystem(SystemGroup.AfterInput, CollisionSystem)
 	world.registerSystem(SystemGroup.AfterInput, TweenSystem)
 	world.registerSystem(SystemGroup.AfterInput, TransformSystem)
+	world.registerSystem(SystemGroup.AfterInput, FollowSystem)
 	world.registerSystem(SystemGroup.AfterTween, FOVSystem)
 	world.registerSystem(SystemGroup.AfterTween, GameSystem)
 	world.registerSystem(SystemGroup.Render, PixiSystem)

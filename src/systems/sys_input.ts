@@ -47,8 +47,10 @@ export default class InputSystem extends System {
 				this.world.getEntity(GlobalEntity.Game)!.c.controller
 			)
 			controller.direction = direction
-			controller.boost =
+			controller.sneak =
 				this.keys.has('ShiftLeft') || this.keys.has('ShiftRight')
+			controller.boost =
+				this.keys.has('ControlLeft') || this.keys.has('ControlRight')
 		}
 	}
 	keyDown(e) {
@@ -87,4 +89,6 @@ const gameKeys = [
 	'Numpad6',
 	'ShiftLeft',
 	'ShiftRight',
+	'ControlLeft',
+	'ControlRight',
 ]

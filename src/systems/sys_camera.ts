@@ -5,25 +5,27 @@ import { Viewport } from 'pixi-viewport'
 import { addGrids, diffGrids } from '../util'
 import { TILE_SIZE } from '../index'
 import { Util } from 'rot-js'
-import Follow from '../components/com_follow'
 
 const PADDING = 1.25 / 3 // Portion of screen to pad
 
 export default class CameraSystem extends System {
 	private viewport: Viewport
+	private reCenter = true
 	init(viewport: Viewport) {
 		this.viewport = viewport
 	}
+
 	update(tick) {
-		const follow = <Follow>this.world.getEntity(GlobalEntity.Camera)!.c.follow
-		if (!follow.target) return
-		const targetCenter = addGrids(follow.target, {
+		const target = <Point>(
+			this.world.getEntity(GlobalEntity.Player)!.c.pixi.object.position
+		)
+		const targetCenter = addGrids(target, {
 			x: TILE_SIZE / 2,
 			y: TILE_SIZE / 2,
 		})
-		if (follow.newTarget) {
+		if (this.reCenter) {
 			this.viewport.moveCenter(<Point>targetCenter)
-			follow.newTarget = false
+			this.reCenter = false
 		} else {
 			const xPadding = Math.floor(
 				this.viewport.screenWidthInWorldPixels / 2 -

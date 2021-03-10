@@ -8,6 +8,7 @@ export default class Particles extends Component {
 		emitter: null,
 	}
 	preDestroy() {
-		this.emitter.destroy()
+		// Destroy emitter after waiting for all particles to die
+		setTimeout(() => this.emitter.destroy(), this.emitter.maxLifetime * 1000)
 	}
 }

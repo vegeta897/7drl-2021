@@ -1,12 +1,9 @@
-import { Component } from 'ape-ecs'
-import { Grid } from '../types'
+import { Component, Entity, EntityRef } from 'ape-ecs'
 
 export default class Follow extends Component {
 	static typeName = 'Follow'
-	target: Grid | null
-	newTarget: boolean
+	target: Entity
 	static properties = {
-		target: null,
-		newTarget: true,
+		target: EntityRef,
 	}
 }

@@ -49,12 +49,12 @@ export default class TweenSystem extends System {
 						break
 					case GrindState.End:
 						positionTween.duration(GRIND_SPEED * 2)
-						this.addHop(game, transform, 1.5)
+						if (grinding.speed > 0) this.addHop(game, transform, 1.5)
 						break
 					default:
 						positionTween.duration(
 							GRIND_SPEED *
-								(GRIND_SPEED_GAIN / (grinding.distance + GRIND_SPEED_GAIN))
+								(GRIND_SPEED_GAIN / (grinding.speed + GRIND_SPEED_GAIN))
 						)
 						break
 				}

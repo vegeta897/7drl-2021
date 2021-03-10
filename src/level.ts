@@ -6,7 +6,7 @@ import { createMainline } from './rail/rail'
 import { Grid } from './types'
 import { RailData, Room } from './rail/types'
 
-const RANDOM_SEED = false
+const RANDOM_SEED = true
 const SEED = !RANDOM_SEED ? 23 : rotJS.RNG.getUniformInt(0, 0xffffff)
 const DEBUG_VISIBILITY = false
 
@@ -94,7 +94,7 @@ export class Level {
 						texture = TextureID.RailDownLeftRight
 						break
 				}
-				tint = 0x9a6348
+				tint = tile.rail!.booster ? 0xbf1d30 : 0x9a6348
 			} else if (tile.type === Tile.Wall) {
 				texture = TextureID.Wall
 				tint = 0x584563
