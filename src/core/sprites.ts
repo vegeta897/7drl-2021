@@ -1,6 +1,8 @@
 import { BaseTexture, Texture, Rectangle, Sprite } from 'pixi.js'
 import sheetImage from '../assets/sprites.png'
 
+export const TILE_SIZE = 16
+
 export enum TextureID {
 	Floor,
 	Wall,
@@ -28,6 +30,7 @@ export enum TextureID {
 	Eight,
 	Nine,
 	Heart,
+	PressEnter,
 }
 
 const textures = <Texture[]>[]
@@ -237,6 +240,13 @@ const sheetDefinition = {
 			y: 119,
 			w: 16,
 			h: 16,
+		},
+		{
+			key: TextureID.PressEnter,
+			x: 35,
+			y: 119,
+			w: 49,
+			h: 33,
 		},
 	],
 }

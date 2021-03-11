@@ -10,10 +10,9 @@ import Game from './components/com_game'
 import Controller from './components/com_controller'
 import { spawnEnemies } from './archetypes/enemy'
 
-const WIDTH = 960
-const HEIGHT = 720
+export const WIDTH = 960
+export const HEIGHT = 720
 export const DEFAULT_ZOOM = 3
-export const TILE_SIZE = 16
 
 const { view, stage } = new Application({
 	width: WIDTH,
@@ -29,22 +28,17 @@ Ticker.shared.add(() => {
 	TWEEN.update()
 	world.runSystems(SystemGroup.Render)
 })
+
 const viewport = new Viewport({
 	screenWidth: view.width,
 	screenHeight: view.height,
 })
+viewport.setZoom(DEFAULT_ZOOM)
 stage.addChild(viewport)
 
 const level = new Level(viewport)
-viewport.setZoom(DEFAULT_ZOOM)
 
 const HUD = new Container()
-HUD.setTransform(
-	WIDTH - (TILE_SIZE * 3 - 2) * DEFAULT_ZOOM,
-	HEIGHT - (TILE_SIZE + 2) * DEFAULT_ZOOM,
-	3,
-	3
-)
 stage.addChild(HUD)
 
 initWorld({ viewport, HUD })

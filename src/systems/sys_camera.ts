@@ -3,8 +3,8 @@ import { System } from 'ape-ecs'
 import { GlobalEntity, Tags } from '../types'
 import { Viewport } from 'pixi-viewport'
 import { addGrids, diffGrids } from '../util'
-import { TILE_SIZE } from '../index'
 import { Util } from 'rot-js'
+import { TILE_SIZE } from '../core/sprites'
 
 const PADDING = 1.25 / 3 // Portion of screen to pad
 

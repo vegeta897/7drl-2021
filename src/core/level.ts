@@ -1,7 +1,6 @@
 import * as rotJS from 'rot-js'
 import { Container, Sprite } from 'pixi.js'
-import { createSprite, TextureID } from './sprites'
-import { TILE_SIZE } from '../index'
+import { createSprite, TextureID, TILE_SIZE } from './sprites'
 import { createMainline } from '../rail/rail'
 import { Grid } from '../types'
 import { RailData, Room } from '../rail/types'
@@ -86,11 +85,6 @@ export class Level {
 		console.timeEnd('Sprite creation')
 	}
 	destroyLevel(): void {
-		console.log(
-			'level destroy removing',
-			this.container.children.length,
-			'children'
-		)
 		this.container.removeChildren()
 		this.tiles.clear()
 		this.entityMap.clear()

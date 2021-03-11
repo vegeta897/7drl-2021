@@ -9,7 +9,7 @@ import { tileToSpritePosition } from '../util'
 import Controller from '../components/com_controller'
 import Game from '../components/com_game'
 import { runMainSystems } from '../core/ecs'
-import { TILE_SIZE } from '../index'
+import { TILE_SIZE } from '../core/sprites'
 
 // Higher is slower
 export const PLAYER_SPEED = 100

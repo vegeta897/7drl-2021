@@ -14,8 +14,8 @@ export default class GameSystem extends System {
 				if (entity !== gameEntity) entity.destroy()
 			})
 			game.level.destroyLevel()
-			createPlayer(this.world)
 			game.level.createLevel()
+			createPlayer(this.world)
 		}
 	}
 }

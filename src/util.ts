@@ -1,6 +1,6 @@
 import { Directions, Grid } from './types'
-import { TILE_SIZE } from './index'
 import { RNG } from 'rot-js'
+import { TILE_SIZE } from './core/sprites'
 
 const clockwise = [
 	Directions.Up,

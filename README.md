@@ -15,6 +15,8 @@ Seeded from [my own RL template](https://github.com/vegeta897/rl-test)
 
 - Sprites from [Kenney's 1-Bit Pack](https://www.kenney.nl/assets/bit-pack) (some modified)
 
+- Colors based on [NA16 Palette](https://lospec.com/palette-list/na16) by Nauris
+
 ## References
 
 Some projects I looked at for guidance:

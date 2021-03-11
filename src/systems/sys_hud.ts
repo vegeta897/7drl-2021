@@ -2,9 +2,15 @@ import { Entity, System } from 'ape-ecs'
 import { Container, Sprite } from 'pixi.js'
 import { GlobalEntity, Tags } from '../types'
 import Health from '../components/com_health'
-import { changeSpriteTexture, createSprite, TextureID } from '../core/sprites'
-import { TILE_SIZE } from '../index'
+import {
+	changeSpriteTexture,
+	createSprite,
+	TextureID,
+	TILE_SIZE,
+} from '../core/sprites'
 import Game from '../components/com_game'
+import { DeadRailContainer } from '../screens'
+import { HEIGHT, WIDTH } from '../index'
 
 const digitTextureIDs = [
 	TextureID.Zero,
@@ -20,33 +26,54 @@ const digitTextureIDs = [
 ]
 
 export default class HUDSystem extends System {
-	container!: Container
-	tensDigitSprite!: Sprite
-	onesDigitSprite!: Sprite
-	heartSprite!: Sprite
+	container: Container
+	screenContainer: Container | null = null
+	healthContainer: Container
+	tensDigitSprite: Sprite
+	onesDigitSprite: Sprite
+	heartSprite: Sprite
+
 	init(container: Container) {
 		this.container = container
+		this.container.setTransform(0, 0, 3, 3)
+		this.healthContainer = new Container()
+		this.healthContainer.setTransform(
+			WIDTH / 3 - (TILE_SIZE * 3 - 2),
+			HEIGHT / 3 - (TILE_SIZE + 2)
+		)
+		this.container.addChild(this.healthContainer)
 		this.tensDigitSprite = createSprite(TextureID.Zero)
 		this.onesDigitSprite = createSprite(TextureID.Zero)
 		this.onesDigitSprite.x = TILE_SIZE - 6
+		this.onesDigitSprite.tint = 0xf5edba
+		this.tensDigitSprite.tint = 0xf5edba
 		this.heartSprite = createSprite(TextureID.Heart)
 		this.heartSprite.x = TILE_SIZE * 2 - 6
-		this.container.addChild(
+		this.healthContainer.addChild(
 			this.tensDigitSprite,
 			this.onesDigitSprite,
 			this.heartSprite
 		)
 	}
 	update(tick) {
+		const gameEntity = <Entity>this.world.getEntity(GlobalEntity.Game)!
 		const game = <Game>this.world.getEntity(GlobalEntity.Game)!.c.game
-		if (game.gameOver) {
-			this.container.visible = false
-			return
-		}
 		const player = <Entity>this.world.getEntity(GlobalEntity.Player)!
+		if (game.gameOver) {
+			if (this.screenContainer) this.container.removeChild(this.screenContainer)
+			this.screenContainer = DeadRailContainer
+			this.container.addChild(this.screenContainer)
+			this.healthContainer.visible = false
+			gameEntity.addTag(Tags.UpdateHUD)
+			return
+		} else if (gameEntity.has(Tags.UpdateHUD)) {
+			gameEntity.removeTag(Tags.UpdateHUD)
+			if (this.screenContainer) this.container.removeChild(this.screenContainer)
+			this.screenContainer = null
+			this.healthContainer.visible = true
+		}
 		if (!player.has(Tags.UpdateHUD)) return
 		player.removeTag(Tags.UpdateHUD)
-		this.container.visible = true
 		const { health } = <{ health: Health }>player.c
 		const [tensDigit, onesDigit] = Math.max(0, Math.min(99, health.current))
 			.toString()
