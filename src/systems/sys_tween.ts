@@ -78,7 +78,6 @@ export default class TweenSystem extends System {
 			this.world.getEntity(GlobalEntity.Game)!.c.controller.state =
 				ControllerState.Disabled
 		} else {
-			console.log('controller ready')
 			this.world.getEntity(GlobalEntity.Game)!.c.controller.state =
 				ControllerState.Ready
 		}

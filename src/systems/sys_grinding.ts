@@ -38,6 +38,7 @@ export default class GrindingSystem extends System {
 	init() {
 		this.moving = this.createQuery({
 			all: [Transform, Move, Player],
+			not: [Grinding],
 			persist: true,
 		})
 		this.grinding = this.createQuery({
@@ -50,36 +51,8 @@ export default class GrindingSystem extends System {
 			this.world.getEntity(GlobalEntity.Game)!.c
 		)
 		const level = <Level>game.level
-		const moving = this.moving.execute()
-		const grinding = this.grinding.execute()
 
-		moving.forEach((entity) => {
-			if (controller.sneak || controller.boost) return
-			const { move, transform } = <{ transform: Transform; move: Move }>entity.c
-			const destGrid = level.getTileAt(addGrids(move, transform))
-			if (
-				destGrid?.type === Tile.Rail &&
-				(destGrid.rail!.directions.includes(move.direction) ||
-					destGrid.rail!.directions.includes(reverseDirection(move.direction)))
-			) {
-				// Begin grind
-				entity.addComponent({
-					type: Grinding.typeName,
-					key: 'grinding',
-					direction: move.direction,
-					speed: INITIAL_GRIND_SPEED,
-					boosted: destGrid.rail!.booster,
-				})
-				game.autoUpdate = true
-				// game.viewport.animate(<AnimateOptions>{
-				// 	scale: GRIND_ZOOM,
-				// 	time: ZOOM_TIME,
-				// 	ease: 'easeInCubic', // Penner's easing https://github.com/bcherny/penner
-				// })
-			}
-		})
-
-		grinding.forEach((entity) => {
+		this.grinding.execute().forEach((entity) => {
 			const { transform, grinding } = <
 				{ transform: Transform; grinding: Grinding }
 			>entity.c
@@ -140,7 +113,6 @@ export default class GrindingSystem extends System {
 				}
 				if (nextTile?.solid) {
 					// If colliding, grinding doesn't End, it's removed and no Move added
-					console.log('collision, removing grind component')
 					entity.removeComponent(grinding)
 					return
 				}
@@ -167,9 +139,41 @@ export default class GrindingSystem extends System {
 				})
 				if (state === GrindState.Continue) game.autoUpdate = true
 			} else {
-				console.log('removing grind component')
 				entity.removeComponent(grinding)
 			}
 		})
+
+		this.moving
+			.refresh()
+			.execute()
+			.forEach((entity) => {
+				if (controller.sneak || controller.boost) return
+				const { move, transform } = <{ transform: Transform; move: Move }>(
+					entity.c
+				)
+				const destGrid = level.getTileAt(addGrids(move, transform))
+				if (
+					destGrid?.type === Tile.Rail &&
+					(destGrid.rail!.directions.includes(move.direction) ||
+						destGrid.rail!.directions.includes(
+							reverseDirection(move.direction)
+						))
+				) {
+					// Begin grind
+					entity.addComponent({
+						type: Grinding.typeName,
+						key: 'grinding',
+						direction: move.direction,
+						speed: INITIAL_GRIND_SPEED,
+						boosted: destGrid.rail!.booster,
+					})
+					game.autoUpdate = true
+					// game.viewport.animate(<AnimateOptions>{
+					// 	scale: GRIND_ZOOM,
+					// 	time: ZOOM_TIME,
+					// 	ease: 'easeInCubic', // Penner's easing https://github.com/bcherny/penner
+					// })
+				}
+			})
 	}
 }

@@ -35,7 +35,6 @@ export default class FollowSystem extends System {
 			const moveTo = level.getPath(myTransform, targetTransform)[1]
 			if (!moveTo) return
 			const move = diffGrids(moveTo, myTransform)
-			console.log(tick, entity.id, 'following')
 			entity.addComponent({
 				type: Move.typeName,
 				key: 'move',

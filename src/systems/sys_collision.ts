@@ -26,11 +26,17 @@ export default class CollisionSystem extends System {
 			>entity.c
 			const dest = addGrids(transform, move)
 			const destEntity = game.level.entityMap.get(dest.x + ':' + dest.y)
-			if (grinding && grinding.state !== GrindState.Start && destEntity) {
+			if (grinding) {
 				// If grinding, we don't have to check for map collision
-				console.log('grinding through', destEntity.id)
-				destEntity.destroy()
-				return
+				if (destEntity) {
+					if (grinding.state === GrindState.Start) {
+						entity.removeComponent(grinding)
+					} else {
+						console.log(tick, 'grinding through', destEntity.id)
+						destEntity.destroy()
+						return // Don't need to perform entity collision
+					}
+				}
 			} else {
 				// Check for collision when moving
 				const destWalkable = game.level.isTileWalkable(dest.x, dest.y)
@@ -45,7 +51,7 @@ export default class CollisionSystem extends System {
 				}
 			}
 			if (destEntity) {
-				// Entity collision
+				// Entity collision (not grinding)
 				// Attack if one of these entities is a player
 				entity.removeComponent(move)
 				if (entity.has(Player) || destEntity.has(Player)) {
