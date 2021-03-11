@@ -6,6 +6,8 @@ My entry for [7DRL 2021](https://7drl.com/)
 
 Seeded from [my own RL template](https://github.com/vegeta897/rl-test)
 
+Sprites from [Kenney's 1-Bit Pack](https://www.kenney.nl/assets/bit-pack) (some modified)
+
 ## TODO
 
 - Remove debug stuff before submitting
