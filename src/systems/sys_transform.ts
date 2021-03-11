@@ -1,6 +1,5 @@
 import { Query, System } from 'ape-ecs'
 import Transform from '../components/com_transform'
-import { addGrids } from '../util'
 import Move from '../components/com_move'
 import { Level } from '../level'
 import { GlobalEntity } from '../types'
@@ -21,9 +20,8 @@ export default class TransformSystem extends System {
 		this.moving.execute().forEach((entity) => {
 			const { transform, move } = <{ transform: Transform; move: Move }>entity.c
 			level.entityMap.delete(transform.x + ':' + transform.y)
-			const dest = addGrids(transform, move)
-			level.entityMap.set(dest.x + ':' + dest.y, entity)
-			transform.update({ dirty: true, ...dest })
+			level.entityMap.set(move.x + ':' + move.y, entity)
+			transform.update({ dirty: true, x: move.x, y: move.y })
 			entity.removeComponent(move)
 			entity.addComponent({
 				type: Tweening.typeName,

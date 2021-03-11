@@ -74,8 +74,8 @@ export default class GrindingSystem extends System {
 						newDirection = <Directions>rng.getItem(turns)
 					}
 				}
-				const moveGrid = moveDirectional(newDirection)
-				const nextTile = level.getTileAt(addGrids(transform, moveGrid))
+				const moveTo = addGrids(transform, moveDirectional(newDirection))
+				const nextTile = level.getTileAt(moveTo)
 				const particles = entity.getComponents(Particles)
 				if (
 					!nextTile?.rail?.directions.includes(
@@ -134,7 +134,7 @@ export default class GrindingSystem extends System {
 				entity.addComponent({
 					type: Move.typeName,
 					key: 'move',
-					...moveGrid,
+					...moveTo,
 					direction: newDirection,
 				})
 				if (state === GrindState.Continue) game.autoUpdate = true
@@ -148,14 +148,12 @@ export default class GrindingSystem extends System {
 			.execute()
 			.forEach((entity) => {
 				if (controller.sneak || controller.boost) return
-				const { move, transform } = <{ transform: Transform; move: Move }>(
-					entity.c
-				)
-				const destGrid = level.getTileAt(addGrids(move, transform))
+				const move = <Move>entity.c.move
+				const destTile = level.getTileAt(move)
 				if (
-					destGrid?.type === Tile.Rail &&
-					(destGrid.rail!.directions.includes(move.direction) ||
-						destGrid.rail!.directions.includes(
+					destTile?.type === Tile.Rail &&
+					(destTile.rail!.directions.includes(move.direction) ||
+						destTile.rail!.directions.includes(
 							reverseDirection(move.direction)
 						))
 				) {
@@ -165,7 +163,7 @@ export default class GrindingSystem extends System {
 						key: 'grinding',
 						direction: move.direction,
 						speed: INITIAL_GRIND_SPEED,
-						boosted: destGrid.rail!.booster,
+						boosted: destTile.rail!.booster,
 					})
 					game.autoUpdate = true
 					// game.viewport.animate(<AnimateOptions>{

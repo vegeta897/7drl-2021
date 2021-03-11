@@ -2,7 +2,6 @@ import { Query, System } from 'ape-ecs'
 import Transform from '../components/com_transform'
 import Move from '../components/com_move'
 import { GlobalEntity, GrindState } from '../types'
-import { addGrids } from '../util'
 import Player from '../components/com_player'
 import Attack from '../components/com_attack'
 import Grinding from '../components/com_grinding'
@@ -18,14 +17,12 @@ export default class CollisionSystem extends System {
 	}
 	update(tick) {
 		const game = <Game>this.world.getEntity(GlobalEntity.Game)!.c.game
-		this.movers.execute().forEach((entity) => {
-			// TODO: Entities are able to move to the same spot since we're checking where they are instead of where they will be
-			// Best solution is probably to add the target's move component to their transform
-			const { transform, move, grinding } = <
+		const movers = this.movers.execute()
+		movers.forEach((entity) => {
+			const { /*transform,*/ move, grinding } = <
 				{ transform: Transform; move: Move; grinding: Grinding }
 			>entity.c
-			const dest = addGrids(transform, move)
-			const destEntity = game.level.entityMap.get(dest.x + ':' + dest.y)
+			const destEntity = game.level.entityMap.get(move.x + ':' + move.y)
 			if (grinding) {
 				// If grinding, we don't have to check for map collision
 				if (destEntity) {
@@ -39,7 +36,7 @@ export default class CollisionSystem extends System {
 				}
 			} else {
 				// Check for collision when moving
-				const destWalkable = game.level.isTileWalkable(dest.x, dest.y)
+				const destWalkable = game.level.isTileWalkable(move.x, move.y)
 				if (!move.noClip && !destWalkable) {
 					// Wall, cancel move
 					entity.removeComponent(move)

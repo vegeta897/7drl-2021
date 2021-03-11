@@ -15,7 +15,7 @@ import { runMainSystems } from '../ecs'
 // Higher is slower
 export const PLAYER_SPEED = 100
 export const GRIND_SPEED = 120
-export const GRIND_SPEED_GAIN = 60
+export const GRIND_SPEED_GAIN = 80
 export const ENEMY_SPEED = 150
 
 export default class TweenSystem extends System {

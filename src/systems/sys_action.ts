@@ -3,8 +3,9 @@ import { ControllerState, GlobalEntity } from '../types'
 import Move from '../components/com_move'
 import { runMainSystems } from '../ecs'
 import Controller from '../components/com_controller'
-import { moveDirectional } from '../util'
+import { addGrids, moveDirectional } from '../util'
 import Game from '../components/com_game'
+import Transform from '../components/com_transform'
 
 export default class ActionSystem extends System {
 	update(tick) {
@@ -19,10 +20,14 @@ export default class ActionSystem extends System {
 		} else if (controller.state === ControllerState.Ready) {
 			if (controller.direction !== null || controller.wait) {
 				if (controller.direction !== null) {
+					const moveTo = addGrids(
+						<Transform>player.c.transform,
+						moveDirectional(controller.direction, controller.boost ? 8 : 1)
+					)
 					player.addComponent({
 						type: Move.typeName,
 						key: 'move',
-						...moveDirectional(controller.direction, controller.boost ? 8 : 1),
+						...moveTo,
 						noClip: controller.boost,
 						direction: controller.direction,
 					})

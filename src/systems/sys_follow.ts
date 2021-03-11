@@ -34,12 +34,11 @@ export default class FollowSystem extends System {
 			if (targetDistance > MAX_FOLLOW_DISTANCE || targetDistance === 0) return
 			const moveTo = level.getPath(myTransform, targetTransform)[1]
 			if (!moveTo) return
-			const move = diffGrids(moveTo, myTransform)
 			entity.addComponent({
 				type: Move.typeName,
 				key: 'move',
-				...move,
-				direction: getDirectionFromMove(move),
+				...moveTo,
+				direction: getDirectionFromMove(diffGrids(moveTo, myTransform)),
 			})
 		})
 	}
