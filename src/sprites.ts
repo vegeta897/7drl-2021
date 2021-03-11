@@ -1,5 +1,5 @@
 import { BaseTexture, Texture, Rectangle, Sprite } from 'pixi.js'
-import sheetImage from './assets/1bitpack_kenney.png'
+import sheetImage from './assets/sprites.png'
 
 export enum TextureID {
 	Floor,
@@ -48,42 +48,42 @@ const sheetDefinition = {
 		{
 			key: TextureID.Wall,
 			x: 51,
-			y: 306,
+			y: 68,
 			w: 16,
 			h: 16,
 		},
 		{
 			key: TextureID.Player,
-			x: 476,
-			y: 0,
+			x: 0,
+			y: 17,
 			w: 16,
 			h: 16,
 		},
 		{
 			key: TextureID.Enemy,
-			x: 493,
-			y: 102,
+			x: 17,
+			y: 17,
 			w: 16,
 			h: 16,
 		},
 		{
 			key: TextureID.RailCross,
 			x: 51,
-			y: 85,
+			y: 0,
 			w: 16,
 			h: 16,
 		},
 		{
 			key: TextureID.RailUpDown,
 			x: 0,
-			y: 85,
+			y: 0,
 			w: 16,
 			h: 16,
 		},
 		{
 			key: TextureID.RailLeftRight,
 			x: 0,
-			y: 85,
+			y: 0,
 			w: 16,
 			h: 16,
 			rotate: 1,
@@ -91,7 +91,7 @@ const sheetDefinition = {
 		{
 			key: TextureID.RailUpLeft,
 			x: 17,
-			y: 85,
+			y: 0,
 			w: 16,
 			h: 16,
 			rotate: 2,
@@ -99,7 +99,7 @@ const sheetDefinition = {
 		{
 			key: TextureID.RailUpRight,
 			x: 17,
-			y: 85,
+			y: 0,
 			w: 16,
 			h: 16,
 			rotate: 1,
@@ -107,7 +107,7 @@ const sheetDefinition = {
 		{
 			key: TextureID.RailDownLeft,
 			x: 17,
-			y: 85,
+			y: 0,
 			w: 16,
 			h: 16,
 			rotate: 3,
@@ -115,14 +115,14 @@ const sheetDefinition = {
 		{
 			key: TextureID.RailDownRight,
 			x: 17,
-			y: 85,
+			y: 0,
 			w: 16,
 			h: 16,
 		},
 		{
 			key: TextureID.RailUpDownLeft,
 			x: 34,
-			y: 85,
+			y: 0,
 			w: 16,
 			h: 16,
 			rotate: 2,
@@ -130,14 +130,14 @@ const sheetDefinition = {
 		{
 			key: TextureID.RailUpDownRight,
 			x: 34,
-			y: 85,
+			y: 0,
 			w: 16,
 			h: 16,
 		},
 		{
 			key: TextureID.RailUpLeftRight,
 			x: 34,
-			y: 85,
+			y: 0,
 			w: 16,
 			h: 16,
 			rotate: 1,
@@ -145,7 +145,7 @@ const sheetDefinition = {
 		{
 			key: TextureID.RailDownLeftRight,
 			x: 34,
-			y: 85,
+			y: 0,
 			w: 16,
 			h: 16,
 			rotate: 3,
