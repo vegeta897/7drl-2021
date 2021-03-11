@@ -2,7 +2,7 @@ import { Application, Ticker, Container, Sprite } from 'pixi.js'
 import TWEEN from '@tweenjs/tween.js'
 import './style.css'
 import { Level } from './level'
-import { world, updateWorld, initWorld } from './ecs'
+import { world, runMainSystems, initWorld } from './ecs'
 import { createPlayerComponents } from './archetypes/player'
 import { GlobalEntity, SystemGroup } from './types'
 import { Viewport } from 'pixi-viewport'
@@ -83,6 +83,7 @@ const playerComponents = createPlayerComponents(
 	// level.levelStart
 	{ x: px, y: py }
 )
+console.log('setting entity map', px + ':' + py, 'to player')
 level.entityMap.set(
 	px + ':' + py,
 	world.createEntity({
@@ -93,4 +94,4 @@ level.entityMap.set(
 
 spawnEnemies(world, 8)
 
-updateWorld()
+runMainSystems()

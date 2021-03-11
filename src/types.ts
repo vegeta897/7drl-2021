@@ -1,6 +1,6 @@
 export enum SystemGroup {
 	Input = 'input',
-	AfterInput = 'beforeTween',
+	Main = 'beforeTween',
 	AfterTween = 'afterTween',
 	Render = 'render',
 }

@@ -8,6 +8,8 @@ import Game from '../components/com_game'
 import { RNG } from 'rot-js'
 import Follow from '../components/com_follow'
 
+let enemyCount = 0
+
 export function createEnemyComponents(
 	container: Container,
 	grid: Grid,
@@ -49,7 +51,7 @@ export function spawnEnemies(world: World, count: number) {
 		level.rooms.forEach((room, roomIndex) => {
 			if (roomIndex === level.rooms.length - 1) return
 			if (RNG.getUniform() > 0.05) return
-			console.log('spawn enemy in room', roomIndex)
+			// console.log('spawn enemy in room', roomIndex)
 			const x = room.x1 + RNG.getUniformInt(0, room.x2 - room.x1)
 			const y = room.y1 + RNG.getUniformInt(0, room.y2 - room.y1)
 			const enemyComponents = createEnemyComponents(
@@ -57,9 +59,11 @@ export function spawnEnemies(world: World, count: number) {
 				{ x, y },
 				player
 			)
+			console.log('setting entity map', x + ':' + y, 'to enemy')
 			level.entityMap.set(
 				x + ':' + y,
 				world.createEntity({
+					id: `enemy${++enemyCount}`,
 					c: enemyComponents,
 				})
 			)

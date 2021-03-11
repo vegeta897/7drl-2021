@@ -33,12 +33,11 @@ const rng = RNG.clone()
 const INITIAL_GRIND_SPEED = 4
 
 export default class GrindingSystem extends System {
-	private noGrindMoving!: Query
+	private moving!: Query
 	private grinding!: Query
 	init() {
-		this.noGrindMoving = this.createQuery({
+		this.moving = this.createQuery({
 			all: [Transform, Move, Player],
-			not: [Grinding],
 			persist: true,
 		})
 		this.grinding = this.createQuery({
@@ -51,9 +50,10 @@ export default class GrindingSystem extends System {
 			this.world.getEntity(GlobalEntity.Game)!.c
 		)
 		const level = <Level>game.level
-		const noGrindMoving = this.noGrindMoving.execute()
+		const moving = this.moving.execute()
 		const grinding = this.grinding.execute()
-		noGrindMoving.forEach((entity) => {
+
+		moving.forEach((entity) => {
 			if (controller.sneak || controller.boost) return
 			const { move, transform } = <{ transform: Transform; move: Move }>entity.c
 			const destGrid = level.getTileAt(addGrids(move, transform))
@@ -70,14 +70,15 @@ export default class GrindingSystem extends System {
 					speed: INITIAL_GRIND_SPEED,
 					boosted: destGrid.rail!.booster,
 				})
+				game.autoUpdate = true
 				// game.viewport.animate(<AnimateOptions>{
 				// 	scale: GRIND_ZOOM,
 				// 	time: ZOOM_TIME,
 				// 	ease: 'easeInCubic', // Penner's easing https://github.com/bcherny/penner
 				// })
-				game.autoUpdate = true
 			}
 		})
+
 		grinding.forEach((entity) => {
 			const { transform, grinding } = <
 				{ transform: Transform; grinding: Grinding }
@@ -102,6 +103,7 @@ export default class GrindingSystem extends System {
 				}
 				const moveGrid = moveDirectional(newDirection)
 				const nextTile = level.getTileAt(addGrids(transform, moveGrid))
+				const particles = entity.getComponents(Particles)
 				if (
 					!nextTile?.rail?.directions.includes(
 						reverseDirection(newDirection)
@@ -109,7 +111,7 @@ export default class GrindingSystem extends System {
 					grinding.speed === 1
 				) {
 					state = GrindState.End
-					entity.getComponents(Particles).forEach((p) => {
+					particles.forEach((p) => {
 						if (grinding.speed === 1) {
 							// If grinding to a halt, tween down the particles
 							new Tween(p.emitter)
@@ -125,6 +127,7 @@ export default class GrindingSystem extends System {
 								.start()
 								.onComplete(() => entity.removeComponent(p))
 						} else {
+							// If not grinding to a halt, just remove the emitter right away
 							p.emitter.emit = false
 							entity.removeComponent(p)
 						}
@@ -135,7 +138,12 @@ export default class GrindingSystem extends System {
 					// 	ease: 'easeInOutCubic',
 					// })
 				}
-				const particles = entity.getComponents(Particles)
+				if (nextTile?.solid) {
+					// If colliding, grinding doesn't End, it's removed and no Move added
+					console.log('collision, removing grind component')
+					entity.removeComponent(grinding)
+					return
+				}
 				if (newDirection !== grinding.direction)
 					updateSparkComponents(particles, newDirection)
 				grinding.update({
@@ -144,20 +152,22 @@ export default class GrindingSystem extends System {
 					distance: grinding.distance + (state === GrindState.End ? 0 : 1),
 					speed: grinding.speed + (grinding.boosted ? 1 : -1),
 				})
-				if (grinding.distance % 8 === 0) {
+				if (grinding.speed % 8 === 0) {
 					// Grinding intensifies
 					particles.forEach(({ emitter }) => {
 						intensifySparks(emitter)
 					})
 				}
+				// Add move component
 				entity.addComponent({
 					type: Move.typeName,
 					key: 'move',
 					...moveGrid,
 					direction: newDirection,
 				})
-				game.autoUpdate = true
+				if (state === GrindState.Continue) game.autoUpdate = true
 			} else {
+				console.log('removing grind component')
 				entity.removeComponent(grinding)
 			}
 		})

@@ -1,5 +1,10 @@
 import { System } from 'ape-ecs'
-import { Directions, GlobalEntity, SystemGroup } from '../types'
+import {
+	ControllerState,
+	Directions,
+	GlobalEntity,
+	SystemGroup,
+} from '../types'
 import Controller from '../components/com_controller'
 
 // Based on https://github.com/fritzy/7drl2020
@@ -61,10 +66,15 @@ export default class InputSystem extends System {
 	}
 	keyDown(e) {
 		if (!e.repeat) {
-			this.keys.add(e.code)
-			this.currentKey = e.code
-			this.world.runSystems(SystemGroup.Input)
 			if (gameKeys.includes(e.code)) e.preventDefault()
+			this.keys.add(e.code)
+			if (
+				this.world.getEntity(GlobalEntity.Game)!.c.controller.state ===
+				ControllerState.Ready
+			) {
+				this.currentKey = e.code
+				this.world.runSystems(SystemGroup.Input)
+			}
 		}
 	}
 

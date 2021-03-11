@@ -4,6 +4,7 @@ import { addGrids } from '../util'
 import Move from '../components/com_move'
 import { Level } from '../level'
 import { GlobalEntity } from '../types'
+import Tweening from '../components/com_tween'
 
 // Only affects transforms that aren't being tweened
 export default class TransformSystem extends System {
@@ -19,10 +20,15 @@ export default class TransformSystem extends System {
 		const level = <Level>this.world.getEntity(GlobalEntity.Game)!.c.game.level
 		this.moving.execute().forEach((entity) => {
 			const { transform, move } = <{ transform: Transform; move: Move }>entity.c
-			transform.update(addGrids(transform, move))
-			level.entityMap.delete(move.x + ':' + move.y)
-			level.entityMap.set(move.x + ':' + move.y, entity)
+			level.entityMap.delete(transform.x + ':' + transform.y)
+			const dest = addGrids(transform, move)
+			level.entityMap.set(dest.x + ':' + dest.y, entity)
+			transform.update({ dirty: true, ...dest })
 			entity.removeComponent(move)
+			entity.addComponent({
+				type: Tweening.typeName,
+				tweenType: Tweening.TweenType.Move,
+			})
 		})
 	}
 }

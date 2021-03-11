@@ -19,15 +19,17 @@ export default class PixiSystem extends System {
 			const { transform, pixi } = <{ transform: Transform; pixi: PixiObject }>(
 				entity.c
 			)
-			if (!transform.dirty) return
-			transform.dirty = false
-			const spritePosition = tileToSpritePosition(transform)
-			const spriteOffset = tileToSpritePosition({
-				x: transform.xOff,
-				y: transform.yOff,
-			})
-			Object.assign(pixi.object.position, spritePosition)
-			Object.assign(pixi.object.pivot, spriteOffset)
+			if (transform.dirty) {
+				transform.dirty = false
+				Object.assign(pixi.object.position, tileToSpritePosition(transform))
+				Object.assign(
+					pixi.object.pivot,
+					tileToSpritePosition({
+						x: transform.xOff,
+						y: transform.yOff,
+					})
+				)
+			}
 			entity.getComponents(Particles).forEach((particles) => {
 				particles.emitter.updateOwnerPos(pixi.object.x, pixi.object.y)
 			})

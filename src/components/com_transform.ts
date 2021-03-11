@@ -1,4 +1,5 @@
 import { Component } from 'ape-ecs'
+import { GlobalEntity } from '../types'
 
 export default class Transform extends Component {
 	static typeName = 'Transform'
@@ -13,5 +14,10 @@ export default class Transform extends Component {
 		xOff: 0,
 		yOff: 0,
 		dirty: true,
+	}
+	preDestroy() {
+		this.world
+			.getEntity(GlobalEntity.Game)
+			.c.game.level.entityMap.delete(this.x + ':' + this.y)
 	}
 }

@@ -1,34 +1,52 @@
 import { Query, System } from 'ape-ecs'
 import Transform from '../components/com_transform'
 import Move from '../components/com_move'
-import { GlobalEntity } from '../types'
-import { Level } from '../level'
+import { GlobalEntity, GrindState } from '../types'
 import { addGrids } from '../util'
 import Player from '../components/com_player'
 import Attack from '../components/com_attack'
+import Grinding from '../components/com_grinding'
+import Game from '../components/com_game'
 
 export default class CollisionSystem extends System {
-	private moves!: Query
+	private movers!: Query
 	init(viewport) {
-		this.moves = this.createQuery({
-			all: [Move, Transform],
+		this.movers = this.createQuery({
+			all: [Transform, Move],
 			persist: true,
 		})
 	}
 	update(tick) {
-		const level = <Level>this.world.getEntity(GlobalEntity.Game)!.c.game.level
-		this.moves.execute().forEach((entity) => {
-			const { transform, move } = <{ transform: Transform; move: Move }>entity.c
+		const game = <Game>this.world.getEntity(GlobalEntity.Game)!.c.game
+		this.movers.execute().forEach((entity) => {
+			// TODO: Entities are able to move to the same spot since we're checking where they are instead of where they will be
+			// Best solution is probably to add the target's move component to their transform
+			const { transform, move, grinding } = <
+				{ transform: Transform; move: Move; grinding: Grinding }
+			>entity.c
 			const dest = addGrids(transform, move)
-			const destWalkable = level.isTileWalkable(dest.x, dest.y)
-			if (!move.noClip && !destWalkable) {
-				// Wall, cancel move
-				entity.removeComponent(move)
+			const destEntity = game.level.entityMap.get(dest.x + ':' + dest.y)
+			if (grinding && grinding.state !== GrindState.Start && destEntity) {
+				// If grinding, we don't have to check for map collision
+				console.log('grinding through', destEntity.id)
+				destEntity.destroy()
 				return
+			} else {
+				// Check for collision when moving
+				const destWalkable = game.level.isTileWalkable(dest.x, dest.y)
+				if (!move.noClip && !destWalkable) {
+					// Wall, cancel move
+					entity.removeComponent(move)
+					if (grinding) {
+						entity.removeComponent(grinding)
+						game.autoUpdate = false
+					}
+					return
+				}
 			}
-			const destEntity = level.entityMap.get(dest.x + ':' + dest.y)
 			if (destEntity) {
-				// Entity, cancel move
+				// Entity collision
+				// Attack if one of these entities is a player
 				entity.removeComponent(move)
 				if (entity.has(Player) || destEntity.has(Player)) {
 					entity.addComponent({
