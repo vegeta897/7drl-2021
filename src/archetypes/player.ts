@@ -1,6 +1,6 @@
 import { Entity, World } from 'ape-ecs'
 import Transform from '../components/com_transform'
-import { createSprite, TextureID } from '../sprites'
+import { createSprite, TextureID } from '../core/sprites'
 import Controller from '../components/com_controller'
 import PixiObject from '../components/com_pixi'
 import { GlobalEntity, Tags } from '../types'

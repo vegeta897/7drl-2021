@@ -1,7 +1,7 @@
 import { RailData } from './types'
-import { Tile, TileData } from '../level'
+import { Tile, TileData } from '../core/level'
 import { Directions } from '../types'
-import { TextureID } from '../sprites'
+import { TextureID } from '../core/sprites'
 
 export function createTile(x, y, type, seeThrough = true, solid = false) {
 	return {

@@ -1,5 +1,5 @@
 import { Component } from 'ape-ecs'
-import { Level } from '../level'
+import { Level } from '../core/level'
 import { Container } from 'pixi.js'
 import { Viewport } from 'pixi-viewport'
 

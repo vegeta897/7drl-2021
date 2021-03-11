@@ -3,7 +3,7 @@ import Transform from '../components/com_transform'
 import { FOV } from 'rot-js'
 import { Easing, Tween } from '@tweenjs/tween.js'
 import { GlobalEntity, Tags } from '../types'
-import { Level } from '../level'
+import { Level } from '../core/level'
 import PixiObject from '../components/com_pixi'
 
 const FOV_RADIUS = 12

@@ -1,12 +1,12 @@
 import * as rotJS from 'rot-js'
 import { Container, Sprite } from 'pixi.js'
 import { createSprite, TextureID } from './sprites'
-import { TILE_SIZE } from './'
-import { createMainline } from './rail/rail'
-import { Grid } from './types'
-import { RailData, Room } from './rail/types'
+import { TILE_SIZE } from '../index'
+import { createMainline } from '../rail/rail'
+import { Grid } from '../types'
+import { RailData, Room } from '../rail/types'
 import Dijkstra from 'rot-js/lib/path/dijkstra'
-import { getSpriteProperties } from './rail/util'
+import { getSpriteProperties } from '../rail/util'
 import { Entity } from 'ape-ecs'
 import { Viewport } from 'pixi-viewport'
 
@@ -66,11 +66,7 @@ export class Level {
 		this.tiles.forEach((tile) => {
 			let tint = 0x3e2137 // Floor
 			let texture = TextureID.Floor
-			if (tile.type === Tile.Rail) {
-				const railSpriteProps = getSpriteProperties(tile.rail!)
-				texture = railSpriteProps.texture
-				tint = railSpriteProps.tint
-			} else if (tile.type === Tile.Wall) {
+			if (tile.type === Tile.Wall) {
 				texture = TextureID.Wall
 				tint = 0x584563
 			}
@@ -79,6 +75,12 @@ export class Level {
 			tile.sprite.y = tile.y * TILE_SIZE
 			if (!DEBUG_VISIBILITY) tile.sprite.alpha = 0
 			tile.sprite.tint = tile.tint ?? tint
+			if (tile.type === Tile.Rail) {
+				const railSpriteProps = getSpriteProperties(tile.rail!)
+				const railSprite = createSprite(railSpriteProps.texture)
+				railSprite.tint = railSpriteProps.tint
+				tile.sprite.addChild(railSprite)
+			}
 			this.container.addChild(tile.sprite)
 		})
 		console.timeEnd('Sprite creation')

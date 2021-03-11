@@ -1,5 +1,5 @@
 import { BaseTexture, Texture, Rectangle, Sprite } from 'pixi.js'
-import sheetImage from './assets/sprites.png'
+import sheetImage from '../assets/sprites.png'
 
 export enum TextureID {
 	Floor,

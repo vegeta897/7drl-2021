@@ -1,7 +1,7 @@
 import { System } from 'ape-ecs'
 import { ControllerState, GlobalEntity } from '../types'
 import Move from '../components/com_move'
-import { runMainSystems } from '../ecs'
+import { runMainSystems } from '../core/ecs'
 import Controller from '../components/com_controller'
 import { addGrids, moveDirectional } from '../util'
 import Game from '../components/com_game'

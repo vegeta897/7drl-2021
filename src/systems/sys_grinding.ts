@@ -8,7 +8,7 @@ import {
 	reverseDirection,
 	turnClockwise,
 } from '../util'
-import { Level, Tile } from '../level'
+import { Level, Tile } from '../core/level'
 import Transform from '../components/com_transform'
 import Game from '../components/com_game'
 import { RNG } from 'rot-js'

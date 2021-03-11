@@ -1,7 +1,7 @@
 import { Query, System } from 'ape-ecs'
 import Transform from '../components/com_transform'
 import Move from '../components/com_move'
-import { Level } from '../level'
+import { Level } from '../core/level'
 import { GlobalEntity } from '../types'
 import Tweening from '../components/com_tween'
 

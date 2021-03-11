@@ -2,7 +2,7 @@ import { Entity, System } from 'ape-ecs'
 import { Container, Sprite } from 'pixi.js'
 import { GlobalEntity, Tags } from '../types'
 import Health from '../components/com_health'
-import { changeSpriteTexture, createSprite, TextureID } from '../sprites'
+import { changeSpriteTexture, createSprite, TextureID } from '../core/sprites'
 import { TILE_SIZE } from '../index'
 import Game from '../components/com_game'
 

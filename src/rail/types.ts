@@ -1,5 +1,5 @@
 import { Directions, Grid } from '../types'
-import { TileData } from '../level'
+import { TileData } from '../core/level'
 
 export const Tints = [
 	0x990000,

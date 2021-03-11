@@ -1,5 +1,5 @@
 import { RNG } from 'rot-js'
-import { Tile, TileData } from '../level'
+import { Tile, TileData } from '../core/level'
 import { Directions, Grid } from '../types'
 import {
 	addGrids,

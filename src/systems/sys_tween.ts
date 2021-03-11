@@ -8,7 +8,7 @@ import PixiObject from '../components/com_pixi'
 import { tileToSpritePosition } from '../util'
 import Controller from '../components/com_controller'
 import Game from '../components/com_game'
-import { runMainSystems } from '../ecs'
+import { runMainSystems } from '../core/ecs'
 import { TILE_SIZE } from '../index'
 
 // Higher is slower
