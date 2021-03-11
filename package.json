@@ -14,7 +14,7 @@
 		"build:dev": "webpack --config webpack.dev.js",
 		"build:prod": "webpack --config webpack.prod.js",
 		"publish": "butler push dist/app.zip vegeta897/dungeon-grinder:html5",
-		"status": "butler status vegeta897/rl-test:html5",
+		"status": "butler status vegeta897/dungeon-grinder:html5",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"dependencies": {
