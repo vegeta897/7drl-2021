@@ -32,9 +32,3 @@ export type Grid = {
 	x: number
 	y: number
 }
-
-export enum GrindState {
-	Start,
-	Continue,
-	End,
-}

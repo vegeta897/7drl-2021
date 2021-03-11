@@ -1,7 +1,7 @@
 import { Entity, Query, System } from 'ape-ecs'
 import Follow from '../components/com_follow'
 import Transform from '../components/com_transform'
-import { GlobalEntity, GrindState } from '../types'
+import { GlobalEntity } from '../types'
 import { Level } from '../level'
 import Game from '../components/com_game'
 import Move from '../components/com_move'
@@ -21,7 +21,7 @@ export default class FollowSystem extends System {
 		const game = <Game>this.world.getEntity(GlobalEntity.Game)!.c.game
 		const player = <Entity>this.world.getEntity(GlobalEntity.Player)!
 		// Do not follow if player is grinding
-		if (player.c.grinding && player.c.grinding.state !== GrindState.End) return
+		if (player.c.grinding) return
 		const level = <Level>game.level
 		this.followers.execute().forEach((entity) => {
 			const myTransform = <Transform>entity.c.transform

@@ -22,6 +22,7 @@ import FollowSystem from './systems/sys_follow'
 import Attack from './components/com_attack'
 import AttackSystem from './systems/sys_attack'
 import Tweening from './components/com_tween'
+import PlayerSystem from './systems/sys_player'
 
 export const world = new World()
 
@@ -41,6 +42,7 @@ export function initWorld({ viewport }) {
 
 	world.registerSystem(SystemGroup.Input, InputSystem)
 	world.registerSystem(SystemGroup.Input, ActionSystem)
+	world.registerSystem(SystemGroup.Main, PlayerSystem)
 	world.registerSystem(SystemGroup.Main, FollowSystem)
 	world.registerSystem(SystemGroup.Main, GrindingSystem)
 	world.registerSystem(SystemGroup.Main, CollisionSystem)

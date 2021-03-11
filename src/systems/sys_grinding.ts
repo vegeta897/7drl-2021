@@ -1,6 +1,6 @@
 import { Query, System } from 'ape-ecs'
-import Grinding from '../components/com_grinding'
-import { Directions, GlobalEntity, GrindState } from '../types'
+import Grinding, { GrindState } from '../components/com_grinding'
+import { Directions, GlobalEntity } from '../types'
 import Move from '../components/com_move'
 import {
 	addGrids,
@@ -56,91 +56,85 @@ export default class GrindingSystem extends System {
 			const { transform, grinding } = <
 				{ transform: Transform; grinding: Grinding }
 			>entity.c
-			if (grinding.state !== GrindState.End) {
-				if (grinding.state === GrindState.Start)
-					addSparkComponents(entity, grinding.direction, game.entityContainer)
-				const rail = <RailData>level.getTileAt(transform)!.rail
-				console.assert(rail)
-				let state = GrindState.Continue
-				let newDirection = grinding.direction
-				if (!rail?.directions.includes(newDirection)) {
-					// Try turning
-					const turns = [
-						turnClockwise(newDirection),
-						turnClockwise(newDirection, 3),
-					].filter((turnDirection) => rail?.directions.includes(turnDirection))
-					if (turns.length > 0) {
-						// Turn
-						newDirection = <Directions>rng.getItem(turns)
-					}
+			if (grinding.state === GrindState.Start)
+				addSparkComponents(entity, grinding.direction, game.entityContainer)
+			const rail = <RailData>level.getTileAt(transform)!.rail
+			console.assert(rail)
+			let state = GrindState.Continue
+			let newDirection = grinding.direction
+			if (!rail?.directions.includes(newDirection)) {
+				// Try turning
+				const turns = [
+					turnClockwise(newDirection),
+					turnClockwise(newDirection, 3),
+				].filter((turnDirection) => rail?.directions.includes(turnDirection))
+				if (turns.length > 0) {
+					// Turn
+					newDirection = <Directions>rng.getItem(turns)
 				}
-				const moveTo = addGrids(transform, moveDirectional(newDirection))
-				const nextTile = level.getTileAt(moveTo)
-				const particles = entity.getComponents(Particles)
-				if (
-					!nextTile?.rail?.directions.includes(
-						reverseDirection(newDirection)
-					) ||
-					grinding.speed === 1
-				) {
-					state = GrindState.End
-					particles.forEach((p) => {
-						if (grinding.speed === 1) {
-							// If grinding to a halt, tween down the particles
-							new Tween(p.emitter)
-								.to(
-									{
-										minimumSpeedMultiplier: 0.7,
-										maxLifetime: 0.1,
-										frequency: 0.01,
-										maxParticles: 0,
-									},
-									GRIND_SPEED * 2
-								)
-								.start()
-								.onComplete(() => entity.removeComponent(p))
-						} else {
-							// If not grinding to a halt, just remove the emitter right away
-							p.emitter.emit = false
-							entity.removeComponent(p)
-						}
-					})
-					// game.viewport.animate({
-					// 	scale: DEFAULT_ZOOM,
-					// 	time: ZOOM_TIME / 2,
-					// 	ease: 'easeInOutCubic',
-					// })
-				}
-				if (nextTile?.solid) {
-					// If colliding, grinding doesn't End, it's removed and no Move added
-					entity.removeComponent(grinding)
-					return
-				}
-				if (newDirection !== grinding.direction)
-					updateSparkComponents(particles, newDirection)
-				grinding.update({
-					direction: newDirection,
-					state,
-					distance: grinding.distance + (state === GrindState.End ? 0 : 1),
-					speed: grinding.speed + (grinding.boosted ? 1 : -1),
-				})
-				if (grinding.speed % 8 === 0) {
-					// Grinding intensifies
-					particles.forEach(({ emitter }) => {
-						intensifySparks(emitter)
-					})
-				}
-				// Add move component
-				entity.addComponent({
-					type: Move.typeName,
-					key: 'move',
-					...moveTo,
-					direction: newDirection,
-				})
-				if (state === GrindState.Continue) game.autoUpdate = true
-			} else {
-				entity.removeComponent(grinding)
 			}
+			const moveTo = addGrids(transform, moveDirectional(newDirection))
+			const nextTile = level.getTileAt(moveTo)
+			const particles = entity.getComponents(Particles)
+			if (
+				!nextTile?.rail?.directions.includes(reverseDirection(newDirection)) ||
+				grinding.speed === 1
+			) {
+				state = GrindState.End
+				particles.forEach((p) => {
+					if (grinding.speed === 1) {
+						// If grinding to a halt, tween down the particles
+						new Tween(p.emitter)
+							.to(
+								{
+									minimumSpeedMultiplier: 0.7,
+									maxLifetime: 0.1,
+									frequency: 0.01,
+									maxParticles: 0,
+								},
+								GRIND_SPEED * 2
+							)
+							.start()
+							.onComplete(() => entity.removeComponent(p))
+					} else {
+						// If not grinding to a halt, just remove the emitter right away
+						p.emitter.emit = false
+						entity.removeComponent(p)
+					}
+				})
+				// game.viewport.animate({
+				// 	scale: DEFAULT_ZOOM,
+				// 	time: ZOOM_TIME / 2,
+				// 	ease: 'easeInOutCubic',
+				// })
+			}
+			if (nextTile?.solid) {
+				// If colliding, grinding doesn't End, it's removed and no Move added
+				entity.removeComponent(grinding)
+				return
+			}
+			if (newDirection !== grinding.direction)
+				updateSparkComponents(particles, newDirection)
+			grinding.update({
+				direction: newDirection,
+				state,
+				distance: grinding.distance + (state === GrindState.End ? 0 : 1),
+				speed: grinding.speed + (grinding.boosted ? 1 : -1),
+			})
+			if (grinding.speed % 8 === 0) {
+				// Grinding intensifies
+				particles.forEach(({ emitter }) => {
+					intensifySparks(emitter)
+				})
+			}
+			// Add move component
+			entity.addComponent({
+				type: Move.typeName,
+				key: 'move',
+				...moveTo,
+				direction: newDirection,
+			})
+			if (state === GrindState.Continue) game.autoUpdate = true
 		})
 
 		this.moving

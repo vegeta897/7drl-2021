@@ -16,13 +16,15 @@ export default class AttackSystem extends System {
 			const { attack, transform: myTransform } = <
 				{ attack: Attack; transform: Transform }
 			>entity.c
-			if (attack.target) {
+			if (attack.target && !attack.target.c.grinding) {
 				const targetTransform = <Transform>attack.target.c.transform
 				const targetDistance =
 					Math.abs(targetTransform.x - myTransform.x) +
 					Math.abs(targetTransform.y - myTransform.y)
 				if (targetDistance <= 1) {
-					console.log(tick, entity.id, 'attacking!', attack.target.id)
+					console.log(tick, `${entity.id} attacked ${attack.target.id}`)
+				} else {
+					console.log(tick, `${entity.id} missed ${attack.target.id}`)
 				}
 			}
 			entity.removeComponent(attack)

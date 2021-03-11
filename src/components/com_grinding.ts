@@ -1,5 +1,11 @@
 import { Component } from 'ape-ecs'
-import { Directions, GrindState } from '../types'
+import { Directions } from '../types'
+
+export enum GrindState {
+	Start,
+	Continue,
+	End,
+}
 
 export default class Grinding extends Component {
 	static typeName = 'Grinding'
