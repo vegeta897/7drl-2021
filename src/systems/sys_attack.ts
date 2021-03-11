@@ -2,6 +2,7 @@ import { Query, System } from 'ape-ecs'
 import Attack from '../components/com_attack'
 import Transform from '../components/com_transform'
 import { GlobalEntity, Tags } from '../types'
+import Game from '../components/com_game'
 
 export default class AttackSystem extends System {
 	private attackers!: Query
@@ -13,6 +14,7 @@ export default class AttackSystem extends System {
 	}
 	update(tick) {
 		const player = this.world.getEntity(GlobalEntity.Player)!
+		const game = <Game>this.world.getEntity(GlobalEntity.Game)!.c.game
 		// const level = <Level>this.world.getEntity(GlobalEntity.Game)!.c.game.level
 		this.attackers.execute().forEach((entity) => {
 			const { attack, transform: myTransform } = <
@@ -37,6 +39,7 @@ export default class AttackSystem extends System {
 							if (target !== player) target.destroy()
 							else {
 								// Game over man
+								game.gameOver = true
 							}
 						}
 					}

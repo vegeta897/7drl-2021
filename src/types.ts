@@ -1,12 +1,13 @@
 export enum SystemGroup {
 	Input = 'input',
 	Main = 'beforeTween',
-	AfterTween = 'afterTween',
 	Render = 'render',
 }
 
 export enum Tags {
 	UpdateHUD = 'updateHUD',
+	UpdateCamera = 'updateCamera',
+	UpdateVisibility = 'updateVisibility',
 }
 
 export enum ControllerState {
@@ -18,7 +19,6 @@ export enum ControllerState {
 export enum GlobalEntity {
 	Game = 'game',
 	Player = 'player',
-	Camera = 'camera',
 }
 
 export enum Directions {

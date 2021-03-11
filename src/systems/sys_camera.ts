@@ -1,6 +1,6 @@
 import { Point } from 'pixi.js'
 import { System } from 'ape-ecs'
-import { GlobalEntity } from '../types'
+import { GlobalEntity, Tags } from '../types'
 import { Viewport } from 'pixi-viewport'
 import { addGrids, diffGrids } from '../util'
 import { TILE_SIZE } from '../index'
@@ -10,22 +10,20 @@ const PADDING = 1.25 / 3 // Portion of screen to pad
 
 export default class CameraSystem extends System {
 	private viewport: Viewport
-	private reCenter = true
 	init(viewport: Viewport) {
 		this.viewport = viewport
 	}
 
 	update(tick) {
-		const target = <Point>(
-			this.world.getEntity(GlobalEntity.Player)!.c.pixi.object.position
-		)
+		const player = this.world.getEntity(GlobalEntity.Player)!
+		const target = <Point>player.c.pixi.object.position
 		const targetCenter = addGrids(target, {
 			x: TILE_SIZE / 2,
 			y: TILE_SIZE / 2,
 		})
-		if (this.reCenter) {
+		if (player.has(Tags.UpdateCamera)) {
+			player.removeTag(Tags.UpdateCamera)
 			this.viewport.moveCenter(<Point>targetCenter)
-			this.reCenter = false
 		} else {
 			const xPadding = Math.floor(
 				this.viewport.screenWidthInWorldPixels / 2 -

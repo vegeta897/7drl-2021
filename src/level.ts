@@ -8,6 +8,7 @@ import { RailData, Room } from './rail/types'
 import Dijkstra from 'rot-js/lib/path/dijkstra'
 import { getSpriteProperties } from './rail/util'
 import { Entity } from 'ape-ecs'
+import { Viewport } from 'pixi-viewport'
 
 const RANDOM_SEED = true
 const SEED = !RANDOM_SEED ? 2 : rotJS.RNG.getUniformInt(0, 0xffffff)
@@ -37,9 +38,12 @@ export class Level {
 	rooms: Room[]
 	tiles: Map<string, TileData> = new Map()
 	entityMap: Map<string, Entity> = new Map()
-	private dijkstraMaps: Map<string, Dijkstra> = new Map()
-	constructor(worldSprites: Set<Sprite>) {
+	constructor(viewport: Viewport) {
 		rotJS.RNG.setSeed(SEED)
+		viewport.addChild(this.container)
+		this.createLevel()
+	}
+	createLevel(): void {
 		console.time('Level generation')
 		let mainLine
 		let attempts = 0
@@ -76,9 +80,18 @@ export class Level {
 			if (!DEBUG_VISIBILITY) tile.sprite.alpha = 0
 			tile.sprite.tint = tile.tint ?? tint
 			this.container.addChild(tile.sprite)
-			worldSprites.add(tile.sprite)
 		})
 		console.timeEnd('Sprite creation')
+	}
+	destroyLevel(): void {
+		console.log(
+			'level destroy removing',
+			this.container.children.length,
+			'children'
+		)
+		this.container.removeChildren()
+		this.tiles.clear()
+		this.entityMap.clear()
 	}
 	getTileAt(grid: Grid): TileData | undefined {
 		return this.tiles.get(grid.x + ':' + grid.y)
@@ -91,15 +104,23 @@ export class Level {
 		const tile = this.getTileAt({ x, y })
 		return !!tile && !tile.solid
 	}
-	getPath(from: Grid, to: Grid, distance: number = 1): Grid[] {
-		const toGridKey = to.x + ':' + to.y
-		let map = this.dijkstraMaps.get(toGridKey)
-		if (!map) {
-			map = new Dijkstra(to.x, to.y, (x, y) => this.isTileWalkable(x, y), {
-				topology: 4,
-			})
-			this.dijkstraMaps.set(toGridKey, map)
-		}
+	getPath(
+		from: Grid,
+		to: Grid,
+		selfEntity: Entity,
+		distance: number = 1
+	): Grid[] {
+		const map = new Dijkstra(
+			to.x,
+			to.y,
+			(x, y) => {
+				return (
+					this.isTileWalkable(x, y) &&
+					(this.entityMap.get(x + ':' + y) || selfEntity) === selfEntity
+				)
+			},
+			{ topology: 4 }
+		)
 		const path: Grid[] = []
 		map.compute(
 			from.x,

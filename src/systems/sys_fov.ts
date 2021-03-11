@@ -2,7 +2,7 @@ import { Query, System } from 'ape-ecs'
 import Transform from '../components/com_transform'
 import { FOV } from 'rot-js'
 import { Easing, Tween } from '@tweenjs/tween.js'
-import { GlobalEntity } from '../types'
+import { GlobalEntity, Tags } from '../types'
 import { Level } from '../level'
 import PixiObject from '../components/com_pixi'
 
@@ -31,13 +31,13 @@ export default class FOVSystem extends System {
 	}
 	update(tick) {
 		let visibilityUpdated = false
-		const level = <Level>this.world.getEntity(GlobalEntity.Game)!.c.game.level
 		const player = this.world.getEntity(GlobalEntity.Player)!
 		const playerTransform = <Transform>player.c.transform
 		// Player moved, update visibility map
-		if (playerTransform._meta.updated === tick) {
+		if (player.has(Tags.UpdateVisibility)) {
 			visibilityUpdated = true
 			const newVisibilityMap: VisibilityMap = new Map()
+			const level = <Level>this.world.getEntity(GlobalEntity.Game)!.c.game.level
 			const fov = new FOV.PreciseShadowcasting((x, y) =>
 				level.isTileSeeThrough(x, y)
 			)

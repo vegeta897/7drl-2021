@@ -14,9 +14,12 @@ export default class ActionSystem extends System {
 		)
 		const player = this.world.getEntity(GlobalEntity.Player)!
 		const game = <Game>this.world.getEntity(GlobalEntity.Game)!.c.game
-		if (game.autoUpdate) {
-			game.autoUpdate = false
-			runMainSystems()
+		if (game.gameOver) {
+			if (controller.restart) {
+				game.gameOver = false
+				controller.restart = false
+				runMainSystems()
+			}
 		} else if (controller.state === ControllerState.Ready) {
 			if (controller.direction !== null || controller.wait) {
 				if (controller.direction !== null) {
@@ -29,6 +32,7 @@ export default class ActionSystem extends System {
 						key: 'move',
 						...moveTo,
 						noClip: controller.boost,
+						sneak: controller.sneak,
 						direction: controller.direction,
 					})
 				}

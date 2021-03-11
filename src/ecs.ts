@@ -24,6 +24,7 @@ import AttackSystem from './systems/sys_attack'
 import Tweening from './components/com_tween'
 import PlayerSystem from './systems/sys_player'
 import HUDSystem from './systems/sys_hud'
+import GameSystem from './systems/sys_game'
 
 export const world = new World()
 
@@ -51,6 +52,7 @@ export function initWorld({ viewport, HUD }) {
 	world.registerSystem(SystemGroup.Main, AttackSystem)
 	world.registerSystem(SystemGroup.Main, TweenSystem)
 	world.registerSystem(SystemGroup.Main, FOVSystem)
+	world.registerSystem(SystemGroup.Main, GameSystem)
 	world.registerSystem(SystemGroup.Render, PixiSystem)
 	world.registerSystem(SystemGroup.Render, CameraSystem, [viewport])
 	world.registerSystem(SystemGroup.Render, HUDSystem, [HUD])

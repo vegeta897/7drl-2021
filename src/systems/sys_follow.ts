@@ -32,7 +32,7 @@ export default class FollowSystem extends System {
 				Math.abs(targetTransform.x - myTransform.x) +
 				Math.abs(targetTransform.y - myTransform.y)
 			if (targetDistance > MAX_FOLLOW_DISTANCE || targetDistance === 0) return
-			const moveTo = level.getPath(myTransform, targetTransform)[1]
+			const moveTo = level.getPath(myTransform, targetTransform, entity)[1]
 			if (!moveTo) return
 			entity.addComponent({
 				type: Move.typeName,

@@ -27,6 +27,9 @@ export default class TweenSystem extends System {
 		})
 	}
 	update(tick) {
+		const { controller, game } = <{ controller: Controller; game: Game }>(
+			this.world.getEntity(GlobalEntity.Game)!.c
+		)
 		const player = this.world.getEntity(GlobalEntity.Player)!
 		this.tweening.execute().forEach((entity) => {
 			const { transform, pixi, grinding } = <
@@ -75,11 +78,14 @@ export default class TweenSystem extends System {
 			})
 		})
 		if (this.tweens.size > 0) {
-			this.world.getEntity(GlobalEntity.Game)!.c.controller.state =
-				ControllerState.Disabled
+			controller.state = ControllerState.Disabled
 		} else {
-			this.world.getEntity(GlobalEntity.Game)!.c.controller.state =
-				ControllerState.Ready
+			if (game.autoUpdate) {
+				game.autoUpdate = false
+				runMainSystems()
+			} else {
+				controller.state = ControllerState.Ready
+			}
 		}
 	}
 	createTween(tweenObject: Grid): Tween<Grid> {

@@ -21,7 +21,6 @@ import {
 } from '../rail/particles'
 import { Tween } from '@tweenjs/tween.js'
 import { GRIND_SPEED } from './sys_tween'
-import Controller from '../components/com_controller'
 // import { DEFAULT_ZOOM } from '../index'
 // import { AnimateOptions } from 'pixi-viewport'
 
@@ -47,9 +46,7 @@ export default class GrindingSystem extends System {
 	}
 	update(tick) {
 		const player = this.world.getEntity(GlobalEntity.Player)
-		const { game, controller } = <{ game: Game; controller: Controller }>(
-			this.world.getEntity(GlobalEntity.Game)!.c
-		)
+		const { game } = <{ game: Game }>this.world.getEntity(GlobalEntity.Game)!.c
 		const level = <Level>game.level
 
 		this.grinding.execute().forEach((entity) => {
@@ -141,8 +138,9 @@ export default class GrindingSystem extends System {
 			.refresh()
 			.execute()
 			.forEach((entity) => {
-				if (entity !== player || controller.sneak || controller.boost) return
+				if (entity !== player) return
 				const move = <Move>entity.c.move
+				if (move.sneak || move.noClip) return
 				const destTile = level.getTileAt(move)
 				if (
 					destTile?.type === Tile.Rail &&

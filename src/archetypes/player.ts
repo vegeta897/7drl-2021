@@ -1,34 +1,40 @@
-import { IComponentConfigValObject } from 'ape-ecs'
-import { Container } from 'pixi.js'
+import { Entity, World } from 'ape-ecs'
 import Transform from '../components/com_transform'
 import { createSprite, TextureID } from '../sprites'
 import Controller from '../components/com_controller'
 import PixiObject from '../components/com_pixi'
-import { Grid } from '../types'
+import { GlobalEntity, Tags } from '../types'
 import Health from '../components/com_health'
+import Game from '../components/com_game'
 
-export function createPlayerComponents(
-	container: Container,
-	grid: Grid
-): IComponentConfigValObject {
+export function createPlayer(world: World): Entity {
 	const sprite = createSprite(TextureID.Player)
-	container.addChild(sprite)
-	return {
-		transform: {
-			type: Transform.typeName,
-			...grid,
+	const game = <Game>world.getEntity(GlobalEntity.Game)!.c.game
+	game.entityContainer.addChild(sprite)
+	// const grid = game.level.levelStart
+	const grid = { x: 1, y: 1 }
+	const entity = world.createEntity({
+		id: GlobalEntity.Player,
+		tags: [Tags.UpdateHUD, Tags.UpdateCamera, Tags.UpdateVisibility],
+		c: {
+			transform: {
+				type: Transform.typeName,
+				...grid,
+			},
+			pixi: {
+				type: PixiObject.typeName,
+				object: sprite,
+			},
+			controller: {
+				type: Controller.typeName,
+			},
+			health: {
+				type: Health.typeName,
+				current: 15,
+				max: 15,
+			},
 		},
-		pixi: {
-			type: PixiObject.typeName,
-			object: sprite,
-		},
-		controller: {
-			type: Controller.typeName,
-		},
-		health: {
-			type: Health.typeName,
-			current: 15,
-			max: 15,
-		},
-	}
+	})
+	game.level.entityMap.set(grid.x + ':' + grid.y, entity)
+	return entity
 }

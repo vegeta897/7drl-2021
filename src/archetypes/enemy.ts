@@ -9,7 +9,7 @@ import { RNG } from 'rot-js'
 import Follow from '../components/com_follow'
 import Health from '../components/com_health'
 
-let enemyCount = 0
+let enemyID = 0
 
 export function createEnemyComponents(
 	container: Container,
@@ -71,7 +71,7 @@ export function spawnEnemies(world: World, count: number) {
 }
 
 function spawnEnemy(world, x, y) {
-	const { level, entityContainer, worldSprites } = <Game>(
+	const { level, entityContainer } = <Game>(
 		world.getEntity(GlobalEntity.Game)!.c.game
 	)
 	const player = <Entity>world.getEntity(GlobalEntity.Player)!
@@ -80,13 +80,12 @@ function spawnEnemy(world, x, y) {
 		{ x, y },
 		player
 	)
-	console.log('setting entity map', x + ':' + y, 'to enemy')
 	level.entityMap.set(
 		x + ':' + y,
 		world.createEntity({
-			id: `enemy${++enemyCount}`,
+			id: `enemy${++enemyID}`,
 			c: enemyComponents,
 		})
 	)
-	worldSprites.add(enemyComponents.pixi.object)
+	entityContainer.addChild(enemyComponents.pixi.object)
 }

@@ -4,6 +4,7 @@ import { GlobalEntity, Tags } from '../types'
 import Health from '../components/com_health'
 import { changeSpriteTexture, createSprite, TextureID } from '../sprites'
 import { TILE_SIZE } from '../index'
+import Game from '../components/com_game'
 
 const digitTextureIDs = [
 	TextureID.Zero,
@@ -37,9 +38,15 @@ export default class HUDSystem extends System {
 		)
 	}
 	update(tick) {
+		const game = <Game>this.world.getEntity(GlobalEntity.Game)!.c.game
+		if (game.gameOver) {
+			this.container.visible = false
+			return
+		}
 		const player = <Entity>this.world.getEntity(GlobalEntity.Player)!
 		if (!player.has(Tags.UpdateHUD)) return
 		player.removeTag(Tags.UpdateHUD)
+		this.container.visible = true
 		const { health } = <{ health: Health }>player.c
 		const [tensDigit, onesDigit] = Math.max(0, Math.min(99, health.current))
 			.toString()

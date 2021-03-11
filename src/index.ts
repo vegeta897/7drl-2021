@@ -1,10 +1,10 @@
-import { Application, Ticker, Container, Sprite } from 'pixi.js'
+import { Application, Ticker, Container } from 'pixi.js'
 import TWEEN from '@tweenjs/tween.js'
 import './style.css'
 import { Level } from './level'
 import { world, runMainSystems, initWorld } from './ecs'
-import { createPlayerComponents } from './archetypes/player'
-import { GlobalEntity, SystemGroup, Tags } from './types'
+import { createPlayer } from './archetypes/player'
+import { GlobalEntity, SystemGroup } from './types'
 import { Viewport } from 'pixi-viewport'
 import Game from './components/com_game'
 import Controller from './components/com_controller'
@@ -35,11 +35,7 @@ const viewport = new Viewport({
 })
 stage.addChild(viewport)
 
-const worldSprites: Set<Sprite> = new Set()
-
-const level = new Level(worldSprites)
-
-viewport.addChild(level.container)
+const level = new Level(viewport)
 viewport.setZoom(DEFAULT_ZOOM)
 
 const HUD = new Container()
@@ -64,7 +60,6 @@ world.createEntity({
 			level,
 			viewport,
 			entityContainer,
-			worldSprites,
 		},
 		controller: {
 			type: Controller.typeName,
@@ -83,22 +78,7 @@ world.createEntity({
 // Make the long line turn off to the side when reaching the dungeon, so it doesn't take you all the way to the end booster
 // Add a key to one of the enemies that opens the door to the final booster room
 
-const px = level.rooms[0].x1 + 1
-const py = level.rooms[0].y1 + 1
-const playerComponents = createPlayerComponents(
-	entityContainer,
-	// level.levelStart
-	{ x: px, y: py }
-)
-console.log('setting entity map', px + ':' + py, 'to player')
-level.entityMap.set(
-	px + ':' + py,
-	world.createEntity({
-		id: GlobalEntity.Player,
-		tags: [Tags.UpdateHUD],
-		c: playerComponents,
-	})
-)
+createPlayer(world)
 
 spawnEnemies(world, 8)
 
