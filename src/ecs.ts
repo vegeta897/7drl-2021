@@ -7,7 +7,7 @@ import InputSystem from './systems/sys_input'
 import ActionSystem from './systems/sys_action'
 import CollisionSystem from './systems/sys_collision'
 import TransformSystem from './systems/sys_transform'
-import Player from './components/com_player'
+import Health from './components/com_health'
 import CameraSystem from './systems/sys_camera'
 import Follow from './components/com_follow'
 import FOVSystem from './systems/sys_fov'
@@ -23,20 +23,21 @@ import Attack from './components/com_attack'
 import AttackSystem from './systems/sys_attack'
 import Tweening from './components/com_tween'
 import PlayerSystem from './systems/sys_player'
+import HUDSystem from './systems/sys_hud'
 
 export const world = new World()
 
-export function initWorld({ viewport }) {
+export function initWorld({ viewport, HUD }) {
 	world.registerComponent(Game, 1)
 	world.registerComponent(Controller, 1)
 	world.registerComponent(PixiObject, 100)
-	world.registerComponent(Move, 20)
+	world.registerComponent(Move, 50)
 	world.registerComponent(Transform, 100)
 	world.registerComponent(Tweening, 100)
-	world.registerComponent(Player, 1)
-	world.registerComponent(Follow, 20)
-	world.registerComponent(Grinding, 10)
-	world.registerComponent(Particles, 20)
+	world.registerComponent(Health, 50)
+	world.registerComponent(Follow, 50)
+	world.registerComponent(Grinding, 1)
+	world.registerComponent(Particles, 50)
 	world.registerComponent(Attack, 10)
 	world.registerTags(...Object.values(Tags))
 
@@ -52,6 +53,7 @@ export function initWorld({ viewport }) {
 	world.registerSystem(SystemGroup.Main, FOVSystem)
 	world.registerSystem(SystemGroup.Render, PixiSystem)
 	world.registerSystem(SystemGroup.Render, CameraSystem, [viewport])
+	world.registerSystem(SystemGroup.Render, HUDSystem, [HUD])
 }
 
 export function runMainSystems() {

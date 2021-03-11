@@ -4,7 +4,7 @@ import './style.css'
 import { Level } from './level'
 import { world, runMainSystems, initWorld } from './ecs'
 import { createPlayerComponents } from './archetypes/player'
-import { GlobalEntity, SystemGroup } from './types'
+import { GlobalEntity, SystemGroup, Tags } from './types'
 import { Viewport } from 'pixi-viewport'
 import Game from './components/com_game'
 import Controller from './components/com_controller'
@@ -42,7 +42,16 @@ const level = new Level(worldSprites)
 viewport.addChild(level.container)
 viewport.setZoom(DEFAULT_ZOOM)
 
-initWorld({ viewport })
+const HUD = new Container()
+HUD.setTransform(
+	WIDTH - (TILE_SIZE * 3 - 2) * DEFAULT_ZOOM,
+	HEIGHT - (TILE_SIZE + 2) * DEFAULT_ZOOM,
+	3,
+	3
+)
+stage.addChild(HUD)
+
+initWorld({ viewport, HUD })
 
 const entityContainer = new Container()
 viewport.addChild(entityContainer)
@@ -67,14 +76,12 @@ world.createEntity({
 
 // TODO: Final boss will be in a big room with a rail maze (use rotJS maze-gen)
 
-// TODO: IMPORTANT: Player has momentum when grinding, which diminishes with each tile
-// End of the line on each level has a super booster which will let the player grind all the way to the end, or as far as possible
-// Now we don't need to worry about the player accidentally grinding too far (to their death)
 // Player gains initial grinding momentum during game (killing monsters)
 // In starting room, there is a rail with booster that links into the main rail with a turn leading toward the dungeon rooms
 // In starting room of first level, put some small rails of different lengths so the player can learn the basics. also put a dummy enemy on a couple of them so they can learn how to grind into enemies
 // Put enemies on the long line just before the dungeon
 // Make the long line turn off to the side when reaching the dungeon, so it doesn't take you all the way to the end booster
+// Add a key to one of the enemies that opens the door to the final booster room
 
 const px = level.rooms[0].x1 + 1
 const py = level.rooms[0].y1 + 1
@@ -88,6 +95,7 @@ level.entityMap.set(
 	px + ':' + py,
 	world.createEntity({
 		id: GlobalEntity.Player,
+		tags: [Tags.UpdateHUD],
 		c: playerComponents,
 	})
 )

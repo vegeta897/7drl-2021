@@ -2,7 +2,6 @@ import { Query, System } from 'ape-ecs'
 import Transform from '../components/com_transform'
 import { Easing, Tween } from '@tweenjs/tween.js'
 import { ControllerState, GlobalEntity, Grid } from '../types'
-import Player from '../components/com_player'
 import Grinding, { GrindState } from '../components/com_grinding'
 import Tweening from '../components/com_tween'
 import PixiObject from '../components/com_pixi'
@@ -28,12 +27,12 @@ export default class TweenSystem extends System {
 		})
 	}
 	update(tick) {
+		const player = this.world.getEntity(GlobalEntity.Player)!
 		this.tweening.execute().forEach((entity) => {
-			const { transform, pixi, player, grinding } = <
+			const { transform, pixi, grinding } = <
 				{
 					transform: Transform
 					pixi: PixiObject
-					player?: Player
 					grinding?: Grinding
 				}
 			>entity.c
@@ -43,12 +42,11 @@ export default class TweenSystem extends System {
 					const positionTween = this.createTween(pixi.object.position).to(
 						tileToSpritePosition(transform)
 					)
-					if (player && !grinding) {
+					if (!grinding) {
 						this.addHop(pixi.object.pivot, PLAYER_SPEED)
 						positionTween.easing(Easing.Quadratic.Out)
 						positionTween.duration(PLAYER_SPEED)
-					}
-					if (grinding) {
+					} else {
 						switch (grinding.state) {
 							case GrindState.Start:
 								positionTween.duration(GRIND_SPEED)

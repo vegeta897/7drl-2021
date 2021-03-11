@@ -4,7 +4,6 @@ import { FOV } from 'rot-js'
 import { Easing, Tween } from '@tweenjs/tween.js'
 import { GlobalEntity } from '../types'
 import { Level } from '../level'
-import Player from '../components/com_player'
 import PixiObject from '../components/com_pixi'
 
 const FOV_RADIUS = 12
@@ -27,16 +26,14 @@ export default class FOVSystem extends System {
 	init() {
 		this.transforms = this.createQuery({
 			all: [Transform, PixiObject],
-			not: [Player],
 			persist: true,
 		})
 	}
 	update(tick) {
 		let visibilityUpdated = false
 		const level = <Level>this.world.getEntity(GlobalEntity.Game)!.c.game.level
-		const playerTransform = <Transform>(
-			this.world.getEntity(GlobalEntity.Player)!.c.transform
-		)
+		const player = this.world.getEntity(GlobalEntity.Player)!
+		const playerTransform = <Transform>player.c.transform
 		// Player moved, update visibility map
 		if (playerTransform._meta.updated === tick) {
 			visibilityUpdated = true
@@ -95,6 +92,7 @@ export default class FOVSystem extends System {
 		}
 		// Update non-player entities
 		this.transforms.execute().forEach((entity) => {
+			if (entity === player) return
 			const { transform, pixi } = <{ transform: Transform; pixi: PixiObject }>(
 				entity.c
 			)

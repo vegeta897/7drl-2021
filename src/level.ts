@@ -9,8 +9,8 @@ import Dijkstra from 'rot-js/lib/path/dijkstra'
 import { getSpriteProperties } from './rail/util'
 import { Entity } from 'ape-ecs'
 
-const RANDOM_SEED = false
-const SEED = !RANDOM_SEED ? 8 : rotJS.RNG.getUniformInt(0, 0xffffff)
+const RANDOM_SEED = true
+const SEED = !RANDOM_SEED ? 2 : rotJS.RNG.getUniformInt(0, 0xffffff)
 const DEBUG_VISIBILITY = false
 
 export enum Tile {

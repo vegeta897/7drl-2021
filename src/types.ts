@@ -6,7 +6,7 @@ export enum SystemGroup {
 }
 
 export enum Tags {
-	New = 'new',
+	UpdateHUD = 'updateHUD',
 }
 
 export enum ControllerState {

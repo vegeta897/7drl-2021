@@ -22,7 +22,6 @@ import {
 import { Tween } from '@tweenjs/tween.js'
 import { GRIND_SPEED } from './sys_tween'
 import Controller from '../components/com_controller'
-import Player from '../components/com_player'
 // import { DEFAULT_ZOOM } from '../index'
 // import { AnimateOptions } from 'pixi-viewport'
 
@@ -37,16 +36,17 @@ export default class GrindingSystem extends System {
 	private grinding!: Query
 	init() {
 		this.moving = this.createQuery({
-			all: [Transform, Move, Player],
+			all: [Transform, Move],
 			not: [Grinding],
 			persist: true,
 		})
 		this.grinding = this.createQuery({
-			all: [Transform, Grinding, Player],
+			all: [Transform, Grinding],
 			persist: true,
 		})
 	}
 	update(tick) {
+		const player = this.world.getEntity(GlobalEntity.Player)
 		const { game, controller } = <{ game: Game; controller: Controller }>(
 			this.world.getEntity(GlobalEntity.Game)!.c
 		)
@@ -141,7 +141,7 @@ export default class GrindingSystem extends System {
 			.refresh()
 			.execute()
 			.forEach((entity) => {
-				if (controller.sneak || controller.boost) return
+				if (entity !== player || controller.sneak || controller.boost) return
 				const move = <Move>entity.c.move
 				const destTile = level.getTileAt(move)
 				if (

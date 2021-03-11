@@ -17,6 +17,17 @@ export enum TextureID {
 	RailUpDownRight,
 	RailUpLeftRight,
 	RailDownLeftRight,
+	Zero,
+	One,
+	Two,
+	Three,
+	Four,
+	Five,
+	Six,
+	Seven,
+	Eight,
+	Nine,
+	Heart,
 }
 
 const textures = <Texture[]>[]
@@ -34,8 +45,8 @@ function loadSheet() {
 	textures[TextureID.Floor] = Texture.WHITE
 }
 
-export function createSprite(textureName: TextureID): Sprite {
-	return new Sprite(textures[textureName])
+export function createSprite(textureID: TextureID): Sprite {
+	return new Sprite(textures[textureID])
 }
 
 export function changeSpriteTexture(sprite: Sprite, textureName: TextureID) {
@@ -149,6 +160,83 @@ const sheetDefinition = {
 			w: 16,
 			h: 16,
 			rotate: 3,
+		},
+		{
+			key: TextureID.Zero,
+			x: 0,
+			y: 85,
+			w: 16,
+			h: 16,
+		},
+		{
+			key: TextureID.One,
+			x: 17,
+			y: 85,
+			w: 16,
+			h: 16,
+		},
+		{
+			key: TextureID.Two,
+			x: 34,
+			y: 85,
+			w: 16,
+			h: 16,
+		},
+		{
+			key: TextureID.Three,
+			x: 51,
+			y: 85,
+			w: 16,
+			h: 16,
+		},
+		{
+			key: TextureID.Four,
+			x: 68,
+			y: 85,
+			w: 16,
+			h: 16,
+		},
+		{
+			key: TextureID.Five,
+			x: 0,
+			y: 102,
+			w: 16,
+			h: 16,
+		},
+		{
+			key: TextureID.Six,
+			x: 17,
+			y: 102,
+			w: 16,
+			h: 16,
+		},
+		{
+			key: TextureID.Seven,
+			x: 34,
+			y: 102,
+			w: 16,
+			h: 16,
+		},
+		{
+			key: TextureID.Eight,
+			x: 51,
+			y: 102,
+			w: 16,
+			h: 16,
+		},
+		{
+			key: TextureID.Nine,
+			x: 68,
+			y: 102,
+			w: 16,
+			h: 16,
+		},
+		{
+			key: TextureID.Heart,
+			x: 0,
+			y: 119,
+			w: 16,
+			h: 16,
 		},
 	],
 }
