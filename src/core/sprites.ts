@@ -4,10 +4,12 @@ import sheetImage from '../assets/sprites.png'
 export const TILE_SIZE = 16
 
 export enum TextureID {
+	Blank,
 	Floor,
 	Wall,
 	Player,
 	Enemy,
+	Dummy,
 	RailCross,
 	RailUpDown,
 	RailLeftRight,
@@ -43,6 +45,8 @@ export enum TextureID {
 	Nine,
 	Heart,
 	PressEnter,
+	HoldShift,
+	Exit,
 }
 
 const textures = <Texture[]>[]
@@ -63,7 +67,7 @@ function loadSheet() {
 			textures[key].rotate += 8
 		}
 	}
-	textures[TextureID.Floor] = Texture.WHITE
+	textures[TextureID.Blank] = Texture.WHITE
 }
 
 export function createSprite(textureID: TextureID): Sprite {
@@ -83,6 +87,11 @@ const sheetDefinition = {
 			y: 68,
 		},
 		{
+			key: TextureID.Floor,
+			x: 51,
+			y: 119,
+		},
+		{
 			key: TextureID.Player,
 			x: 34,
 			y: 17,
@@ -90,6 +99,11 @@ const sheetDefinition = {
 		{
 			key: TextureID.Enemy,
 			x: 68,
+			y: 17,
+		},
+		{
+			key: TextureID.Dummy,
+			x: 51,
 			y: 17,
 		},
 		{
@@ -279,15 +293,22 @@ const sheetDefinition = {
 		},
 		{
 			key: TextureID.Heart,
-			x: 0,
+			x: 68,
 			y: 119,
 		},
 		{
 			key: TextureID.PressEnter,
-			x: 35,
+			x: 0,
 			y: 119,
 			w: 49,
 			h: 33,
+		},
+		{
+			key: TextureID.HoldShift,
+			x: 0,
+			y: 153,
+			w: 38,
+			h: 31,
 		},
 	],
 }

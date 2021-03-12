@@ -56,7 +56,7 @@ export default class GrindingSystem extends System {
 			const particles = entity.getComponents(Particles)
 			if (
 				nextTile?.rail?.flowMap[newDirection] === undefined ||
-				grinding.speed === 1
+				(grinding.speed === 1 && !nextTile?.rail?.booster)
 			) {
 				state = GrindState.End
 				particles.forEach((p) => {
@@ -73,7 +73,8 @@ export default class GrindingSystem extends System {
 								GRIND_SPEED * 2
 							)
 							.start()
-							.onComplete(() => entity.removeComponent(p))
+							.onComplete(() => entity && entity.removeComponent(p))
+							.onStop(() => particles.forEach((p) => p.destroy()))
 					} else {
 						// If not grinding to a halt, just remove the emitter right away
 						p.emitter.emit = false
@@ -93,11 +94,13 @@ export default class GrindingSystem extends System {
 			}
 			if (newDirection !== grinding.direction)
 				updateSparkComponents(particles, newDirection)
+			const boosted = grinding.boosted || nextTile?.rail?.booster
 			grinding.update({
 				direction: newDirection,
 				state,
 				distance: grinding.distance + (state === GrindState.End ? 0 : 1),
 				speed: grinding.speed + (grinding.boosted ? 1 : -1),
+				boosted,
 			})
 			if (grinding.speed % 8 === 0) {
 				// Grinding intensifies

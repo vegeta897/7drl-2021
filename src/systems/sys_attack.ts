@@ -26,6 +26,7 @@ export default class AttackSystem extends System {
 			>entity.c
 			const { target } = attack
 			if (target && !target.c.grinding) {
+				// TODO: Swing graphic!
 				const targetTransform = <Transform>target.c.transform
 				const targetDistance =
 					Math.abs(targetTransform.x - myTransform.x) +
@@ -38,8 +39,10 @@ export default class AttackSystem extends System {
 							player.addTag(Tags.UpdateHUD)
 						}
 						if (target.c.health.current <= 0) {
-							if (target !== player) target.destroy()
-							else {
+							if (target !== player) {
+								target.destroy()
+								// TODO: Particles!
+							} else {
 								// Game over man
 								game.gameOver = true
 							}

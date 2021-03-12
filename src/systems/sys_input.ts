@@ -62,7 +62,7 @@ export default class InputSystem extends System {
 			)
 			controller.direction = direction
 			controller.wait = wait
-			controller.restart = restart
+			controller.continue = restart
 			controller.sneak =
 				this.keys.has('ShiftLeft') || this.keys.has('ShiftRight')
 			controller.boost =

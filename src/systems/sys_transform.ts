@@ -1,9 +1,11 @@
-import { Query, System } from 'ape-ecs'
+import { Entity, Query, System } from 'ape-ecs'
 import Transform from '../components/com_transform'
 import Move from '../components/com_move'
 import { Level } from '../core/level'
 import { GlobalEntity } from '../types'
 import Tweening from '../components/com_tween'
+import { equalGrid } from '../util'
+import Game from '../components/com_game'
 
 // Only affects transforms that aren't being tweened
 export default class TransformSystem extends System {
@@ -16,7 +18,9 @@ export default class TransformSystem extends System {
 	}
 
 	update(tick) {
-		const level = <Level>this.world.getEntity(GlobalEntity.Game)!.c.game.level
+		const player = <Entity>this.world.getEntity(GlobalEntity.Player)
+		const gameEntity = this.world.getEntity(GlobalEntity.Game)!
+		const level = <Level>gameEntity.c.game.level
 		this.moving.execute().forEach((entity) => {
 			const { transform, move } = <{ transform: Transform; move: Move }>entity.c
 			level.entityMap.delete(transform.x + ':' + transform.y)
@@ -27,6 +31,10 @@ export default class TransformSystem extends System {
 				type: Tweening.typeName,
 				tweenType: Tweening.TweenType.Move,
 			})
+			if (entity === player && equalGrid(transform, { x: 0, y: 0 })) {
+				const game = <Game>gameEntity.c.game
+				game.win = true
+			}
 		})
 	}
 }

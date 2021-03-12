@@ -26,6 +26,7 @@ export default class CollisionSystem extends System {
 			if (destEntity) {
 				// Entity collision
 				if (player.c.grinding.state !== GrindState.Start) {
+					// TODO: Particles!
 					destEntity.destroy()
 				} else {
 					player.removeComponent(player.c.move)

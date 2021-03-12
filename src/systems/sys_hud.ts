@@ -62,7 +62,13 @@ export default class HUDSystem extends System {
 		const player = <Entity>this.world.getEntity(GlobalEntity.Player)!
 		if (gameEntity.has(Tags.UpdateHUD)) {
 			gameEntity.removeTag(Tags.UpdateHUD)
-			if (game.gameOver) {
+			if (game.win) {
+				if (this.screenContainer)
+					this.container.removeChild(this.screenContainer)
+				this.healthContainer.visible = false
+				player.c.pixi.object.visible = false
+				return
+			} else if (game.gameOver) {
 				if (this.screenContainer)
 					this.container.removeChild(this.screenContainer)
 				this.screenContainer = DeadRailContainer

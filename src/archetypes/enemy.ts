@@ -12,7 +12,7 @@ import { DEBUG_VISIBILITY } from '../core/level'
 
 let enemyID = 0
 
-export function createEnemyComponents(
+function createEnemyComponents(
 	container: Container,
 	grid: Grid,
 	player: Entity
@@ -48,9 +48,12 @@ export function createEnemyComponents(
 
 // Or maybe some other behavior that works better for the grinding gameplay?
 
-export function spawnEnemies(world: World, count: number) {
-	const { level } = <Game>world.getEntity(GlobalEntity.Game)!.c.game
+export function spawnEnemies(world: World) {
+	const { level, levelNumber } = <Game>(
+		world.getEntity(GlobalEntity.Game)!.c.game
+	)
 	if (level.rooms.length === 0) return
+	const count = Math.floor(levelNumber * 1.5 * 6)
 	let spawned = 0
 	let passes = 0
 	// TODO: This is bad, spread enemies out

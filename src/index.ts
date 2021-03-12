@@ -9,6 +9,7 @@ import { Viewport } from 'pixi-viewport'
 import Game from './components/com_game'
 import Controller from './components/com_controller'
 import { spawnEnemies } from './archetypes/enemy'
+import { spawnDummies } from './archetypes/dummy'
 
 export const WIDTH = 960
 export const HEIGHT = 720
@@ -66,14 +67,14 @@ world.createEntity({
 // TODO: Final boss will be in a big room with a rail maze (use rotJS maze-gen)
 
 // Player gains initial grinding momentum during game (killing monsters)
-// In starting room, there is a rail with booster that links into the main rail with a turn leading toward the dungeon rooms
-// In starting room of first level, put some small rails of different lengths so the player can learn the basics. also put a dummy enemy on a couple of them so they can learn how to grind into enemies
 // Put enemies on the long line just before the dungeon
 // Make the long line turn off to the side when reaching the dungeon, so it doesn't take you all the way to the end booster
 // Add a key to one of the enemies that opens the door to the final booster room
 
 createPlayer(world)
 
-spawnEnemies(world, 8)
+spawnEnemies(world)
+
+spawnDummies(world)
 
 runMainSystems()

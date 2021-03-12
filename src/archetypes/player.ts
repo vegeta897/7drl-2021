@@ -3,9 +3,10 @@ import Transform from '../components/com_transform'
 import { createSprite, TextureID } from '../core/sprites'
 import Controller from '../components/com_controller'
 import PixiObject from '../components/com_pixi'
-import { GlobalEntity, Tags } from '../types'
+import { Directions, GlobalEntity, Tags } from '../types'
 import Health from '../components/com_health'
 import Game from '../components/com_game'
+import Move from '../components/com_move'
 
 export function createPlayer(world: World): Entity {
 	const sprite = createSprite(TextureID.Player)
@@ -39,6 +40,15 @@ export function createPlayer(world: World): Entity {
 			},
 		},
 	})
+	if (game.levelNumber > 1) {
+		entity.addComponent({
+			type: Move.typeName,
+			key: 'move',
+			x: game.level.levelStart.x - 1,
+			y: game.level.levelStart.y,
+			direction: Directions.Left,
+		})
+	}
 	game.level.entityMap.set(grid.x + ':' + grid.y, entity)
 	return entity
 }

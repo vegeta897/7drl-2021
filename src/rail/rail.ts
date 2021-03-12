@@ -20,6 +20,7 @@ const FIRST_SEGMENT_LENGTH = 150
 const MIN_SEGMENT_LENGTH = 3
 
 export default class MainLine {
+	levelNumber: number
 	valid: boolean
 	abort = false
 	attempts = 0
@@ -32,7 +33,6 @@ export default class MainLine {
 	playerStart: Grid
 	generate() {
 		if (this.attempts++ > 100) return (this.abort = true)
-		console.log(`######## begin level gen attempt ${this.attempts} #########`)
 		this.rooms = []
 		this.tiles.data.clear()
 		this.segments = []
@@ -40,30 +40,39 @@ export default class MainLine {
 		this.currentGrid = { x: 0, y: 0 }
 		this.valid = true
 		// Create first segment
-		const firstSegment = this.runRail(Directions.Right, FIRST_SEGMENT_LENGTH)
+		const firstSegment = this.runRail(
+			this.levelNumber === 1 ? Directions.Right : Directions.Left,
+			FIRST_SEGMENT_LENGTH
+		)
 		if (!firstSegment) {
 			this.generate()
 			return
 		}
-		const mergeDistance = 20
 		this.commitRail(firstSegment)
-		// Create boosted merge rail
-		const mergeTile = firstSegment.railTiles[mergeDistance]
-		mergeTile.rail!.flowMap[Directions.Up] = Directions.Right
-		for (let i = 1; i < 4; i++) {
-			this.tiles.addTile(
-				createRailTile(mergeTile.x, mergeTile.y + i, {
-					flowMap:
-						i === 3
-							? [Directions.Up, Directions.Up, Directions.Up, Directions.Up]
-							: [Directions.Up, Directions.Down],
-					booster: i === 3,
-				})
-			)
+		const mergeDistance = 20
+		if (this.levelNumber === 1) {
+			// Create tutorial room
+			// Create boosted merge rail
+			const mergeTile = firstSegment.railTiles[mergeDistance]
+			mergeTile.rail!.flowMap[Directions.Up] = Directions.Right
+			for (let i = 1; i < 4; i++) {
+				this.tiles.addTile(
+					createRailTile(mergeTile.x, mergeTile.y + i, {
+						flowMap:
+							i === 3
+								? [Directions.Up, Directions.Up, Directions.Up, Directions.Up]
+								: [Directions.Up, Directions.Down],
+						booster: i === 3,
+					})
+				)
+			}
+			this.playerStart = { x: mergeDistance + 7, y: 22 }
+			const tutorialRoom = getTutorialRoom(mergeDistance - 4, 4)
+			this.commitRoom(tutorialRoom)
+		} else {
+			// After first level
+			this.playerStart = { x: 0, y: 3 }
 		}
-		this.playerStart = { x: mergeDistance + 11, y: 22 }
-		const tutorialRoom = getTutorialRoom(mergeDistance - 4, 4)
-		this.commitRoom(tutorialRoom)
 		// Add intermediate segments
 		do {
 			const prevSegment = this.segments[this.segments.length - 1]
@@ -222,7 +231,8 @@ export default class MainLine {
 		})
 		this.rooms.push(room)
 	}
-	constructor() {
+	constructor(levelNumber) {
+		this.levelNumber = levelNumber
 		while (!this.valid && !this.abort) {
 			this.generate()
 		}

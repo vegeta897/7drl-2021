@@ -43,18 +43,18 @@ export class Level {
 		viewport.addChild(this.container)
 		this.createLevel()
 	}
-	createLevel(): void {
+	createLevel(levelNumber = 1): void {
 		console.time('Level generation')
-		const mainLine = new MainLine()
-		mainLine.tiles.data.forEach((railTile, gridKey) =>
-			this.tiles.set(gridKey, railTile)
+		const mainLine = new MainLine(levelNumber)
+		mainLine.tiles.data.forEach((tile, gridKey) =>
+			this.tiles.set(gridKey, tile)
 		)
 		this.rooms = mainLine.rooms
 		this.levelStart = mainLine.playerStart
 		console.timeEnd('Level generation')
 		console.time('Sprite creation')
 		this.tiles.forEach((tile) => {
-			let tint = 0x3e2137 // Floor
+			let tint = 0xffffff
 			let texture = TextureID.Floor
 			if (tile.type === Tile.Wall) {
 				texture = TextureID.Wall
@@ -71,6 +71,12 @@ export class Level {
 			}
 			this.container.addChild(tile.sprite)
 		})
+		// for (let i = 0; i < 8; i++) {
+		// 	const rt = createSprite(TextureID.RailUpRightGoLeft + i)
+		// 	rt.x = (firstRoom.x1 + i) * TILE_SIZE
+		// 	rt.y = firstRoom.y2 * TILE_SIZE
+		// 	this.container.addChild(rt)
+		// }
 		console.timeEnd('Sprite creation')
 	}
 	destroyLevel(): void {

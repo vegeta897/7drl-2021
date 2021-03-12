@@ -38,29 +38,34 @@ export default class TweenSystem extends System {
 				}
 			>entity.c
 			entity.getComponents(Tweening).forEach((tweening) => {
+				if (tweening.tweens.length > 0) return // Already tweening
 				if (tweening.tweenType === Tweening.TweenType.Move) {
 					transform.dirty = false
 					const toSpritePosition = tileToSpritePosition(transform)
 					const onTile = game.level.getTileAt(transform)
 					if (onTile?.type === Tile.Rail) toSpritePosition.y -= 3
-					const positionTween = this.createTween(pixi.object.position).to(
-						toSpritePosition
-					)
+					const positionTween = this.createTween(
+						pixi.object.position,
+						tweening
+					).to(toSpritePosition)
 					if (!grinding) {
-						this.addHop(pixi.object.pivot, PLAYER_SPEED)
+						this.addHop(tweening, pixi.object.pivot, PLAYER_SPEED)
+
 						positionTween.easing(Easing.Quadratic.Out)
 						positionTween.duration(PLAYER_SPEED)
 					} else {
 						switch (grinding.state) {
 							case GrindState.Start:
 								positionTween.duration(GRIND_SPEED)
-								this.addHop(pixi.object.pivot, GRIND_SPEED, 1.5)
+								this.addHop(tweening, pixi.object.pivot, GRIND_SPEED, 1.5)
+
 								break
 							case GrindState.End:
 								positionTween.duration(GRIND_SPEED * 2)
 								positionTween.easing(Easing.Quadratic.Out)
 								if (grinding.speed > 0)
-									this.addHop(pixi.object.pivot, GRIND_SPEED * 2, 2)
+									this.addHop(tweening, pixi.object.pivot, GRIND_SPEED * 2, 2)
+
 								break
 							default:
 								positionTween.duration(
@@ -71,7 +76,6 @@ export default class TweenSystem extends System {
 					}
 					positionTween.start()
 				}
-				entity.removeComponent(tweening)
 			})
 		})
 		if (this.tweens.size > 0) {
@@ -85,12 +89,13 @@ export default class TweenSystem extends System {
 			}
 		}
 	}
-	createTween(tweenObject: Grid): Tween<Grid> {
+	createTween(tweenObject: Grid, tweening: Tweening): Tween<Grid> {
 		const tween = new Tween(tweenObject)
 		const remove = () => {
+			tweening.destroy()
 			this.onTweenEnd(tween)
 		}
-		tween.onComplete(remove).onStop(remove)
+		tween.onComplete(remove)
 		this.tweens.add(tween)
 		return tween
 	}
@@ -101,7 +106,7 @@ export default class TweenSystem extends System {
 			const { controller, game } = <{ controller: Controller; game: Game }>(
 				this.world.getEntity(GlobalEntity.Game)!.c
 			)
-			if (game.autoUpdate) {
+			if (game.autoUpdate && !game.gameOver && !game.win) {
 				game.autoUpdate = false
 				runMainSystems()
 			} else {
@@ -109,12 +114,12 @@ export default class TweenSystem extends System {
 			}
 		}
 	}
-	addHop(pivot: Grid, duration: number, height = 1) {
-		const hopUp = this.createTween(pivot)
+	addHop(tweening: Tweening, pivot: Grid, duration: number, height = 1) {
+		const hopUp = this.createTween(pivot, tweening)
 			.duration(duration / 2)
 			.to({ y: 0.2 * height * TILE_SIZE })
 			.easing(Easing.Circular.Out)
-		const hopDown = this.createTween(pivot)
+		const hopDown = this.createTween(pivot, tweening)
 			.duration(duration / 2)
 			.to({ y: 0 })
 			.easing(Easing.Circular.In)

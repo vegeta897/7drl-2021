@@ -15,11 +15,12 @@ export default class ActionSystem extends System {
 		const player = this.world.getEntity(GlobalEntity.Player)!
 		const gameEntity = this.world.getEntity(GlobalEntity.Game)!
 		const game = <Game>gameEntity.c.game
-		if (game.gameOver) {
-			if (controller.restart) {
+		if (game.gameOver || game.win) {
+			if (controller.continue) {
 				gameEntity.addTag(Tags.UpdateHUD)
 				game.gameOver = false
-				controller.restart = false
+				game.win = false
+				controller.continue = false
 				runMainSystems()
 			}
 		} else if (controller.state === ControllerState.Ready) {
@@ -27,7 +28,7 @@ export default class ActionSystem extends System {
 				if (controller.direction !== null) {
 					const moveTo = addGrids(
 						<Transform>player.c.transform,
-						moveDirectional(controller.direction, controller.boost ? 16 : 1)
+						moveDirectional(controller.direction, controller.boost ? 4 : 1)
 					)
 					player.addComponent({
 						type: Move.typeName,

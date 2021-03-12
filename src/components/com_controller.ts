@@ -5,14 +5,14 @@ export default class Controller extends Component {
 	static typeName = 'Controller'
 	direction: Directions | null
 	wait: boolean
-	restart: boolean
+	continue: boolean
 	boost: boolean // Debug movement
 	sneak: boolean
 	state: ControllerState
 	static properties = {
 		direction: null,
 		wait: false,
-		restart: false,
+		continue: false,
 		boost: false,
 		sneak: false,
 		state: ControllerState.Ready,
