@@ -11,7 +11,6 @@ export default class Game extends Component {
 	entityContainer: Container
 	gameOver: boolean
 	win: boolean
-	levelNumber: number
 	static properties = {
 		level: null,
 		autoUpdate: false,
@@ -19,6 +18,5 @@ export default class Game extends Component {
 		entityContainer: null,
 		gameOver: false,
 		win: false,
-		levelNumber: 1,
 	}
 }

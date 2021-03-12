@@ -43,9 +43,9 @@ export class Level {
 		viewport.addChild(this.container)
 		this.createLevel()
 	}
-	createLevel(levelNumber = 1): void {
+	createLevel(): void {
 		console.time('Level generation')
-		const mainLine = new MainLine(levelNumber)
+		const mainLine = new MainLine()
 		mainLine.tiles.data.forEach((tile, gridKey) =>
 			this.tiles.set(gridKey, tile)
 		)

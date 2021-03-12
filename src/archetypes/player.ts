@@ -3,10 +3,9 @@ import Transform from '../components/com_transform'
 import { createSprite, TextureID } from '../core/sprites'
 import Controller from '../components/com_controller'
 import PixiObject from '../components/com_pixi'
-import { Directions, GlobalEntity, Tags } from '../types'
+import { GlobalEntity, Tags } from '../types'
 import Health from '../components/com_health'
 import Game from '../components/com_game'
-import Grinding from '../components/com_grinding'
 
 export function createPlayer(world: World): Entity {
 	const sprite = createSprite(TextureID.Player)
@@ -40,15 +39,6 @@ export function createPlayer(world: World): Entity {
 			},
 		},
 	})
-	if (game.levelNumber > 1) {
-		entity.addComponent({
-			type: Grinding.typeName,
-			key: 'grinding',
-			direction: Directions.Left,
-			speed: 10,
-			boosted: true,
-		})
-	}
 	game.level.entityMap.set(grid.x + ':' + grid.y, entity)
 	return entity
 }

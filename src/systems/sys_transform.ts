@@ -4,7 +4,6 @@ import Move from '../components/com_move'
 import { Level } from '../core/level'
 import { GlobalEntity, Tags } from '../types'
 import Tweening from '../components/com_tween'
-import { equalGrid } from '../util'
 import Game from '../components/com_game'
 
 // Only affects transforms that aren't being tweened
@@ -33,8 +32,9 @@ export default class TransformSystem extends System {
 			})
 			if (entity === player) {
 				player.addTag(Tags.UpdateVisibility)
-				if (equalGrid(transform, { x: 0, y: 0 })) {
+				if (transform.x < 20) {
 					const game = <Game>gameEntity.c.game
+					game.gameOver = true
 					game.win = true
 				}
 			}

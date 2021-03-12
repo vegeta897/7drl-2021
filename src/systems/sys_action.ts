@@ -15,11 +15,10 @@ export default class ActionSystem extends System {
 		const player = this.world.getEntity(GlobalEntity.Player)!
 		const gameEntity = this.world.getEntity(GlobalEntity.Game)!
 		const game = <Game>gameEntity.c.game
-		if (game.gameOver || game.win) {
+		if (game.gameOver && !game.win) {
 			if (controller.continue) {
 				gameEntity.addTag(Tags.UpdateHUD)
 				game.gameOver = false
-				game.win = false
 				controller.continue = false
 				runMainSystems()
 			}
