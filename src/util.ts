@@ -104,6 +104,19 @@ export function getDirectionFromMove(move: Grid): Directions {
 	throw 'Invalid move'
 }
 
+export function checkCollisionInRadius(
+	grids: Grid[],
+	center: Grid,
+	radius: number
+): boolean {
+	for (let x = -radius; x < radius + 1; x++) {
+		for (let y = -radius; y < radius + 1; y++) {
+			if (grids.find((grid) => grid.x === x && grid.y === y)) return true
+		}
+	}
+	return false
+}
+
 export function tileToSpritePosition(tile: Grid): Grid {
 	return { x: tile.x * TILE_SIZE, y: tile.y * TILE_SIZE }
 }

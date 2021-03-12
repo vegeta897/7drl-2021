@@ -7,28 +7,19 @@ import {
 	getDirections,
 	getNeighbors,
 	getUpperNormal,
+	isVertical,
 	moveDirectional,
 	reverseDirection,
 } from '../util'
-import { RailData, Room, Stretch, Tints } from './types'
-import {
-	createFloorTile,
-	createRailTile,
-	createWallTile,
-	getLinkage,
-} from './util'
-
-const DEBUG_COLORS = false
-
-const crossLinkages = [0b1100, 0b1100, 0b0011, 0b0011]
-// const directionNames = ['Up', 'Down', 'Left', 'Right']
+import { RailData, Room, Stretch } from './types'
+import { createFloorTile, createRailTile, createWallTile } from './util'
 
 export function createMainline():
 	| { tiles: Map<string, TileData>; stretches: Stretch[]; rooms: Room[] }
 	| false {
 	const targetMainlineLength = 150
-	const minStretchLength = 7 // NOT including walls
-	const stretchLengthStdDev = 4
+	const minStretchLength = 4 // NOT including walls
+	const stretchLengthStdDev = 6
 	const tiles: Map<string, TileData> = new Map()
 	const stretches: Stretch[] = []
 	const rooms: Room[] = []
@@ -36,12 +27,13 @@ export function createMainline():
 	let finalStretch = false
 	do {
 		const prevStretch = stretches[stretches.length - 1]
+		const firstStretch = !prevStretch
 		const startGrid: Grid = prevStretch?.endGrid || { x: 0, y: 0 }
-		let stretchLength = !prevStretch
+		let stretchLength = firstStretch
 			? 20
 			: getUpperNormal(minStretchLength, stretchLengthStdDev)
 		const possibleDirections = getDirections(
-			prevStretch
+			!firstStretch
 				? [prevStretch.direction, reverseDirection(prevStretch.direction)]
 				: []
 		)
@@ -54,11 +46,12 @@ export function createMainline():
 		}
 		let validStretch
 		let stretchDirection
-		const stretchRails: Map<string, Grid & RailData> = new Map()
+		let stretchRails: Map<string, Grid & RailData>
 		do {
 			validStretch = true
 			stretchDirection = RNG.getItem(possibleDirections)!
 			possibleDirections.splice(possibleDirections.indexOf(stretchDirection), 1)
+			stretchRails = new Map()
 			// Check full rail path is clear
 			for (let i = 0; i < stretchLength; i++) {
 				const { x, y } = addGrids(
@@ -66,11 +59,11 @@ export function createMainline():
 					moveDirectional(stretchDirection, i)
 				)
 				if (
-					prevStretch &&
+					stretches[0] &&
 					Math.abs(stretches[0].startGrid.x - x) < 4 &&
-					Math.abs(stretches[0].startGrid.y - y)
+					Math.abs(stretches[0].startGrid.y - y) < 4
 				) {
-					// Don't allow rails near starting rail
+					// Don't allow rails near starting room
 					validStretch = false
 					break
 				}
@@ -78,7 +71,7 @@ export function createMainline():
 				const railTile = tiles.get(gridKey)
 				if (i > 0 && railTile?.rail) {
 					// Check if intersecting rail is perpendicular
-					if (railTile.rail?.linkage !== crossLinkages[stretchDirection]) {
+					if (railTile.rail?.flowMap[stretchDirection] !== undefined) {
 						// Invalid direction
 						stretchRails.clear()
 						validStretch = false
@@ -87,20 +80,17 @@ export function createMainline():
 						stretchLength++
 					}
 				}
-				let linkage, directions
-				if (i === 0 && prevStretch) {
+				const flowMap: Directions[] = []
+				if (i === 0 && !firstStretch) {
 					// Make first tile match previous tile direction
-					directions = [
-						stretchDirection,
-						reverseDirection(prevStretch.direction),
-					]
-					linkage = getLinkage(directions)
+					flowMap[stretchDirection] = reverseDirection(prevStretch.direction)
+					flowMap[reverseDirection(prevStretch.direction)] = stretchDirection
 				} else {
-					directions = [stretchDirection, reverseDirection(stretchDirection)]
-					linkage = getLinkage(directions)
+					flowMap[stretchDirection] = reverseDirection(stretchDirection)
+					flowMap[reverseDirection(stretchDirection)] = stretchDirection
 				}
-				const booster = !prevStretch && i === 0
-				stretchRails.set(gridKey, { x, y, linkage, directions, booster })
+				const booster = firstStretch && i === 0
+				stretchRails.set(gridKey, { x, y, flowMap, booster })
 			}
 		} while (!validStretch && possibleDirections.length > 0)
 		if (!validStretch) {
@@ -108,63 +98,62 @@ export function createMainline():
 			return false
 		} else {
 			// Create room for stretch
-			const roomCenterDistance = !prevStretch
-				? 0
-				: finalStretch
-				? stretchLength - 4
-				: getUpperNormal(1, stretchLength / 2, stretchLength - 2)
-			addGrids(startGrid, moveDirectional(stretchDirection, roomCenterDistance))
 			const roomBreadth =
-				!prevStretch || finalStretch ? 5 : getUpperNormal(5, 3)
-			const roomLength = !prevStretch
+				firstStretch || finalStretch ? 5 : getUpperNormal(5, 3)
+			const roomLength = firstStretch
 				? 5
 				: finalStretch
 				? 8
 				: getUpperNormal(3, stretchLength / 2, stretchLength)
-			const roomOffset = !prevStretch
-				? 2
+			const roomOffset = firstStretch
+				? 0
 				: finalStretch
-				? 5
-				: RNG.getUniformInt(0, roomBreadth)
-			const roomTiles: TileData[] = []
-			let x1, x2, y1, y2
-			for (let rw = 0; rw < roomBreadth; rw++) {
-				for (let rl = 0; rl < roomLength; rl++) {
-					const { x, y } = addGrids(
-						startGrid,
-						moveDirectional(
-							stretchDirection,
-							rl + roomCenterDistance - Math.floor(roomLength / 2),
-							rw - roomOffset
-						)
-					)
-					x1 = x < x1 ? x : x1 ?? x
-					x2 = x > x2 ? x : x2 ?? x
-					y1 = y < y1 ? y : y1 ?? y
-					y2 = y > y2 ? y : y2 ?? y
-					if (tiles.has(x + ':' + y)) continue
-					const roomTile = createFloorTile(x, y)
-					if (DEBUG_COLORS)
-						roomTile.tint = Tints[stretches.length % Tints.length]
-					roomTiles.push(roomTile)
-					tiles.set(x + ':' + y, roomTile)
+				? 2
+				: RNG.getUniformInt(
+						-Math.floor(roomBreadth / 2),
+						Math.floor(roomBreadth / 2)
+				  )
+			const roomCenter = addGrids(
+				startGrid,
+				moveDirectional(
+					stretchDirection,
+					firstStretch
+						? 0
+						: finalStretch
+						? stretchLength - 4
+						: RNG.getUniformInt(0, stretchLength),
+					-roomOffset
+				)
+			)
+			const room = createRoom(
+				roomCenter,
+				isVertical(stretchDirection) ? roomBreadth : roomLength,
+				isVertical(stretchDirection) ? roomLength : roomBreadth
+			)
+			room.tiles.forEach((roomTile) => {
+				if (tiles.has(roomTile.x + ':' + roomTile.y)) return
+				if (
+					stretches[0] &&
+					Math.abs(stretches[0].startGrid.x - roomTile.x) < 4 &&
+					Math.abs(stretches[0].startGrid.y - roomTile.y) < 4
+				) {
+					// Don't allow rooms near starting room
+					return
 				}
-			}
+				tiles.set(roomTile.x + ':' + roomTile.y, roomTile)
+			})
 			// Add rail tiles to map
+			// Doing this after room gen so floor tiles get overwritten
 			stretchRails.forEach((railTile, gridKey) => {
 				let tile = createRailTile(railTile.x, railTile.y, railTile)
 				const existingRailTile =
 					!equalGrid(railTile, startGrid) && tiles.get(gridKey)
 				if (existingRailTile && existingRailTile.rail) {
-					tile.rail!.directions = getDirections()
-					tile.rail!.linkage = 0b1111
+					tile.rail!.flowMap = [1, 0, 3, 2]
 				}
-				if (DEBUG_COLORS) tile.tint = Tints[stretches.length % Tints.length]
 				tiles.set(gridKey, tile)
 			})
 			// Add stretch to stretches
-			const width = x2 - x1
-			const height = y2 - y1
 			const stretch = {
 				direction: stretchDirection,
 				possibleDirections,
@@ -175,7 +164,7 @@ export function createMainline():
 				),
 				rails: stretchRails,
 				length: stretchLength,
-				room: { width, height, tiles: roomTiles, x1, x2, y1, y2 },
+				room,
 			}
 			stretches.push(stretch)
 			rooms.push(stretch.room)
@@ -191,4 +180,23 @@ export function createMainline():
 		})
 	})
 	return { tiles, stretches, rooms }
+}
+
+function createRoom(center: Grid, width: number, height: number) {
+	const roomTiles: TileData[] = []
+	let x1, x2, y1, y2
+	for (let rw = 0; rw < width; rw++) {
+		for (let rh = 0; rh < height; rh++) {
+			const { x, y } = addGrids(center, {
+				x: rw - Math.floor(width / 2),
+				y: rh - Math.floor(height / 2),
+			})
+			x1 = x < x1 ? x : x1 ?? x
+			x2 = x > x2 ? x : x2 ?? x
+			y1 = y < y1 ? y : y1 ?? y
+			y2 = y > y2 ? y : y2 ?? y
+			roomTiles.push(createFloorTile(x, y))
+		}
+	}
+	return { width, height, tiles: roomTiles, x1, x2, y1, y2 }
 }

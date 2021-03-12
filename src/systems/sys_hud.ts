@@ -1,6 +1,6 @@
 import { Entity, System } from 'ape-ecs'
 import { Container, Sprite } from 'pixi.js'
-import { GlobalEntity, Tags } from '../types'
+import { GlobalEntity, GlobalSprite, Tags } from '../types'
 import Health from '../components/com_health'
 import {
 	changeSpriteTexture,
@@ -11,6 +11,7 @@ import {
 import Game from '../components/com_game'
 import { DeadRailContainer } from '../screens'
 import { HEIGHT, WIDTH } from '../index'
+import { Easing, Tween } from '@tweenjs/tween.js'
 
 const digitTextureIDs = [
 	TextureID.Zero,
@@ -59,18 +60,38 @@ export default class HUDSystem extends System {
 		const gameEntity = <Entity>this.world.getEntity(GlobalEntity.Game)!
 		const game = <Game>this.world.getEntity(GlobalEntity.Game)!.c.game
 		const player = <Entity>this.world.getEntity(GlobalEntity.Player)!
-		if (game.gameOver) {
-			if (this.screenContainer) this.container.removeChild(this.screenContainer)
-			this.screenContainer = DeadRailContainer
-			this.container.addChild(this.screenContainer)
-			this.healthContainer.visible = false
-			gameEntity.addTag(Tags.UpdateHUD)
-			return
-		} else if (gameEntity.has(Tags.UpdateHUD)) {
+		if (gameEntity.has(Tags.UpdateHUD)) {
 			gameEntity.removeTag(Tags.UpdateHUD)
-			if (this.screenContainer) this.container.removeChild(this.screenContainer)
-			this.screenContainer = null
-			this.healthContainer.visible = true
+			if (game.gameOver) {
+				if (this.screenContainer)
+					this.container.removeChild(this.screenContainer)
+				this.screenContainer = DeadRailContainer
+				this.screenContainer.alpha = 0
+				this.container.addChild(this.screenContainer)
+				new Tween(this.screenContainer)
+					.to({ alpha: 1 }, 2500)
+					.delay(500)
+					.easing(Easing.Sinusoidal.Out)
+					.start()
+				const pressEnterSprite = this.screenContainer.getChildByName!(
+					GlobalSprite.PressEnter
+				)
+				pressEnterSprite.alpha = 0
+				new Tween(pressEnterSprite)
+					.to({ alpha: 1 }, 800)
+					.delay(4000)
+					.easing(Easing.Sinusoidal.Out)
+					.start()
+				this.healthContainer.visible = false
+				player.c.pixi.object.visible = false
+				return
+			} else {
+				player.c.pixi.object.visible = true
+				if (this.screenContainer)
+					this.container.removeChild(this.screenContainer)
+				this.screenContainer = null
+				this.healthContainer.visible = true
+			}
 		}
 		if (!player.has(Tags.UpdateHUD)) return
 		player.removeTag(Tags.UpdateHUD)

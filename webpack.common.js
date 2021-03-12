@@ -45,7 +45,7 @@ module.exports = {
 		new ProgressPlugin(),
 		new CleanWebpackPlugin(),
 		new HtmlWebPackPlugin({
-			title: 'Roguelike Test',
+			title: 'Dungeon Grinder',
 		}),
 	],
 }

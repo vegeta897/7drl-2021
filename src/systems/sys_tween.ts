@@ -15,7 +15,6 @@ import { TILE_SIZE } from '../core/sprites'
 export const PLAYER_SPEED = 100
 export const GRIND_SPEED = 120
 export const GRIND_SPEED_GAIN = 80
-export const ENEMY_SPEED = 150
 
 export default class TweenSystem extends System {
 	private tweening!: Query
@@ -30,7 +29,6 @@ export default class TweenSystem extends System {
 		const { controller, game } = <{ controller: Controller; game: Game }>(
 			this.world.getEntity(GlobalEntity.Game)!.c
 		)
-		const player = this.world.getEntity(GlobalEntity.Player)!
 		this.tweening.execute().forEach((entity) => {
 			const { transform, pixi, grinding } = <
 				{
@@ -68,9 +66,6 @@ export default class TweenSystem extends System {
 								)
 								break
 						}
-					}
-					if (!player) {
-						positionTween.duration(ENEMY_SPEED)
 					}
 					positionTween.start()
 				}

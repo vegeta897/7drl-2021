@@ -1,5 +1,5 @@
 import { System } from 'ape-ecs'
-import { ControllerState, GlobalEntity } from '../types'
+import { ControllerState, GlobalEntity, Tags } from '../types'
 import Move from '../components/com_move'
 import { runMainSystems } from '../core/ecs'
 import Controller from '../components/com_controller'
@@ -13,9 +13,11 @@ export default class ActionSystem extends System {
 			this.world.getEntity(GlobalEntity.Game)!.c
 		)
 		const player = this.world.getEntity(GlobalEntity.Player)!
-		const game = <Game>this.world.getEntity(GlobalEntity.Game)!.c.game
+		const gameEntity = this.world.getEntity(GlobalEntity.Game)!
+		const game = <Game>gameEntity.c.game
 		if (game.gameOver) {
 			if (controller.restart) {
+				gameEntity.addTag(Tags.UpdateHUD)
 				game.gameOver = false
 				controller.restart = false
 				runMainSystems()

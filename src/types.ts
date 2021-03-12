@@ -5,6 +5,7 @@ export enum SystemGroup {
 }
 
 export enum Tags {
+	Player = 'player',
 	UpdateHUD = 'updateHUD',
 	UpdateCamera = 'updateCamera',
 	UpdateVisibility = 'updateVisibility',
@@ -19,6 +20,10 @@ export enum ControllerState {
 export enum GlobalEntity {
 	Game = 'game',
 	Player = 'player',
+}
+
+export enum GlobalSprite {
+	PressEnter = 'pressEnter',
 }
 
 export enum Directions {

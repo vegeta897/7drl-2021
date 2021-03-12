@@ -15,7 +15,12 @@ export function createPlayer(world: World): Entity {
 	// const grid = { x: 1, y: 1 }
 	const entity = world.createEntity({
 		id: GlobalEntity.Player,
-		tags: [Tags.UpdateHUD, Tags.UpdateCamera, Tags.UpdateVisibility],
+		tags: [
+			Tags.Player,
+			Tags.UpdateHUD,
+			Tags.UpdateCamera,
+			Tags.UpdateVisibility,
+		],
 		c: {
 			transform: {
 				type: Transform.typeName,

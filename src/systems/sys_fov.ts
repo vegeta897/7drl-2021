@@ -3,7 +3,7 @@ import Transform from '../components/com_transform'
 import { FOV } from 'rot-js'
 import { Easing, Tween } from '@tweenjs/tween.js'
 import { GlobalEntity, Tags } from '../types'
-import { Level } from '../core/level'
+import { DEBUG_VISIBILITY, Level } from '../core/level'
 import PixiObject from '../components/com_pixi'
 
 const FOV_RADIUS = 12
@@ -30,6 +30,7 @@ export default class FOVSystem extends System {
 		})
 	}
 	update(tick) {
+		if (DEBUG_VISIBILITY) return
 		let visibilityUpdated = false
 		const player = this.world.getEntity(GlobalEntity.Player)!
 		const playerTransform = <Transform>player.c.transform

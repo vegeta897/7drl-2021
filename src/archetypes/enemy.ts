@@ -49,9 +49,6 @@ export function createEnemyComponents(
 
 export function spawnEnemies(world: World, count: number) {
 	const { level } = <Game>world.getEntity(GlobalEntity.Game)!.c.game
-	const px = level.rooms[0].x1 + 4
-	const py = level.rooms[0].y1 + 1
-	spawnEnemy(world, px, py)
 	let spawned = 0
 	let passes = 0
 	// TODO: This is bad, spread enemies out
@@ -60,8 +57,8 @@ export function spawnEnemies(world: World, count: number) {
 			if (roomIndex === level.rooms.length - 1) return
 			if (RNG.getUniform() > 0.05) return
 			// console.log('spawn enemy in room', roomIndex)
-			const x = room.x1 + RNG.getUniformInt(0, room.x2 - room.x1)
-			const y = room.y1 + RNG.getUniformInt(0, room.y2 - room.y1)
+			const x = room.x1 + RNG.getUniformInt(0, room.width - 1)
+			const y = room.y1 + RNG.getUniformInt(0, room.height - 1)
 			if (level.entityMap.has(x + ':' + y)) return
 			spawnEnemy(world, x, y)
 			spawned++

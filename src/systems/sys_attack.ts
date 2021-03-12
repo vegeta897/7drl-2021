@@ -9,6 +9,7 @@ export default class AttackSystem extends System {
 	init(viewport) {
 		this.attackers = this.createQuery({
 			all: [Attack, Transform],
+			not: [Tags.Player],
 			persist: true,
 		})
 	}
@@ -16,7 +17,10 @@ export default class AttackSystem extends System {
 		const player = this.world.getEntity(GlobalEntity.Player)!
 		const game = <Game>this.world.getEntity(GlobalEntity.Game)!.c.game
 		// const level = <Level>this.world.getEntity(GlobalEntity.Game)!.c.game.level
-		this.attackers.execute().forEach((entity) => {
+		const attackers = [...this.attackers.execute()]
+		if (player.has(Attack)) attackers.unshift(player)
+		attackers.forEach((entity) => {
+			if (entity.destroyed) return
 			const { attack, transform: myTransform } = <
 				{ attack: Attack; transform: Transform }
 			>entity.c
@@ -27,7 +31,6 @@ export default class AttackSystem extends System {
 					Math.abs(targetTransform.x - myTransform.x) +
 					Math.abs(targetTransform.y - myTransform.y)
 				if (targetDistance <= 1) {
-					console.log(tick, `${entity.id} attacked ${target.id}`)
 					if (target.c.health) {
 						target.c.health.current--
 						target.c.health.update()
@@ -35,7 +38,6 @@ export default class AttackSystem extends System {
 							player.addTag(Tags.UpdateHUD)
 						}
 						if (target.c.health.current <= 0) {
-							console.log(target.id, 'died!')
 							if (target !== player) target.destroy()
 							else {
 								// Game over man
@@ -44,7 +46,7 @@ export default class AttackSystem extends System {
 						}
 					}
 				} else {
-					console.log(tick, `${entity.id} missed ${target.id}`)
+					// Miss
 				}
 			}
 			entity.removeComponent(attack)

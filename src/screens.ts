@@ -1,5 +1,6 @@
 import { createSprite, TextureID, TILE_SIZE } from './core/sprites'
 import { Container } from 'pixi.js'
+import { GlobalSprite } from './types'
 
 const deadRails: (TextureID | undefined)[][] = [
 	[
@@ -103,7 +104,8 @@ export const DeadRailContainer = new Container()
 DeadRailContainer.setTransform(1.5 * TILE_SIZE, 4 * TILE_SIZE - 5)
 
 const pressEnter = createSprite(TextureID.PressEnter)
-pressEnter.tint = 0x9c9a2f
+pressEnter.name = GlobalSprite.PressEnter
+pressEnter.tint = 0xc0c741
 pressEnter.setTransform(111, 88)
 DeadRailContainer.addChild(pressEnter)
 
@@ -113,7 +115,7 @@ for (const [lineIndex, line] of deadRails.entries()) {
 		const railSprite = createSprite(rail)
 		railSprite.x = railIndex * TILE_SIZE
 		railSprite.y = lineIndex * TILE_SIZE
-		railSprite.tint = 0xbf1d30
+		railSprite.tint = 0xef1d30
 		DeadRailContainer.addChild(railSprite)
 	}
 }

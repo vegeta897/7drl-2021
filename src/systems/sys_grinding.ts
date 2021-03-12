@@ -1,17 +1,11 @@
 import { Query, System } from 'ape-ecs'
 import Grinding, { GrindState } from '../components/com_grinding'
-import { Directions, GlobalEntity } from '../types'
+import { GlobalEntity, Tags } from '../types'
 import Move from '../components/com_move'
-import {
-	addGrids,
-	moveDirectional,
-	reverseDirection,
-	turnClockwise,
-} from '../util'
+import { addGrids, moveDirectional, reverseDirection } from '../util'
 import { Level, Tile } from '../core/level'
 import Transform from '../components/com_transform'
 import Game from '../components/com_game'
-import { RNG } from 'rot-js'
 import { RailData } from '../rail/types'
 import Particles from '../components/com_particles'
 import {
@@ -23,8 +17,6 @@ import { Tween } from '@tweenjs/tween.js'
 import { GRIND_SPEED } from './sys_tween'
 // import { DEFAULT_ZOOM } from '../index'
 // import { AnimateOptions } from 'pixi-viewport'
-
-const rng = RNG.clone()
 
 // const GRIND_ZOOM = 5
 // const ZOOM_TIME = 500
@@ -45,7 +37,6 @@ export default class GrindingSystem extends System {
 		})
 	}
 	update(tick) {
-		const player = this.world.getEntity(GlobalEntity.Player)
 		const { game } = <{ game: Game }>this.world.getEntity(GlobalEntity.Game)!.c
 		const level = <Level>game.level
 
@@ -58,23 +49,13 @@ export default class GrindingSystem extends System {
 			const rail = <RailData>level.getTileAt(transform)!.rail
 			console.assert(rail)
 			let state = GrindState.Continue
-			let newDirection = grinding.direction
-			if (!rail?.directions.includes(newDirection)) {
-				// Try turning
-				const turns = [
-					turnClockwise(newDirection),
-					turnClockwise(newDirection, 3),
-				].filter((turnDirection) => rail?.directions.includes(turnDirection))
-				if (turns.length > 0) {
-					// Turn
-					newDirection = <Directions>rng.getItem(turns)
-				}
-			}
+			const newDirection = rail.flowMap[reverseDirection(grinding.direction)]
+			console.assert(newDirection !== undefined)
 			const moveTo = addGrids(transform, moveDirectional(newDirection))
 			const nextTile = level.getTileAt(moveTo)
 			const particles = entity.getComponents(Particles)
 			if (
-				!nextTile?.rail?.directions.includes(reverseDirection(newDirection)) ||
+				nextTile?.rail?.flowMap[reverseDirection(newDirection)] === undefined ||
 				grinding.speed === 1
 			) {
 				state = GrindState.End
@@ -138,16 +119,15 @@ export default class GrindingSystem extends System {
 			.refresh()
 			.execute()
 			.forEach((entity) => {
-				if (entity !== player) return
+				if (!entity.has(Tags.Player)) return
 				const move = <Move>entity.c.move
 				if (move.sneak || move.noClip) return
 				const destTile = level.getTileAt(move)
 				if (
 					destTile?.type === Tile.Rail &&
-					(destTile.rail!.directions.includes(move.direction) ||
-						destTile.rail!.directions.includes(
-							reverseDirection(move.direction)
-						))
+					(destTile.rail!.flowMap[reverseDirection(move.direction)] !==
+						undefined ||
+						destTile.rail!.flowMap.includes(move.direction))
 				) {
 					// Begin grind
 					entity.addComponent({

@@ -33,53 +33,81 @@ export function createWallTile(x: number, y: number): TileData {
 	return createTile(x, y, Tile.Wall, false, true)
 }
 
-export function getLinkage(dirs: Directions[]): number {
-	let linkage = 0
-	for (const dir of dirs) {
-		linkage += 1 << dir
-	}
-	return linkage
-}
-
 export function getSpriteProperties(
 	railData: RailData
 ): { texture: TextureID; tint: number } {
 	let texture = TextureID.RailCross
-	switch (railData.linkage) {
-		case 0b0001:
-		case 0b0010:
-		case 0b0011:
-			texture = TextureID.RailUpDown
-			break
-		case 0b0100:
-		case 0b1000:
-		case 0b1100:
-			texture = TextureID.RailLeftRight
-			break
-		case 0b0101:
-			texture = TextureID.RailUpLeft
-			break
-		case 0b1001:
-			texture = TextureID.RailUpRight
-			break
-		case 0b0110:
-			texture = TextureID.RailDownLeft
-			break
-		case 0b1010:
-			texture = TextureID.RailDownRight
-			break
-		case 0b0111:
-			texture = TextureID.RailUpDownLeft
-			break
-		case 0b1011:
-			texture = TextureID.RailUpDownRight
-			break
-		case 0b1101:
-			texture = TextureID.RailUpLeftRight
-			break
-		case 0b1110:
-			texture = TextureID.RailDownLeftRight
-			break
+	const [fromUp, fromDown, fromLeft, fromRight] = railData.flowMap
+
+	if (
+		fromUp === Directions.Down &&
+		fromDown === Directions.Up &&
+		fromLeft === Directions.Right &&
+		fromRight === Directions.Left
+	) {
+		texture = TextureID.RailCross
+	} else if (
+		fromUp === Directions.Down &&
+		fromDown === Directions.Up &&
+		fromLeft === Directions.Up
+	) {
+		texture = TextureID.RailDownLeftGoUp
+	} else if (
+		fromUp === Directions.Down &&
+		fromDown === Directions.Up &&
+		fromLeft === Directions.Down
+	) {
+		texture = TextureID.RailUpLeftGoDown
+	} else if (
+		fromUp === Directions.Down &&
+		fromDown === Directions.Up &&
+		fromRight === Directions.Up
+	) {
+		texture = TextureID.RailDownRightGoUp
+	} else if (
+		fromUp === Directions.Down &&
+		fromDown === Directions.Up &&
+		fromRight === Directions.Down
+	) {
+		texture = TextureID.RailUpRightGoDown
+	} else if (
+		fromLeft === Directions.Right &&
+		fromRight === Directions.Left &&
+		fromDown === Directions.Left
+	) {
+		texture = TextureID.RailDownRightGoLeft
+	} else if (
+		fromLeft === Directions.Right &&
+		fromRight === Directions.Left &&
+		fromDown === Directions.Right
+	) {
+		texture = TextureID.RailDownLeftGoRight
+	} else if (
+		fromLeft === Directions.Right &&
+		fromRight === Directions.Up &&
+		fromUp === Directions.Left
+	) {
+		texture = TextureID.RailUpRightGoLeft
+	} else if (
+		fromLeft === Directions.Up &&
+		fromRight === Directions.Left &&
+		fromUp === Directions.Right
+	) {
+		texture = TextureID.RailUpLeftGoRight
+	} else if (fromUp === Directions.Down && fromDown === Directions.Up) {
+		texture = TextureID.RailUpDown
+	} else if (fromLeft === Directions.Right && fromRight === Directions.Left) {
+		texture = TextureID.RailLeftRight
+	} else if (fromUp === Directions.Right && fromRight === Directions.Up) {
+		texture = TextureID.RailUpRight
+	} else if (fromUp === Directions.Left && fromLeft === Directions.Up) {
+		texture = TextureID.RailUpLeft
+	} else if (fromDown === Directions.Right && fromRight === Directions.Down) {
+		texture = TextureID.RailDownRight
+	} else if (fromDown === Directions.Left && fromLeft === Directions.Down) {
+		texture = TextureID.RailDownLeft
+	} else {
+		throw `invalid rail type ${[fromUp, fromDown, fromLeft, fromRight]}`
 	}
-	return { texture, tint: railData.booster ? 0xbf1d30 : 0x9a6348 }
+	return { texture, tint: railData.booster ? 0xff0000 : 0xffffff }
 }
