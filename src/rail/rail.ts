@@ -1,10 +1,9 @@
 import { RNG } from 'rot-js'
-import { Tile } from '../core/level'
+import { Tile, TileData } from '../core/level'
 import { Directions, Grid } from '../types'
 import {
 	addGrids,
 	checkCollisionInRadius,
-	DirectionNames,
 	getNeighbors,
 	getNormalWithMin,
 	moveDirectional,
@@ -12,12 +11,12 @@ import {
 	TileMap,
 	turnClockwise,
 } from '../util'
-import { RailData, Room, RailSegment } from './types'
+import { RailData, RailSegment, Room } from './types'
 import { createFloorTile, createRailTile, createWallTile } from './util'
 
 const TARGET_TOTAL_LENGTH = 300
-const FIRST_STRETCH_LENGTH = 150
-const MIN_STRETCH_LENGTH = 3
+const FIRST_SEGMENT_LENGTH = 150
+const MIN_SEGMENT_LENGTH = 3
 
 export default class MainLine {
 	valid: boolean
@@ -38,35 +37,60 @@ export default class MainLine {
 		this.totalLength = 0
 		this.currentGrid = { x: 0, y: 0 }
 		this.valid = true
-		// Create first stretch
-		const firstSegment = this.runRail(
-			RNG.getItem([Directions.Left, Directions.Right])!,
-			FIRST_STRETCH_LENGTH
+		// Create first segment
+		const firstSegment = this.runRail(Directions.Right, FIRST_SEGMENT_LENGTH)
+		if (!firstSegment) {
+			this.generate()
+			return
+		}
+		const mergeDistance = 20
+		const firstRoom = this.createRoom(
+			addGrids(
+				firstSegment.startGrid,
+				moveDirectional(firstSegment.direction, mergeDistance, 11)
+			),
+			13,
+			15
 		)
-		if (!firstSegment) throw 'First segment of main line could not be created'
+		this.commitRoom(firstRoom)
 		this.commitRail(firstSegment)
+		// Create boosted merge rail
+		const mergeTile = firstSegment.railTiles[mergeDistance]
+		mergeTile.rail!.flowMap[Directions.Up] = Directions.Right
+		for (let i = 1; i < 4; i++) {
+			this.tiles.addTile(
+				createRailTile(mergeTile.x, mergeTile.y + i, {
+					flowMap:
+						i === 3
+							? [Directions.Up, Directions.Up, Directions.Up, Directions.Up]
+							: [Directions.Up, Directions.Down],
+					booster: i === 3,
+				})
+			)
+		}
+
+		// Add intermediate segments
 		do {
-			const prevStretch = this.segments[this.segments.length - 1]
+			const prevSegment = this.segments[this.segments.length - 1]
 			const possibleDirections = [
-				turnClockwise(prevStretch.direction),
-				turnClockwise(prevStretch.direction, 3),
+				turnClockwise(prevSegment.direction),
+				turnClockwise(prevSegment.direction, 3),
 			]
 			if (RNG.getUniform() > 0.5) possibleDirections.reverse()
-			possibleDirections.unshift(prevStretch.direction)
+			possibleDirections.unshift(prevSegment.direction)
 			let segment
 			do {
 				const direction = possibleDirections.pop()!
-				const stretchLength = getNormalWithMin(
-					MIN_STRETCH_LENGTH * 2,
-					MIN_STRETCH_LENGTH
+				const segmentLength = getNormalWithMin(
+					MIN_SEGMENT_LENGTH * 2,
+					MIN_SEGMENT_LENGTH
 				)
-				console.log('running', DirectionNames[direction], stretchLength)
 				let lastTileCheck
-				if (this.totalLength + stretchLength >= TARGET_TOTAL_LENGTH) {
+				if (this.totalLength + segmentLength >= TARGET_TOTAL_LENGTH) {
 					lastTileCheck = (x, y) =>
 						!checkCollisionInRadius([...this.tiles.data.values()], { x, y }, 5)
 				}
-				segment = this.runRail(direction, stretchLength, lastTileCheck)
+				segment = this.runRail(direction, segmentLength, lastTileCheck)
 			} while (!segment && possibleDirections.length > 0)
 			if (!segment) {
 				this.generate()
@@ -87,11 +111,24 @@ export default class MainLine {
 			this.commitRail(segment)
 			this.complete = this.totalLength >= TARGET_TOTAL_LENGTH
 		} while (!this.complete)
+		// Set last tile of final segment to booster
+		const finalSegment = this.segments[this.segments.length - 1]
+		const finalSegmentTile =
+			finalSegment.railTiles[finalSegment.railTiles.length - 1]
+		finalSegmentTile.rail!.booster = true
+		const boostDirection = reverseDirection(finalSegment.direction)
+		finalSegmentTile.rail!.flowMap = [
+			boostDirection,
+			boostDirection,
+			boostDirection,
+			boostDirection,
+		]
+		this.commitRoom(this.createRoom(finalSegmentTile, 7, 7))
 		// Wall it up
 		this.tiles.data.forEach((tile) => {
 			if (tile.type === Tile.Wall) return
 			getNeighbors(tile, true).forEach(({ x, y }) => {
-				if (!this.tiles.has(x, y)) this.tiles.set(x, y, createWallTile(x, y))
+				if (!this.tiles.has(x, y)) this.tiles.addTile(createWallTile(x, y))
 			})
 		})
 	}
@@ -100,8 +137,8 @@ export default class MainLine {
 		railLength: number,
 		lastTileCheck?: (x, y) => boolean
 	): RailSegment | false {
-		const railTiles = new TileMap()
-		const prevStretch = this.segments[this.segments.length - 1]
+		const railTiles: TileData[] = []
+		const prevSegment = this.segments[this.segments.length - 1]
 		const railStartGrid = { ...this.currentGrid }
 		for (let i = 0; i < railLength; i++) {
 			const { x, y } = addGrids(railStartGrid, moveDirectional(railDir, i))
@@ -114,9 +151,9 @@ export default class MainLine {
 					// Last tile of previous rail, update flow map
 					flowMap[railDir] = undefined
 					flowMap[reverseDirection(railDir)] = reverseDirection(
-						prevStretch.direction
+						prevSegment.direction
 					)
-					flowMap[prevStretch.direction] = railDir
+					flowMap[prevSegment.direction] = railDir
 				} else {
 					if (
 						railTile.rail.flowMap[railDir] !== undefined ||
@@ -136,12 +173,13 @@ export default class MainLine {
 				}
 			}
 			if (i === railLength - 1 && lastTileCheck && !lastTileCheck(x, y)) {
+				if (railLength > FIRST_SEGMENT_LENGTH / 2) return false
 				// Extend to satisfy last-tile check
 				railLength++
 			}
-			railTiles.set(x, y, createRailTile(x, y, { flowMap, booster: false }))
+			railTiles.push(createRailTile(x, y, { flowMap, booster: false }))
 		}
-		if (railTiles.data.size < railLength) {
+		if (railTiles.length < railLength) {
 			// RailSegment failed
 			return false
 		} else {
@@ -156,8 +194,8 @@ export default class MainLine {
 	}
 	commitRail(rail: RailSegment) {
 		this.segments.push(rail)
-		rail.railTiles.data.forEach((railTile, key) => {
-			this.tiles.data.set(key, railTile)
+		rail.railTiles.forEach((railTile) => {
+			this.tiles.addTile(railTile)
 		})
 		this.currentGrid = addGrids(
 			rail.startGrid,
@@ -170,8 +208,8 @@ export default class MainLine {
 		const halfHeight = Math.floor(height / 2)
 		let x1, x2, y1, y2
 		const tiles = new TileMap()
-		for (let x = center.x - halfWidth; x < center.x + halfWidth; x++) {
-			for (let y = center.y - halfHeight; y < center.y + halfHeight; y++) {
+		for (let x = center.x - halfWidth; x < center.x + halfWidth + 1; x++) {
+			for (let y = center.y - halfHeight; y < center.y + halfHeight + 1; y++) {
 				const floorTile = createFloorTile(x, y)
 				tiles.set(x, y, floorTile)
 				x1 = x < x1 ? x : x1 ?? x

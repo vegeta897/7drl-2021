@@ -27,6 +27,10 @@ export enum TextureID {
 	RailUpLeftGoDown,
 	RailDownRightGoUp,
 	RailDownLeftGoUp,
+	RailBoostUp,
+	RailBoostDown,
+	RailBoostLeft,
+	RailBoostRight,
 	Zero,
 	One,
 	Two,
@@ -80,7 +84,7 @@ const sheetDefinition = {
 		},
 		{
 			key: TextureID.Player,
-			x: 0,
+			x: 34,
 			y: 17,
 		},
 		{
@@ -199,6 +203,29 @@ const sheetDefinition = {
 			y: 0,
 			rotate: 3,
 			flip: true,
+		},
+		{
+			key: TextureID.RailBoostUp,
+			x: 17,
+			y: 17,
+		},
+		{
+			key: TextureID.RailBoostDown,
+			x: 17,
+			y: 17,
+			rotate: 2,
+		},
+		{
+			key: TextureID.RailBoostLeft,
+			x: 17,
+			y: 17,
+			rotate: 1,
+		},
+		{
+			key: TextureID.RailBoostRight,
+			x: 17,
+			y: 17,
+			rotate: 3,
 		},
 		{
 			key: TextureID.Zero,

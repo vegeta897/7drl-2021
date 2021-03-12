@@ -34,12 +34,9 @@ export function createWallTile(x: number, y: number): TileData {
 	return createTile(x, y, Tile.Wall, false, true)
 }
 
-export function getSpriteProperties(
-	railData: RailData
-): { texture: TextureID; tint: number } {
-	let texture = TextureID.RailCross
+export function getRailTexture(railData: RailData): TextureID {
+	let texture
 	const [goingUp, goingDown, goingLeft, goingRight] = railData.flowMap
-
 	if (
 		goingUp === Directions.Up &&
 		goingDown === Directions.Down &&
@@ -107,11 +104,19 @@ export function getSpriteProperties(
 		texture = TextureID.RailDownRight
 	} else if (goingUp === Directions.Left && goingRight === Directions.Down) {
 		texture = TextureID.RailDownLeft
+	} else if (railData.booster && goingUp === Directions.Up) {
+		texture = TextureID.RailBoostUp
+	} else if (railData.booster && goingUp === Directions.Down) {
+		texture = TextureID.RailBoostDown
+	} else if (railData.booster && goingUp === Directions.Right) {
+		texture = TextureID.RailBoostRight
+	} else if (railData.booster && goingUp === Directions.Left) {
+		texture = TextureID.RailBoostLeft
 	} else {
 		logFlowMap(railData.flowMap)
 		throw 'invalid flow map'
 	}
-	return { texture, tint: railData.booster ? 0xff0000 : 0xffffff }
+	return texture
 }
 
 export function logFlowMap(flowMap: RailData['flowMap']) {

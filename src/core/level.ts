@@ -5,7 +5,7 @@ import MainLine from '../rail/rail'
 import { Grid } from '../types'
 import { RailData, Room } from '../rail/types'
 import Dijkstra from 'rot-js/lib/path/dijkstra'
-import { getSpriteProperties } from '../rail/util'
+import { getRailTexture } from '../rail/util'
 import { Entity } from 'ape-ecs'
 import { Viewport } from 'pixi-viewport'
 
@@ -50,13 +50,10 @@ export class Level {
 			this.tiles.set(gridKey, railTile)
 		)
 		this.rooms = mainLine.rooms
-		// const firstRoom = mainLine.rooms[0]
-		this.levelStart = /*{
+		const firstRoom = mainLine.rooms[0]
+		this.levelStart = {
 			x: firstRoom.x1 + Math.floor(firstRoom.width / 2),
 			y: firstRoom.y1 + Math.floor(firstRoom.height / 2),
-		}*/ {
-			x: 0,
-			y: 0,
 		}
 		console.timeEnd('Level generation')
 		console.time('Sprite creation')
@@ -73,9 +70,7 @@ export class Level {
 			if (!DEBUG_VISIBILITY) tile.sprite.alpha = 0
 			tile.sprite.tint = tile.tint ?? tint
 			if (tile.type === Tile.Rail) {
-				const railSpriteProps = getSpriteProperties(tile.rail!)
-				const railSprite = createSprite(railSpriteProps.texture)
-				railSprite.tint = railSpriteProps.tint
+				const railSprite = createSprite(getRailTexture(tile.rail!))
 				tile.sprite.addChild(railSprite)
 			}
 			this.container.addChild(tile.sprite)

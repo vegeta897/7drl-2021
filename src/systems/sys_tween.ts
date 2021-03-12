@@ -10,11 +10,11 @@ import Controller from '../components/com_controller'
 import Game from '../components/com_game'
 import { runMainSystems } from '../core/ecs'
 import { TILE_SIZE } from '../core/sprites'
+import { Tile } from '../core/level'
 
 // Higher is slower
 export const PLAYER_SPEED = 100
 export const GRIND_SPEED = 120
-export const GRIND_SPEED_GAIN = 80
 
 export default class TweenSystem extends System {
 	private tweening!: Query
@@ -40,8 +40,11 @@ export default class TweenSystem extends System {
 			entity.getComponents(Tweening).forEach((tweening) => {
 				if (tweening.tweenType === Tweening.TweenType.Move) {
 					transform.dirty = false
+					const toSpritePosition = tileToSpritePosition(transform)
+					const onTile = game.level.getTileAt(transform)
+					if (onTile?.type === Tile.Rail) toSpritePosition.y -= 3
 					const positionTween = this.createTween(pixi.object.position).to(
-						tileToSpritePosition(transform)
+						toSpritePosition
 					)
 					if (!grinding) {
 						this.addHop(pixi.object.pivot, PLAYER_SPEED)
@@ -61,8 +64,7 @@ export default class TweenSystem extends System {
 								break
 							default:
 								positionTween.duration(
-									GRIND_SPEED *
-										(GRIND_SPEED_GAIN / (grinding.speed + GRIND_SPEED_GAIN))
+									Math.max(1000 / 30, GRIND_SPEED - grinding.speed / 2)
 								)
 								break
 						}

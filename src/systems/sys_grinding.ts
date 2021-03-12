@@ -121,9 +121,10 @@ export default class GrindingSystem extends System {
 			.forEach((entity) => {
 				if (!entity.has(Tags.Player)) return
 				const move = <Move>entity.c.move
-				if (move.sneak || move.noClip) return
+				if (move.noClip) return
 				const destTile = level.getTileAt(move)
 				if (destTile?.type === Tile.Rail) {
+					if (!destTile.rail!.booster && move.sneak) return
 					let direction
 					if (destTile.rail!.flowMap[move.direction] !== undefined) {
 						direction = move.direction

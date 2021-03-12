@@ -147,6 +147,9 @@ export class TileMap {
 	set(x: number, y: number, tile: TileData): void {
 		this.data.set(TileMap.keyFromXY(x, y), tile)
 	}
+	addTile(tile: TileData): void {
+		this.data.set(TileMap.keyFromXY(tile.x, tile.y), tile)
+	}
 	static keyFromXY(x, y) {
 		return x + ':' + y
 	}

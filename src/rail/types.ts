@@ -1,5 +1,6 @@
 import { Directions, Grid } from '../types'
 import { TileMap } from '../util'
+import { TileData } from '../core/level'
 
 export type RailData = {
 	flowMap: (Directions | undefined)[]
@@ -9,7 +10,7 @@ export type RailData = {
 export type RailSegment = {
 	direction: Directions
 	startGrid: Grid
-	railTiles: TileMap
+	railTiles: TileData[]
 	length: number
 	rooms: Room[]
 }

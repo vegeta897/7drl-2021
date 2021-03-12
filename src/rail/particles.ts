@@ -40,8 +40,8 @@ function getEmitterOptions(dir: Directions): EmitterOptions[] {
 	switch (dir) {
 		case Directions.Up:
 			return [
-				{ pos: { x: 4, y: 16 }, addAtBack: false },
-				{ pos: { x: 12, y: 16 }, addAtBack: false },
+				{ pos: { x: 4, y: 14 }, addAtBack: false },
+				{ pos: { x: 12, y: 14 }, addAtBack: false },
 			]
 		case Directions.Down:
 			return [
@@ -50,13 +50,13 @@ function getEmitterOptions(dir: Directions): EmitterOptions[] {
 			]
 		case Directions.Left:
 			return [
-				{ pos: { x: 10, y: 4 }, addAtBack: true },
-				{ pos: { x: 10, y: 12 }, addAtBack: false },
+				{ pos: { x: 10, y: 7 }, addAtBack: true },
+				{ pos: { x: 10, y: 15 }, addAtBack: false },
 			]
 		case Directions.Right:
 			return [
-				{ pos: { x: 6, y: 4 }, addAtBack: true },
-				{ pos: { x: 6, y: 12 }, addAtBack: false },
+				{ pos: { x: 6, y: 7 }, addAtBack: true },
+				{ pos: { x: 6, y: 15 }, addAtBack: false },
 			]
 	}
 }
