@@ -50,11 +50,7 @@ export class Level {
 			this.tiles.set(gridKey, railTile)
 		)
 		this.rooms = mainLine.rooms
-		const firstRoom = mainLine.rooms[0]
-		this.levelStart = {
-			x: firstRoom.x1 + Math.floor(firstRoom.width / 2),
-			y: firstRoom.y1 + Math.floor(firstRoom.height / 2),
-		}
+		this.levelStart = mainLine.playerStart
 		console.timeEnd('Level generation')
 		console.time('Sprite creation')
 		this.tiles.forEach((tile) => {

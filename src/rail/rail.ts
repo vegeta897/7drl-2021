@@ -13,6 +13,7 @@ import {
 } from '../util'
 import { RailData, RailSegment, Room } from './types'
 import { createFloorTile, createRailTile, createWallTile } from './util'
+import { getTutorialRoom } from './tutorial'
 
 const TARGET_TOTAL_LENGTH = 300
 const FIRST_SEGMENT_LENGTH = 150
@@ -28,6 +29,7 @@ export default class MainLine {
 	totalLength: number
 	complete = false
 	currentGrid: Grid
+	playerStart: Grid
 	generate() {
 		if (this.attempts++ > 100) return (this.abort = true)
 		console.log(`######## begin level gen attempt ${this.attempts} #########`)
@@ -44,15 +46,6 @@ export default class MainLine {
 			return
 		}
 		const mergeDistance = 20
-		const firstRoom = this.createRoom(
-			addGrids(
-				firstSegment.startGrid,
-				moveDirectional(firstSegment.direction, mergeDistance, 11)
-			),
-			13,
-			15
-		)
-		this.commitRoom(firstRoom)
 		this.commitRail(firstSegment)
 		// Create boosted merge rail
 		const mergeTile = firstSegment.railTiles[mergeDistance]
@@ -68,7 +61,9 @@ export default class MainLine {
 				})
 			)
 		}
-
+		this.playerStart = { x: mergeDistance + 11, y: 22 }
+		const tutorialRoom = getTutorialRoom(mergeDistance - 4, 4)
+		this.commitRoom(tutorialRoom)
 		// Add intermediate segments
 		do {
 			const prevSegment = this.segments[this.segments.length - 1]
