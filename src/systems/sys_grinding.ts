@@ -123,25 +123,29 @@ export default class GrindingSystem extends System {
 				const move = <Move>entity.c.move
 				if (move.sneak || move.noClip) return
 				const destTile = level.getTileAt(move)
-				if (
-					destTile?.type === Tile.Rail &&
-					(destTile.rail!.flowMap[move.direction] !== undefined ||
-						destTile.rail!.flowMap.includes(move.direction))
-				) {
-					// Begin grind
-					entity.addComponent({
-						type: Grinding.typeName,
-						key: 'grinding',
-						direction: move.direction,
-						speed: INITIAL_GRIND_SPEED,
-						boosted: destTile.rail!.booster,
-					})
-					game.autoUpdate = true
-					// game.viewport.animate(<AnimateOptions>{
-					// 	scale: GRIND_ZOOM,
-					// 	time: ZOOM_TIME,
-					// 	ease: 'easeInCubic', // Penner's easing https://github.com/bcherny/penner
-					// })
+				if (destTile?.type === Tile.Rail) {
+					let direction
+					if (destTile.rail!.flowMap[move.direction] !== undefined) {
+						direction = move.direction
+					} else if (destTile.rail!.flowMap.includes(move.direction)) {
+						direction = destTile.rail!.flowMap.indexOf(move.direction)
+					}
+					if (direction !== undefined) {
+						// Begin grind
+						entity.addComponent({
+							type: Grinding.typeName,
+							key: 'grinding',
+							direction,
+							speed: INITIAL_GRIND_SPEED,
+							boosted: destTile.rail!.booster,
+						})
+						game.autoUpdate = true
+						// game.viewport.animate(<AnimateOptions>{
+						// 	scale: GRIND_ZOOM,
+						// 	time: ZOOM_TIME,
+						// 	ease: 'easeInCubic', // Penner's easing https://github.com/bcherny/penner
+						// })
+					}
 				}
 			})
 	}
