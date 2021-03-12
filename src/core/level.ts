@@ -1,7 +1,7 @@
 import * as rotJS from 'rot-js'
 import { Container, Sprite } from 'pixi.js'
 import { createSprite, TextureID, TILE_SIZE } from './sprites'
-import { createMainline } from '../rail/rail'
+import MainLine from '../rail/rail'
 import { Grid } from '../types'
 import { RailData, Room } from '../rail/types'
 import Dijkstra from 'rot-js/lib/path/dijkstra'
@@ -11,7 +11,8 @@ import { Viewport } from 'pixi-viewport'
 
 const RANDOM_SEED = true
 const SEED = !RANDOM_SEED ? 2 : rotJS.RNG.getUniformInt(0, 0xffffff)
-const DEBUG_VISIBILITY = false
+
+export const DEBUG_VISIBILITY = false
 
 export enum Tile {
 	Floor,
@@ -44,21 +45,18 @@ export class Level {
 	}
 	createLevel(): void {
 		console.time('Level generation')
-		let mainLine
-		let attempts = 0
-		do {
-			attempts++
-			mainLine = createMainline()
-		} while (!mainLine)
-		console.log('Level generated in', attempts, 'attempts')
-		mainLine.tiles.forEach((railTile, gridKey) =>
+		const mainLine = new MainLine()
+		mainLine.tiles.data.forEach((railTile, gridKey) =>
 			this.tiles.set(gridKey, railTile)
 		)
 		this.rooms = mainLine.rooms
-		const finalRoom = mainLine.rooms[mainLine.rooms.length - 1]
-		this.levelStart = {
-			x: finalRoom.x1 + Math.floor(finalRoom.width / 2),
-			y: finalRoom.y1 + Math.floor(finalRoom.height / 2),
+		// const firstRoom = mainLine.rooms[0]
+		this.levelStart = /*{
+			x: firstRoom.x1 + Math.floor(firstRoom.width / 2),
+			y: firstRoom.y1 + Math.floor(firstRoom.height / 2),
+		}*/ {
+			x: 0,
+			y: 0,
 		}
 		console.timeEnd('Level generation')
 		console.time('Sprite creation')

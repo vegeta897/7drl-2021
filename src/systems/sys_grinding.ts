@@ -2,7 +2,7 @@ import { Query, System } from 'ape-ecs'
 import Grinding, { GrindState } from '../components/com_grinding'
 import { GlobalEntity, Tags } from '../types'
 import Move from '../components/com_move'
-import { addGrids, moveDirectional, reverseDirection } from '../util'
+import { addGrids, moveDirectional } from '../util'
 import { Level, Tile } from '../core/level'
 import Transform from '../components/com_transform'
 import Game from '../components/com_game'
@@ -49,13 +49,13 @@ export default class GrindingSystem extends System {
 			const rail = <RailData>level.getTileAt(transform)!.rail
 			console.assert(rail)
 			let state = GrindState.Continue
-			const newDirection = rail.flowMap[reverseDirection(grinding.direction)]
-			console.assert(newDirection !== undefined)
+			const newDirection = rail.flowMap[grinding.direction]
+			if (newDirection === undefined) throw 'grinding from invalid direction'
 			const moveTo = addGrids(transform, moveDirectional(newDirection))
 			const nextTile = level.getTileAt(moveTo)
 			const particles = entity.getComponents(Particles)
 			if (
-				nextTile?.rail?.flowMap[reverseDirection(newDirection)] === undefined ||
+				nextTile?.rail?.flowMap[newDirection] === undefined ||
 				grinding.speed === 1
 			) {
 				state = GrindState.End
@@ -125,8 +125,7 @@ export default class GrindingSystem extends System {
 				const destTile = level.getTileAt(move)
 				if (
 					destTile?.type === Tile.Rail &&
-					(destTile.rail!.flowMap[reverseDirection(move.direction)] !==
-						undefined ||
+					(destTile.rail!.flowMap[move.direction] !== undefined ||
 						destTile.rail!.flowMap.includes(move.direction))
 				) {
 					// Begin grind

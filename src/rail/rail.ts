@@ -1,202 +1,198 @@
 import { RNG } from 'rot-js'
-import { Tile, TileData } from '../core/level'
+import { Tile } from '../core/level'
 import { Directions, Grid } from '../types'
 import {
 	addGrids,
-	equalGrid,
-	getDirections,
+	checkCollisionInRadius,
+	DirectionNames,
 	getNeighbors,
-	getUpperNormal,
-	isVertical,
+	getNormalWithMin,
 	moveDirectional,
 	reverseDirection,
+	TileMap,
+	turnClockwise,
 } from '../util'
-import { RailData, Room, Stretch } from './types'
+import { RailData, Room, RailSegment } from './types'
 import { createFloorTile, createRailTile, createWallTile } from './util'
 
-export function createMainline():
-	| { tiles: Map<string, TileData>; stretches: Stretch[]; rooms: Room[] }
-	| false {
-	const targetMainlineLength = 150
-	const minStretchLength = 4 // NOT including walls
-	const stretchLengthStdDev = 6
-	const tiles: Map<string, TileData> = new Map()
-	const stretches: Stretch[] = []
-	const rooms: Room[] = []
-	let totalMainlineLength = 0
-	let finalStretch = false
-	do {
-		const prevStretch = stretches[stretches.length - 1]
-		const firstStretch = !prevStretch
-		const startGrid: Grid = prevStretch?.endGrid || { x: 0, y: 0 }
-		let stretchLength = firstStretch
-			? 20
-			: getUpperNormal(minStretchLength, stretchLengthStdDev)
-		const possibleDirections = getDirections(
-			!firstStretch
-				? [prevStretch.direction, reverseDirection(prevStretch.direction)]
-				: []
+const TARGET_TOTAL_LENGTH = 300
+const FIRST_STRETCH_LENGTH = 150
+const MIN_STRETCH_LENGTH = 3
+
+export default class MainLine {
+	valid: boolean
+	abort = false
+	attempts = 0
+	rooms: Room[]
+	tiles = new TileMap()
+	segments: RailSegment[]
+	totalLength: number
+	complete = false
+	currentGrid: Grid
+	generate() {
+		if (this.attempts++ > 100) return (this.abort = true)
+		console.log(`######## begin level gen attempt ${this.attempts} #########`)
+		this.rooms = []
+		this.tiles.data.clear()
+		this.segments = []
+		this.totalLength = 0
+		this.currentGrid = { x: 0, y: 0 }
+		this.valid = true
+		// Create first stretch
+		const firstSegment = this.runRail(
+			RNG.getItem([Directions.Left, Directions.Right])!,
+			FIRST_STRETCH_LENGTH
 		)
-		finalStretch =
-			totalMainlineLength + stretchLength >= targetMainlineLength &&
-			(possibleDirections.includes(Directions.Right) ||
-				possibleDirections.includes(Directions.Left))
-		if (finalStretch) {
-			stretchLength = 120
-		}
-		let validStretch
-		let stretchDirection
-		let stretchRails: Map<string, Grid & RailData>
+		if (!firstSegment) throw 'First segment of main line could not be created'
+		this.commitRail(firstSegment)
 		do {
-			validStretch = true
-			stretchDirection = RNG.getItem(possibleDirections)!
-			possibleDirections.splice(possibleDirections.indexOf(stretchDirection), 1)
-			stretchRails = new Map()
-			// Check full rail path is clear
-			for (let i = 0; i < stretchLength; i++) {
-				const { x, y } = addGrids(
-					startGrid,
-					moveDirectional(stretchDirection, i)
+			const prevStretch = this.segments[this.segments.length - 1]
+			const possibleDirections = [
+				turnClockwise(prevStretch.direction),
+				turnClockwise(prevStretch.direction, 3),
+			]
+			if (RNG.getUniform() > 0.5) possibleDirections.reverse()
+			possibleDirections.unshift(prevStretch.direction)
+			let segment
+			do {
+				const direction = possibleDirections.pop()!
+				const stretchLength = getNormalWithMin(
+					MIN_STRETCH_LENGTH * 2,
+					MIN_STRETCH_LENGTH
 				)
-				if (
-					stretches[0] &&
-					Math.abs(stretches[0].startGrid.x - x) < 4 &&
-					Math.abs(stretches[0].startGrid.y - y) < 4
-				) {
-					// Don't allow rails near starting room
-					validStretch = false
-					break
+				console.log('running', DirectionNames[direction], stretchLength)
+				let lastTileCheck
+				if (this.totalLength + stretchLength >= TARGET_TOTAL_LENGTH) {
+					lastTileCheck = (x, y) =>
+						!checkCollisionInRadius([...this.tiles.data.values()], { x, y }, 5)
 				}
-				const gridKey = x + ':' + y
-				const railTile = tiles.get(gridKey)
-				if (i > 0 && railTile?.rail) {
-					// Check if intersecting rail is perpendicular
-					if (railTile.rail?.flowMap[stretchDirection] !== undefined) {
-						// Invalid direction
-						stretchRails.clear()
-						validStretch = false
+				segment = this.runRail(direction, stretchLength, lastTileCheck)
+			} while (!segment && possibleDirections.length > 0)
+			if (!segment) {
+				this.generate()
+				return
+			}
+			const room = this.createRoom(
+				addGrids(
+					segment.startGrid,
+					moveDirectional(
+						segment.direction,
+						RNG.getUniformInt(0, segment.length)
+					)
+				),
+				5,
+				5
+			)
+			this.commitRoom(room)
+			this.commitRail(segment)
+			this.complete = this.totalLength >= TARGET_TOTAL_LENGTH
+		} while (!this.complete)
+		// Wall it up
+		this.tiles.data.forEach((tile) => {
+			if (tile.type === Tile.Wall) return
+			getNeighbors(tile, true).forEach(({ x, y }) => {
+				if (!this.tiles.has(x, y)) this.tiles.set(x, y, createWallTile(x, y))
+			})
+		})
+	}
+	runRail(
+		railDir: Directions,
+		railLength: number,
+		lastTileCheck?: (x, y) => boolean
+	): RailSegment | false {
+		const railTiles = new TileMap()
+		const prevStretch = this.segments[this.segments.length - 1]
+		const railStartGrid = { ...this.currentGrid }
+		for (let i = 0; i < railLength; i++) {
+			const { x, y } = addGrids(railStartGrid, moveDirectional(railDir, i))
+			const railTile = this.tiles.get(x, y)
+			const flowMap: RailData['flowMap'] = []
+			flowMap[railDir] = railDir
+			flowMap[reverseDirection(railDir)] = reverseDirection(railDir)
+			if (railTile?.rail) {
+				if (i === 0) {
+					// Last tile of previous rail, update flow map
+					flowMap[railDir] = undefined
+					flowMap[reverseDirection(railDir)] = reverseDirection(
+						prevStretch.direction
+					)
+					flowMap[prevStretch.direction] = railDir
+				} else {
+					if (
+						railTile.rail.flowMap[railDir] !== undefined ||
+						railTile.rail.flowMap[reverseDirection(railDir)] !== undefined
+					) {
+						// Can't cross this rail
 						break
-					} else if (i === stretchLength - 1) {
-						stretchLength++
+					} else {
+						// Can intersect, update flow map
+						flowMap[turnClockwise(railDir)] = turnClockwise(railDir)
+						flowMap[turnClockwise(railDir, 3)] = turnClockwise(railDir, 3)
+						if (i === railLength - 1) {
+							// Extend past intersection
+							railLength++
+						}
 					}
 				}
-				const flowMap: Directions[] = []
-				if (i === 0 && !firstStretch) {
-					// Make first tile match previous tile direction
-					flowMap[stretchDirection] = reverseDirection(prevStretch.direction)
-					flowMap[reverseDirection(prevStretch.direction)] = stretchDirection
-				} else {
-					flowMap[stretchDirection] = reverseDirection(stretchDirection)
-					flowMap[reverseDirection(stretchDirection)] = stretchDirection
-				}
-				const booster = firstStretch && i === 0
-				stretchRails.set(gridKey, { x, y, flowMap, booster })
 			}
-		} while (!validStretch && possibleDirections.length > 0)
-		if (!validStretch) {
-			// No valid stretch could be created
+			if (i === railLength - 1 && lastTileCheck && !lastTileCheck(x, y)) {
+				// Extend to satisfy last-tile check
+				railLength++
+			}
+			railTiles.set(x, y, createRailTile(x, y, { flowMap, booster: false }))
+		}
+		if (railTiles.data.size < railLength) {
+			// RailSegment failed
 			return false
 		} else {
-			// Create room for stretch
-			const roomBreadth =
-				firstStretch || finalStretch ? 5 : getUpperNormal(5, 3)
-			const roomLength = firstStretch
-				? 5
-				: finalStretch
-				? 8
-				: getUpperNormal(3, stretchLength / 2, stretchLength)
-			const roomOffset = firstStretch
-				? 0
-				: finalStretch
-				? 2
-				: RNG.getUniformInt(
-						-Math.floor(roomBreadth / 2),
-						Math.floor(roomBreadth / 2)
-				  )
-			const roomCenter = addGrids(
-				startGrid,
-				moveDirectional(
-					stretchDirection,
-					firstStretch
-						? 0
-						: finalStretch
-						? stretchLength - 4
-						: RNG.getUniformInt(0, stretchLength),
-					-roomOffset
-				)
-			)
-			const room = createRoom(
-				roomCenter,
-				isVertical(stretchDirection) ? roomBreadth : roomLength,
-				isVertical(stretchDirection) ? roomLength : roomBreadth
-			)
-			room.tiles.forEach((roomTile) => {
-				if (tiles.has(roomTile.x + ':' + roomTile.y)) return
-				if (
-					stretches[0] &&
-					Math.abs(stretches[0].startGrid.x - roomTile.x) < 4 &&
-					Math.abs(stretches[0].startGrid.y - roomTile.y) < 4
-				) {
-					// Don't allow rooms near starting room
-					return
-				}
-				tiles.set(roomTile.x + ':' + roomTile.y, roomTile)
-			})
-			// Add rail tiles to map
-			// Doing this after room gen so floor tiles get overwritten
-			stretchRails.forEach((railTile, gridKey) => {
-				let tile = createRailTile(railTile.x, railTile.y, railTile)
-				const existingRailTile =
-					!equalGrid(railTile, startGrid) && tiles.get(gridKey)
-				if (existingRailTile && existingRailTile.rail) {
-					tile.rail!.flowMap = [1, 0, 3, 2]
-				}
-				tiles.set(gridKey, tile)
-			})
-			// Add stretch to stretches
-			const stretch = {
-				direction: stretchDirection,
-				possibleDirections,
-				startGrid,
-				endGrid: addGrids(
-					startGrid,
-					moveDirectional(stretchDirection, stretchLength - 1)
-				),
-				rails: stretchRails,
-				length: stretchLength,
-				room,
+			return {
+				direction: railDir,
+				startGrid: railStartGrid,
+				railTiles,
+				length: railLength,
+				rooms: [],
 			}
-			stretches.push(stretch)
-			rooms.push(stretch.room)
-		}
-		totalMainlineLength += stretchLength
-	} while (!finalStretch)
-	// Wall it up
-	tiles.forEach((tile) => {
-		if (tile.type === Tile.Wall) return
-		getNeighbors(tile, true).forEach(({ x, y }) => {
-			const gridKey = x + ':' + y
-			if (!tiles.has(gridKey)) tiles.set(gridKey, createWallTile(x, y))
-		})
-	})
-	return { tiles, stretches, rooms }
-}
-
-function createRoom(center: Grid, width: number, height: number) {
-	const roomTiles: TileData[] = []
-	let x1, x2, y1, y2
-	for (let rw = 0; rw < width; rw++) {
-		for (let rh = 0; rh < height; rh++) {
-			const { x, y } = addGrids(center, {
-				x: rw - Math.floor(width / 2),
-				y: rh - Math.floor(height / 2),
-			})
-			x1 = x < x1 ? x : x1 ?? x
-			x2 = x > x2 ? x : x2 ?? x
-			y1 = y < y1 ? y : y1 ?? y
-			y2 = y > y2 ? y : y2 ?? y
-			roomTiles.push(createFloorTile(x, y))
 		}
 	}
-	return { width, height, tiles: roomTiles, x1, x2, y1, y2 }
+	commitRail(rail: RailSegment) {
+		this.segments.push(rail)
+		rail.railTiles.data.forEach((railTile, key) => {
+			this.tiles.data.set(key, railTile)
+		})
+		this.currentGrid = addGrids(
+			rail.startGrid,
+			moveDirectional(rail.direction, rail.length - 1)
+		)
+		this.totalLength += rail.length
+	}
+	createRoom(center: Grid, width: number, height: number): Room {
+		const halfWidth = Math.floor(width / 2)
+		const halfHeight = Math.floor(height / 2)
+		let x1, x2, y1, y2
+		const tiles = new TileMap()
+		for (let x = center.x - halfWidth; x < center.x + halfWidth; x++) {
+			for (let y = center.y - halfHeight; y < center.y + halfHeight; y++) {
+				const floorTile = createFloorTile(x, y)
+				tiles.set(x, y, floorTile)
+				x1 = x < x1 ? x : x1 ?? x
+				x2 = x > x2 ? x : x2 ?? x
+				y1 = y < y1 ? y : y1 ?? y
+				y2 = y > y2 ? y : y2 ?? y
+			}
+		}
+		return { x1, x2, y1, y2, width, height, tiles }
+	}
+	commitRoom(room: Room) {
+		room.tiles.data.forEach((tile, key) => {
+			if (this.tiles.data.has(key)) return
+			this.tiles.data.set(key, tile)
+		})
+		this.rooms.push(room)
+	}
+	constructor() {
+		while (!this.valid && !this.abort) {
+			this.generate()
+		}
+		console.log('mainline generated in', this.attempts, 'attempts')
+	}
 }

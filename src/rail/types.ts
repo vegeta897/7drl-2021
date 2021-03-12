@@ -1,19 +1,17 @@
 import { Directions, Grid } from '../types'
-import { TileData } from '../core/level'
+import { TileMap } from '../util'
 
 export type RailData = {
-	flowMap: Directions[]
+	flowMap: (Directions | undefined)[]
 	booster: boolean
 }
 
-export type Stretch = {
+export type RailSegment = {
 	direction: Directions
-	possibleDirections: Directions[]
 	startGrid: Grid
-	endGrid?: Grid
-	rails: Map<string, Grid & RailData>
+	railTiles: TileMap
 	length: number
-	room?: Room
+	rooms: Room[]
 }
 
 export type Room = {
@@ -23,5 +21,5 @@ export type Room = {
 	x2: number
 	y1: number
 	y2: number
-	tiles: TileData[]
+	tiles: TileMap
 }

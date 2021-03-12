@@ -85,7 +85,7 @@ const sheetDefinition = {
 		},
 		{
 			key: TextureID.Enemy,
-			x: 17,
+			x: 68,
 			y: 17,
 		},
 		{

@@ -8,6 +8,7 @@ import Game from '../components/com_game'
 import { RNG } from 'rot-js'
 import Follow from '../components/com_follow'
 import Health from '../components/com_health'
+import { DEBUG_VISIBILITY } from '../core/level'
 
 let enemyID = 0
 
@@ -18,7 +19,7 @@ export function createEnemyComponents(
 ): IComponentConfigValObject {
 	const sprite = createSprite(TextureID.Enemy)
 	sprite.tint = 0xf5edba
-	sprite.alpha = 0
+	if (!DEBUG_VISIBILITY) sprite.alpha = 0
 	container.addChild(sprite)
 	const health = RNG.getUniformInt(2, 4)
 	return {
@@ -49,12 +50,13 @@ export function createEnemyComponents(
 
 export function spawnEnemies(world: World, count: number) {
 	const { level } = <Game>world.getEntity(GlobalEntity.Game)!.c.game
+	if (level.rooms.length === 0) return
 	let spawned = 0
 	let passes = 0
 	// TODO: This is bad, spread enemies out
 	do {
 		level.rooms.forEach((room, roomIndex) => {
-			if (roomIndex === level.rooms.length - 1) return
+			if (roomIndex === 0) return
 			if (RNG.getUniform() > 0.05) return
 			// console.log('spawn enemy in room', roomIndex)
 			const x = room.x1 + RNG.getUniformInt(0, room.width - 1)

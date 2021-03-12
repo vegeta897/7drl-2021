@@ -12,7 +12,6 @@ export function createPlayer(world: World): Entity {
 	const game = <Game>world.getEntity(GlobalEntity.Game)!.c.game
 	game.entityContainer.addChild(sprite)
 	const grid = game.level.levelStart
-	// const grid = { x: 1, y: 1 }
 	const entity = world.createEntity({
 		id: GlobalEntity.Player,
 		tags: [

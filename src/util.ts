@@ -1,6 +1,7 @@
 import { Directions, Grid } from './types'
 import { RNG } from 'rot-js'
 import { TILE_SIZE } from './core/sprites'
+import { TileData } from './core/level'
 
 const clockwise = [
 	Directions.Up,
@@ -8,6 +9,8 @@ const clockwise = [
 	Directions.Down,
 	Directions.Left,
 ]
+
+export const DirectionNames = ['Up', 'Down', 'Left', 'Right']
 
 export function getDirections(exclude: Directions[] = []): Directions[] {
 	return clockwise.filter((dir) => !exclude.includes(dir))
@@ -67,6 +70,7 @@ function _moveDir(dir: Directions, distance: number = 1): Grid {
 }
 
 // Offset is positive in the relative right of direction
+// TODO: Make this take a starting grid? check usages
 export function moveDirectional(
 	dir: Directions,
 	distance: number = 1,
@@ -109,8 +113,8 @@ export function checkCollisionInRadius(
 	center: Grid,
 	radius: number
 ): boolean {
-	for (let x = -radius; x < radius + 1; x++) {
-		for (let y = -radius; y < radius + 1; y++) {
+	for (let x = center.x - radius; x < center.x + radius + 1; x++) {
+		for (let y = center.y - radius; y < center.y + radius + 1; y++) {
 			if (grids.find((grid) => grid.x === x && grid.y === y)) return true
 		}
 	}
@@ -130,4 +134,20 @@ export function getUpperNormal(
 	max: number = Infinity
 ): number {
 	return Math.min(max, min + Math.floor(Math.abs(RNG.getNormal(0, stdDev))))
+}
+
+export class TileMap {
+	data: Map<string, TileData> = new Map()
+	has(x: number, y: number): boolean {
+		return this.data.has(TileMap.keyFromXY(x, y))
+	}
+	get(x: number, y: number): TileData | undefined {
+		return this.data.get(TileMap.keyFromXY(x, y))
+	}
+	set(x: number, y: number, tile: TileData): void {
+		this.data.set(TileMap.keyFromXY(x, y), tile)
+	}
+	static keyFromXY(x, y) {
+		return x + ':' + y
+	}
 }
