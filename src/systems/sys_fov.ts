@@ -31,11 +31,17 @@ export default class FOVSystem extends System {
 	}
 	update(tick) {
 		if (DEBUG_VISIBILITY) return
+		const game = this.world.getEntity(GlobalEntity.Game)!
+		if (game.has(Tags.UpdateVisibility)) {
+			game.removeTag(Tags.UpdateVisibility)
+			this.prevVisibilityMap.clear()
+		}
 		let visibilityUpdated = false
 		const player = this.world.getEntity(GlobalEntity.Player)!
 		const playerTransform = <Transform>player.c.transform
 		// Player moved, update visibility map
 		if (player.has(Tags.UpdateVisibility)) {
+			player.removeTag(Tags.UpdateVisibility)
 			visibilityUpdated = true
 			const newVisibilityMap: VisibilityMap = new Map()
 			const level = <Level>this.world.getEntity(GlobalEntity.Game)!.c.game.level

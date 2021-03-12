@@ -39,7 +39,7 @@ export default class CollisionSystem extends System {
 			}
 		}
 		movers.forEach((entity) => {
-			if (entity === player) return
+			if (entity === player) return // Movers includes player but player updated above
 			if (entity.destroyed) return
 			const destWalkable = game.level.isTileWalkable(
 				entity.c.move.x,

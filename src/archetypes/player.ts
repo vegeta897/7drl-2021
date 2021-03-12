@@ -6,7 +6,7 @@ import PixiObject from '../components/com_pixi'
 import { Directions, GlobalEntity, Tags } from '../types'
 import Health from '../components/com_health'
 import Game from '../components/com_game'
-import Move from '../components/com_move'
+import Grinding from '../components/com_grinding'
 
 export function createPlayer(world: World): Entity {
 	const sprite = createSprite(TextureID.Player)
@@ -42,11 +42,11 @@ export function createPlayer(world: World): Entity {
 	})
 	if (game.levelNumber > 1) {
 		entity.addComponent({
-			type: Move.typeName,
-			key: 'move',
-			x: game.level.levelStart.x - 1,
-			y: game.level.levelStart.y,
+			type: Grinding.typeName,
+			key: 'grinding',
 			direction: Directions.Left,
+			speed: 10,
+			boosted: true,
 		})
 	}
 	game.level.entityMap.set(grid.x + ':' + grid.y, entity)

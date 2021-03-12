@@ -95,7 +95,7 @@ export default class TweenSystem extends System {
 			tweening.destroy()
 			this.onTweenEnd(tween)
 		}
-		tween.onComplete(remove)
+		tween.onComplete(remove).onStop(() => this.tweens.delete(tween))
 		this.tweens.add(tween)
 		return tween
 	}

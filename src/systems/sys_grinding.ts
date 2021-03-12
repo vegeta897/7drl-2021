@@ -37,7 +37,7 @@ export default class GrindingSystem extends System {
 		})
 	}
 	update(tick) {
-		const { game } = <{ game: Game }>this.world.getEntity(GlobalEntity.Game)!.c
+		const game = <Game>this.world.getEntity(GlobalEntity.Game)!.c.game
 		const level = <Level>game.level
 
 		this.grinding.execute().forEach((entity) => {
@@ -126,30 +126,29 @@ export default class GrindingSystem extends System {
 				const move = <Move>entity.c.move
 				if (move.noClip) return
 				const destTile = level.getTileAt(move)
-				if (destTile?.type === Tile.Rail) {
-					if (!destTile.rail!.booster && move.sneak) return
-					let direction
-					if (destTile.rail!.flowMap[move.direction] !== undefined) {
-						direction = move.direction
-					} else if (destTile.rail!.flowMap.includes(move.direction)) {
-						direction = destTile.rail!.flowMap.indexOf(move.direction)
-					}
-					if (direction !== undefined) {
-						// Begin grind
-						entity.addComponent({
-							type: Grinding.typeName,
-							key: 'grinding',
-							direction,
-							speed: INITIAL_GRIND_SPEED,
-							boosted: destTile.rail!.booster,
-						})
-						game.autoUpdate = true
-						// game.viewport.animate(<AnimateOptions>{
-						// 	scale: GRIND_ZOOM,
-						// 	time: ZOOM_TIME,
-						// 	ease: 'easeInCubic', // Penner's easing https://github.com/bcherny/penner
-						// })
-					}
+				if (destTile?.type !== Tile.Rail) return
+				if (!destTile.rail!.booster && move.sneak) return
+				let direction
+				if (destTile.rail!.flowMap[move.direction] !== undefined) {
+					direction = move.direction
+				} else if (destTile.rail!.flowMap.includes(move.direction)) {
+					direction = destTile.rail!.flowMap.indexOf(move.direction)
+				}
+				if (direction !== undefined) {
+					// Begin grind
+					entity.addComponent({
+						type: Grinding.typeName,
+						key: 'grinding',
+						direction,
+						speed: INITIAL_GRIND_SPEED,
+						boosted: destTile.rail!.booster,
+					})
+					game.autoUpdate = true
+					// game.viewport.animate(<AnimateOptions>{
+					// 	scale: GRIND_ZOOM,
+					// 	time: ZOOM_TIME,
+					// 	ease: 'easeInCubic', // Penner's easing https://github.com/bcherny/penner
+					// })
 				}
 			})
 	}

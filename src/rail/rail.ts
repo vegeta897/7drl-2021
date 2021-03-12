@@ -72,6 +72,14 @@ export default class MainLine {
 		} else {
 			// After first level
 			this.playerStart = { x: 0, y: 3 }
+			for (let i = 0; i < 40; i++) {
+				this.tiles.addTile(
+					createRailTile(this.playerStart.x + 20 - i, this.playerStart.y, {
+						flowMap: [undefined, undefined, Directions.Left, Directions.Right],
+						booster: false,
+					})
+				)
+			}
 		}
 		// Add intermediate segments
 		do {

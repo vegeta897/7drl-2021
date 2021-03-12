@@ -1,5 +1,6 @@
 import { Component } from 'ape-ecs'
 import { Emitter } from 'pixi-particles'
+import { GlobalEntity } from '../types'
 
 export default class Particles extends Component {
 	static typeName = 'Particles'
@@ -8,7 +9,11 @@ export default class Particles extends Component {
 		emitter: null,
 	}
 	preDestroy() {
-		// Destroy emitter after waiting for all particles to die
-		setTimeout(() => this.emitter.destroy(), this.emitter.maxLifetime * 1000)
+		if (this.world.getEntity(GlobalEntity.Game)!.c.game.win) {
+			this.emitter.destroy()
+		} else {
+			// Destroy emitter after waiting for all particles to die
+			setTimeout(() => this.emitter.destroy(), this.emitter.maxLifetime * 1000)
+		}
 	}
 }

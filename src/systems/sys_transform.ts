@@ -2,7 +2,7 @@ import { Entity, Query, System } from 'ape-ecs'
 import Transform from '../components/com_transform'
 import Move from '../components/com_move'
 import { Level } from '../core/level'
-import { GlobalEntity } from '../types'
+import { GlobalEntity, Tags } from '../types'
 import Tweening from '../components/com_tween'
 import { equalGrid } from '../util'
 import Game from '../components/com_game'
@@ -18,7 +18,7 @@ export default class TransformSystem extends System {
 	}
 
 	update(tick) {
-		const player = <Entity>this.world.getEntity(GlobalEntity.Player)
+		const player = <Entity>this.world.getEntity(GlobalEntity.Player)!
 		const gameEntity = this.world.getEntity(GlobalEntity.Game)!
 		const level = <Level>gameEntity.c.game.level
 		this.moving.execute().forEach((entity) => {
@@ -31,9 +31,12 @@ export default class TransformSystem extends System {
 				type: Tweening.typeName,
 				tweenType: Tweening.TweenType.Move,
 			})
-			if (entity === player && equalGrid(transform, { x: 0, y: 0 })) {
-				const game = <Game>gameEntity.c.game
-				game.win = true
+			if (entity === player) {
+				player.addTag(Tags.UpdateVisibility)
+				if (equalGrid(transform, { x: 0, y: 0 })) {
+					const game = <Game>gameEntity.c.game
+					game.win = true
+				}
 			}
 		})
 	}

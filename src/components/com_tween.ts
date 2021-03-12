@@ -4,10 +4,6 @@ import { Tween } from '@tweenjs/tween.js'
 enum TweenType {
 	None,
 	Move,
-	GrindStart,
-	GrindContinue,
-	GrindEnd,
-	Attack,
 }
 
 export default class Tweening extends Component {
