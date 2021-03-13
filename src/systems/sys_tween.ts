@@ -61,15 +61,15 @@ export default class TweenSystem extends System {
 
 								break
 							case GrindState.End:
-								positionTween.duration(GRIND_SPEED * 2)
-								positionTween.easing(Easing.Quadratic.Out)
+								positionTween.duration(GRIND_SPEED * 1.5)
+								positionTween.easing(Easing.Sinusoidal.Out)
 								if (grinding.speed > 0)
-									this.addHop(tweening, pixi.object.pivot, GRIND_SPEED * 2, 2)
+									this.addHop(tweening, pixi.object.pivot, GRIND_SPEED * 1.5, 2)
 
 								break
 							default:
 								positionTween.duration(
-									Math.max(1000 / 30, GRIND_SPEED - grinding.speed / 2)
+									Math.max(1000 / 30, GRIND_SPEED - grinding.speed / 4)
 								)
 								break
 						}

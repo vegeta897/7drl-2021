@@ -8,7 +8,7 @@ import Game from '../components/com_game'
 import { RNG } from 'rot-js'
 import Follow from '../components/com_follow'
 import Health from '../components/com_health'
-import { DEBUG_VISIBILITY } from '../core/level'
+import { DEBUG_VISIBILITY, TileData } from '../core/level'
 
 let enemyID = 0
 
@@ -43,24 +43,18 @@ function createEnemyComponents(
 export function spawnEnemies(world: World) {
 	const { level } = <Game>world.getEntity(GlobalEntity.Game)!.c.game
 	if (level.rooms.length === 0) return
-	const minimum = 16
+	const minimum = 60
 	let spawned = 0
-	let passes = 0
-	// TODO: This is bad, spread enemies out
+	const floorTiles: TileData[] = []
+	level.rooms.forEach(
+		(room) => !room.noEnemies && floorTiles.push(...room.tiles.data.values())
+	)
 	do {
-		level.rooms.forEach((room, roomIndex) => {
-			if (roomIndex === 0) return
-			if (RNG.getUniform() > 0.05) return
-			// console.log('spawn enemy in room', roomIndex)
-			const x = room.x1 + RNG.getUniformInt(0, room.width - 1)
-			const y = room.y1 + RNG.getUniformInt(0, room.height - 1)
-			if (level.entityMap.has(x + ':' + y)) return
-			spawnEnemy(world, x, y)
-			spawned++
-		})
-		passes++
+		const spawnTile = RNG.getItem(floorTiles)!
+		if (level.entityMap.has(spawnTile.x + ':' + spawnTile.y)) return
+		spawnEnemy(world, spawnTile.x, spawnTile.y)
+		spawned++
 	} while (spawned < minimum)
-	console.log('enemy spawn passes:', passes)
 }
 
 function spawnEnemy(world, x, y) {

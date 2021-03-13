@@ -23,4 +23,5 @@ export type Room = {
 	y1: number
 	y2: number
 	tiles: TileMap
+	noEnemies?: boolean
 }

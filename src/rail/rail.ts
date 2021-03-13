@@ -21,8 +21,9 @@ import {
 import { getTutorialRoom } from './tutorial'
 import { TextureID } from '../core/sprites'
 
+const FIRST_SEGMENT_DIRECTION = Directions.Right
 const FIRST_SEGMENT_LENGTH = 200
-const TARGET_TOTAL_LENGTH = FIRST_SEGMENT_LENGTH + 200
+const TARGET_TOTAL_LENGTH = FIRST_SEGMENT_LENGTH + 800
 const MIN_SEGMENT_LENGTH = 3
 
 export default class MainLine {
@@ -45,12 +46,15 @@ export default class MainLine {
 		this.currentGrid = { x: 0, y: 0 }
 		this.valid = true
 		// Create first segment
-		const firstSegment = this.runRail(Directions.Right, FIRST_SEGMENT_LENGTH)
+		const firstSegment = this.runRail(
+			FIRST_SEGMENT_DIRECTION,
+			FIRST_SEGMENT_LENGTH
+		)
 		if (!firstSegment) return this.generate()
 
 		this.commitRail(firstSegment)
 		// Create boosted merge rail
-		const mergeDistance = 50
+		const mergeDistance = 80
 		const mergeTile = firstSegment.railTiles[mergeDistance]
 		mergeTile.rail!.flowMap[Directions.Up] = Directions.Right
 		for (let i = 1; i < 4; i++) {
@@ -65,7 +69,7 @@ export default class MainLine {
 			)
 		}
 		// this.playerStart = { x: mergeDistance + 9, y: 22 }
-		this.playerStart = { x: 195, y: 0 }
+		this.playerStart = { x: 220, y: 0 }
 		// Create tutorial room
 		const tutorialRoom = getTutorialRoom(mergeDistance - 4, 4)
 		this.commitRoom(tutorialRoom)
@@ -77,7 +81,12 @@ export default class MainLine {
 				turnClockwise(prevSegment.direction),
 				turnClockwise(prevSegment.direction, 3),
 			]
-			if (RNG.getUniform() > 0.5) possibleDirections.reverse()
+			if (RNG.getUniform() > 0.8) {
+				// Prioritize moving away from start
+				if (possibleDirections[0] === FIRST_SEGMENT_DIRECTION)
+					possibleDirections.reverse()
+			} else if (RNG.getUniform() > 0.5) possibleDirections.reverse()
+
 			possibleDirections.unshift(prevSegment.direction)
 			let segment
 			do {
@@ -86,14 +95,15 @@ export default class MainLine {
 					MIN_SEGMENT_LENGTH * 2,
 					MIN_SEGMENT_LENGTH
 				)
-				let lastTileCheck
+				let tileCheck = (x, y, lastTile) => x >= FIRST_SEGMENT_LENGTH - 1
 				if (this.totalLength + segmentLength >= TARGET_TOTAL_LENGTH) {
-					lastTileCheck = (x, y) =>
+					tileCheck = (x, y, lastTile) =>
+						!lastTile ||
 						!checkCollisionInRadius([...this.tiles.data.values()], { x, y }, 5)
 				}
-				segment = this.runRail(direction, segmentLength, lastTileCheck)
+				segment = this.runRail(direction, segmentLength, tileCheck)
 			} while (!segment && possibleDirections.length > 0)
-
+			if (!segment) return this.generate()
 			// Create dungeon turn-off rail
 			if (this.segments.length === 1) {
 				const turnoffTile = segment.railTiles[0]
@@ -152,13 +162,14 @@ export default class MainLine {
 	runRail(
 		railDir: Directions,
 		railLength: number,
-		lastTileCheck?: (x, y) => boolean
+		tileCheck?: (x: number, y: number, last: boolean) => boolean
 	): RailSegment | false {
 		const railTiles: TileData[] = []
 		const prevSegment = this.segments[this.segments.length - 1]
 		const railStartGrid = { ...this.currentGrid }
 		for (let i = 0; i < railLength; i++) {
 			const { x, y } = addGrids(railStartGrid, moveDirectional(railDir, i))
+			if (tileCheck && !tileCheck(x, y, i === railLength - 1)) return false
 			const railTile = this.tiles.get(x, y)
 			const flowMap: RailData['flowMap'] = []
 			flowMap[railDir] = railDir
@@ -182,17 +193,11 @@ export default class MainLine {
 						// Can intersect, update flow map
 						flowMap[turnClockwise(railDir)] = turnClockwise(railDir)
 						flowMap[turnClockwise(railDir, 3)] = turnClockwise(railDir, 3)
-						if (i === railLength - 1) {
-							// Extend past intersection
-							railLength++
-						}
+						// Extend past intersection if not too long
+						if (i === railLength - 1 && railLength++ > FIRST_SEGMENT_LENGTH / 4)
+							return false
 					}
 				}
-			}
-			if (i === railLength - 1 && lastTileCheck && !lastTileCheck(x, y)) {
-				if (railLength > FIRST_SEGMENT_LENGTH / 2) return false
-				// Extend to satisfy last-tile check
-				railLength++
 			}
 			railTiles.push(createRailTile(x, y, { flowMap }))
 		}

@@ -62,13 +62,12 @@ function getEmitterOptions(dir: Directions): EmitterOptions[] {
 }
 
 export function intensifySparks(emitter: Emitter): void {
-	emitter.maxParticles++
+	emitter.maxParticles += 0.5
 	emitter.maxLifetime += 0.01
-	emitter.minimumSpeedMultiplier += 0.05
-	emitter.minStartRotation = Math.max(200, emitter.minStartRotation - 0.3)
-	emitter.maxStartRotation = Math.min(340, emitter.maxStartRotation + 0.3)
-	emitter.maxStartRotation += 0.25
-	emitter.frequency *= 0.95
+	emitter.minimumSpeedMultiplier += 0.04
+	emitter.minStartRotation = Math.max(200, emitter.minStartRotation - 0.1)
+	emitter.maxStartRotation = Math.min(340, emitter.maxStartRotation + 0.1)
+	emitter.frequency *= 0.98
 }
 
 export function createSparkEmitter(

@@ -50,6 +50,7 @@ export function getTutorialRoom(xOff = 0, yOff = 0): Room {
 		width: 30,
 		height: 30,
 		tiles: tutorialTiles,
+		noEnemies: true,
 	}
 }
 
