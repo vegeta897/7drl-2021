@@ -31,7 +31,8 @@ export default class PixiSystem extends System {
 				)
 			}
 			entity.getComponents(Particles).forEach((particles) => {
-				particles.emitter.updateOwnerPos(pixi.object.x, pixi.object.y)
+				if (pixi.object)
+					particles.emitter.updateOwnerPos(pixi.object.x, pixi.object.y)
 			})
 		})
 	}
