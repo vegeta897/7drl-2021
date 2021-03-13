@@ -18,11 +18,14 @@ export function createTile(x, y, type, seeThrough = true, solid = false) {
 export function createRailTile(
 	x: number,
 	y: number,
-	railData: RailData
+	railData: { flowMap: RailData['flowMap']; booster?: boolean }
 ): TileData {
 	return {
 		...createTile(x, y, Tile.Rail),
-		rail: railData,
+		rail: {
+			flowMap: railData.flowMap,
+			booster: railData.booster || false,
+		},
 	}
 }
 
@@ -129,4 +132,21 @@ export function logFlowMap(flowMap: RailData['flowMap']) {
 			DirectionNames[exit]
 		)
 	}
+}
+
+type RailTextureIDs = TextureID &
+	(TextureID.RailUpDown | TextureID.RailLeftRight)
+
+// Post-jam: Use this map for getRailTexture
+const railTextureFlowMaps: Map<RailTextureIDs, RailData['flowMap']> = new Map([
+	[TextureID.RailUpDown, [Directions.Up, Directions.Down]],
+	[
+		TextureID.RailLeftRight,
+		[undefined, undefined, Directions.Left, Directions.Right],
+	],
+])
+export function getFlowMapFromTextureID(
+	textureID: RailTextureIDs
+): RailData['flowMap'] {
+	return <RailData['flowMap']>railTextureFlowMaps.get(textureID)
 }

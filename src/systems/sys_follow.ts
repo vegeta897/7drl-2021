@@ -18,13 +18,14 @@ export default class FollowSystem extends System {
 		})
 	}
 	update(tick) {
+		const player = <Entity>this.world.getEntity(GlobalEntity.Player)!
 		const game = <Game>this.world.getEntity(GlobalEntity.Game)!.c.game
 		// Do not follow if player is grinding
-		if (this.world.getEntity(GlobalEntity.Player)!.c.grinding) return
+		if (player.c.grinding) return
 		const level = <Level>game.level
 		this.followers.execute().forEach((entity) => {
 			const myTransform = <Transform>entity.c.transform
-			const target = <Entity>entity.c.follow.target
+			const target = <Entity>entity.c.follow.target || player
 			if (!target || !target.c.transform) return
 			const targetTransform = <Transform>target.c.transform
 			const targetDistance =

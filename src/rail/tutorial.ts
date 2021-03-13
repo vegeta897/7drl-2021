@@ -36,7 +36,6 @@ export function getTutorialRoom(xOff = 0, yOff = 0): Room {
 			if (tileInfo.type === Tile.Rail)
 				tile = createRailTile(x + xOff, y + yOff, {
 					flowMap: tileInfo.flow!,
-					booster: false,
 				})
 			if (tileInfo.solid)
 				tile = createTile(x + xOff, y + yOff, tileInfo.type, true, true)

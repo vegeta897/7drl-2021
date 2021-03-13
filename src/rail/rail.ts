@@ -12,8 +12,14 @@ import {
 	turnClockwise,
 } from '../util'
 import { RailData, RailSegment, Room } from './types'
-import { createFloorTile, createRailTile, createWallTile } from './util'
+import {
+	createFloorTile,
+	createRailTile,
+	createWallTile,
+	getFlowMapFromTextureID,
+} from './util'
 import { getTutorialRoom } from './tutorial'
+import { TextureID } from '../core/sprites'
 
 const FIRST_SEGMENT_LENGTH = 200
 const TARGET_TOTAL_LENGTH = FIRST_SEGMENT_LENGTH + 200
@@ -40,12 +46,9 @@ export default class MainLine {
 		this.valid = true
 		// Create first segment
 		const firstSegment = this.runRail(Directions.Right, FIRST_SEGMENT_LENGTH)
-		if (!firstSegment) {
-			this.generate()
-			return
-		}
+		if (!firstSegment) return this.generate()
+
 		this.commitRail(firstSegment)
-		// Create tutorial room
 		// Create boosted merge rail
 		const mergeDistance = 50
 		const mergeTile = firstSegment.railTiles[mergeDistance]
@@ -56,13 +59,14 @@ export default class MainLine {
 					flowMap:
 						i === 3
 							? [Directions.Up, Directions.Up, Directions.Up, Directions.Up]
-							: [Directions.Up, Directions.Down],
+							: getFlowMapFromTextureID(TextureID.RailUpDown),
 					booster: i === 3,
 				})
 			)
 		}
-		this.playerStart = { x: mergeDistance + 9, y: 22 }
-		// this.playerStart = { x: 1, y: 0 }
+		// this.playerStart = { x: mergeDistance + 9, y: 22 }
+		this.playerStart = { x: 195, y: 0 }
+		// Create tutorial room
 		const tutorialRoom = getTutorialRoom(mergeDistance - 4, 4)
 		this.commitRoom(tutorialRoom)
 
@@ -89,10 +93,24 @@ export default class MainLine {
 				}
 				segment = this.runRail(direction, segmentLength, lastTileCheck)
 			} while (!segment && possibleDirections.length > 0)
-			if (!segment) {
-				this.generate()
-				return
+
+			// Create dungeon turn-off rail
+			if (this.segments.length === 1) {
+				const turnoffTile = segment.railTiles[0]
+				turnoffTile.rail!.flowMap[Directions.Left] = Directions.Left
+				turnoffTile.rail!.flowMap[Directions.Right] = Directions.Right
+				for (let i = 0; i < 6; i++) {
+					this.tiles.addTile(
+						createRailTile(turnoffTile.x + 1 + i, turnoffTile.y, {
+							flowMap: getFlowMapFromTextureID(TextureID.RailLeftRight),
+						})
+					)
+				}
+				this.commitRoom(
+					this.createRoom({ ...turnoffTile, x: turnoffTile.x + 2 }, 8, 3)
+				)
 			}
+
 			const room = this.createRoom(
 				addGrids(
 					segment.startGrid,
@@ -108,6 +126,7 @@ export default class MainLine {
 			this.commitRail(segment)
 			this.complete = this.totalLength >= TARGET_TOTAL_LENGTH
 		} while (!this.complete)
+
 		// Set last tile of final segment to booster
 		const finalSegment = this.segments[this.segments.length - 1]
 		const finalSegmentTile =
@@ -121,6 +140,7 @@ export default class MainLine {
 			boostDirection,
 		]
 		this.commitRoom(this.createRoom(finalSegmentTile, 7, 7))
+
 		// Wall it up
 		this.tiles.data.forEach((tile) => {
 			if (tile.type === Tile.Wall || tile.type === Tile.HoldShift) return
@@ -174,10 +194,10 @@ export default class MainLine {
 				// Extend to satisfy last-tile check
 				railLength++
 			}
-			railTiles.push(createRailTile(x, y, { flowMap, booster: false }))
+			railTiles.push(createRailTile(x, y, { flowMap }))
 		}
 		if (railTiles.length < railLength) {
-			// RailSegment failed
+			// Segment failed
 			return false
 		} else {
 			return {
@@ -189,16 +209,16 @@ export default class MainLine {
 			}
 		}
 	}
-	commitRail(rail: RailSegment) {
-		this.segments.push(rail)
-		rail.railTiles.forEach((railTile) => {
+	commitRail(segment: RailSegment) {
+		this.segments.push(segment)
+		segment.railTiles.forEach((railTile) => {
 			this.tiles.addTile(railTile)
 		})
 		this.currentGrid = addGrids(
-			rail.startGrid,
-			moveDirectional(rail.direction, rail.length - 1)
+			segment.startGrid,
+			moveDirectional(segment.direction, segment.length - 1)
 		)
-		this.totalLength += rail.length
+		this.totalLength += segment.length
 	}
 	createRoom(center: Grid, width: number, height: number): Room {
 		const halfWidth = Math.floor(width / 2)

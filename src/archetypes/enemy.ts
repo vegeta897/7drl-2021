@@ -1,4 +1,4 @@
-import { Entity, IComponentConfigValObject, World } from 'ape-ecs'
+import { IComponentConfigValObject, World } from 'ape-ecs'
 import { Container } from 'pixi.js'
 import Transform from '../components/com_transform'
 import PixiObject from '../components/com_pixi'
@@ -14,8 +14,7 @@ let enemyID = 0
 
 function createEnemyComponents(
 	container: Container,
-	grid: Grid,
-	player: Entity
+	grid: Grid
 ): IComponentConfigValObject {
 	const sprite = createSprite(TextureID.Enemy)
 	if (!DEBUG_VISIBILITY) sprite.alpha = 0
@@ -32,7 +31,6 @@ function createEnemyComponents(
 		},
 		follow: {
 			type: Follow.typeName,
-			target: player,
 		},
 		health: {
 			type: Health.typeName,
@@ -42,15 +40,10 @@ function createEnemyComponents(
 	}
 }
 
-// TODO: Monsters chase after players, and prefer to walk on rail when doing so
-// So players can lure them onto rails and then grind 'em
-
-// Or maybe some other behavior that works better for the grinding gameplay?
-
 export function spawnEnemies(world: World) {
 	const { level } = <Game>world.getEntity(GlobalEntity.Game)!.c.game
 	if (level.rooms.length === 0) return
-	const count = Math.floor(16)
+	const minimum = 16
 	let spawned = 0
 	let passes = 0
 	// TODO: This is bad, spread enemies out
@@ -66,7 +59,7 @@ export function spawnEnemies(world: World) {
 			spawned++
 		})
 		passes++
-	} while (spawned < count)
+	} while (spawned < minimum)
 	console.log('enemy spawn passes:', passes)
 }
 
@@ -74,12 +67,7 @@ function spawnEnemy(world, x, y) {
 	const { level, entityContainer } = <Game>(
 		world.getEntity(GlobalEntity.Game)!.c.game
 	)
-	const player = <Entity>world.getEntity(GlobalEntity.Player)!
-	const enemyComponents = createEnemyComponents(
-		entityContainer,
-		{ x, y },
-		player
-	)
+	const enemyComponents = createEnemyComponents(entityContainer, { x, y })
 	level.entityMap.set(
 		x + ':' + y,
 		world.createEntity({

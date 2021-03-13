@@ -27,7 +27,7 @@ export default class ActionSystem extends System {
 				if (controller.direction !== null) {
 					const moveTo = addGrids(
 						<Transform>player.c.transform,
-						moveDirectional(controller.direction, controller.boost ? 4 : 1)
+						moveDirectional(controller.direction, controller.boost ? 20 : 1)
 					)
 					player.addComponent({
 						type: Move.typeName,

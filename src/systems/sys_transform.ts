@@ -32,6 +32,7 @@ export default class TransformSystem extends System {
 				tweenType: Tweening.TweenType.Move,
 			})
 			if (entity === player) {
+				// console.log(transform.x, transform.y)
 				player.addTag(Tags.UpdateVisibility)
 				if (transform.x < 20) {
 					const game = <Game>gameEntity.c.game

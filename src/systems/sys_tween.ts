@@ -95,7 +95,8 @@ export default class TweenSystem extends System {
 	createTween(tweenObject: Grid, tweening: Tweening): Tween<Grid> {
 		const tween = new Tween(tweenObject)
 		const remove = () => {
-			tweening.destroy()
+			if (tweening.entity.getComponents(Tweening).has(tweening))
+				tweening.entity.removeComponent(tweening)
 			this.onTweenEnd(tween)
 		}
 		tween.onComplete(remove).onStop(() => this.tweens.delete(tween))
