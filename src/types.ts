@@ -24,6 +24,7 @@ export enum GlobalEntity {
 
 export enum GlobalSprite {
 	PressEnter = 'pressEnter',
+	HoldShift = 'holdShift',
 }
 
 export enum Directions {

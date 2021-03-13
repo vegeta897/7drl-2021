@@ -63,18 +63,16 @@ world.createEntity({
 })
 
 // TODO: Show title card on first long grind on first level
-
-// TODO: Final boss will be in a big room with a rail maze (use rotJS maze-gen)
-
-// Player gains initial grinding momentum during game (killing monsters)
 // Put enemies on the long line just before the dungeon
 // Make the long line turn off to the side when reaching the dungeon, so it doesn't take you all the way to the end booster
 // Add a key to one of the enemies that opens the door to the final booster room
 
+spawnEnemies(world)
+spawnDummies(world)
 createPlayer(world)
 
-spawnEnemies(world)
-
-spawnDummies(world)
-
 runMainSystems()
+
+// Post-Jam Wishlist
+// Final boss will be in a big room with a rail maze (use rotJS maze-gen)
+// Player gains initial grinding momentum during game (killing monsters)

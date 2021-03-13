@@ -23,7 +23,8 @@ export default class PlayerSystem extends System {
 			if (!move.noClip && !destWalkable) {
 				// Wall, cancel move
 				player.removeComponent(move)
-				if (grinding) player.removeComponent(grinding)
+				if (grinding && grinding.state !== GrindState.End)
+					player.removeComponent(grinding)
 			} else {
 				const destEntity = game.level.entityMap.get(move.x + ':' + move.y)
 				if (destEntity) {

@@ -9,7 +9,7 @@ import {
 	TILE_SIZE,
 } from '../core/sprites'
 import Game from '../components/com_game'
-import { DeadRailContainer } from '../screens'
+import { DeadRailContainer, WinRailContainer } from '../screens'
 import { HEIGHT, WIDTH } from '../index'
 import { Easing, Tween } from '@tweenjs/tween.js'
 
@@ -65,23 +65,25 @@ export default class HUDSystem extends System {
 			if (game.gameOver) {
 				if (this.screenContainer)
 					this.container.removeChild(this.screenContainer)
-				this.screenContainer = DeadRailContainer
+				this.screenContainer = game.win ? WinRailContainer : DeadRailContainer
 				this.screenContainer.alpha = 0
 				this.container.addChild(this.screenContainer)
 				new Tween(this.screenContainer)
-					.to({ alpha: 1 }, 2500)
-					.delay(500)
+					.to({ alpha: 1 }, game.win ? 1000 : 2500)
+					.delay(game.win ? 0 : 500)
 					.easing(Easing.Sinusoidal.Out)
 					.start()
-				const pressEnterSprite = this.screenContainer.getChildByName!(
-					GlobalSprite.PressEnter
-				)
-				pressEnterSprite.alpha = 0
-				new Tween(pressEnterSprite)
-					.to({ alpha: 1 }, 800)
-					.delay(4000)
-					.easing(Easing.Sinusoidal.Out)
-					.start()
+				if (!game.win) {
+					const pressEnterSprite = this.screenContainer.getChildByName!(
+						GlobalSprite.PressEnter
+					)
+					pressEnterSprite.alpha = 0
+					new Tween(pressEnterSprite)
+						.to({ alpha: 1 }, 800)
+						.delay(4000)
+						.easing(Easing.Sinusoidal.Out)
+						.start()
+				}
 				this.healthContainer.visible = false
 				player.c.pixi.object.visible = false
 				return

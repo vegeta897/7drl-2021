@@ -61,7 +61,7 @@ export default class MainLine {
 				})
 			)
 		}
-		this.playerStart = { x: mergeDistance + 7, y: 22 }
+		this.playerStart = { x: mergeDistance + 9, y: 22 }
 		// this.playerStart = { x: 1, y: 0 }
 		const tutorialRoom = getTutorialRoom(mergeDistance - 4, 4)
 		this.commitRoom(tutorialRoom)
@@ -123,7 +123,7 @@ export default class MainLine {
 		this.commitRoom(this.createRoom(finalSegmentTile, 7, 7))
 		// Wall it up
 		this.tiles.data.forEach((tile) => {
-			if (tile.type === Tile.Wall) return
+			if (tile.type === Tile.Wall || tile.type === Tile.HoldShift) return
 			getNeighbors(tile, true).forEach(({ x, y }) => {
 				if (!this.tiles.has(x, y)) this.tiles.addTile(createWallTile(x, y))
 			})

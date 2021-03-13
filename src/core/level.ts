@@ -2,7 +2,7 @@ import * as rotJS from 'rot-js'
 import { Container, Sprite } from 'pixi.js'
 import { createSprite, TextureID, TILE_SIZE } from './sprites'
 import MainLine from '../rail/rail'
-import { Grid } from '../types'
+import { GlobalSprite, Grid } from '../types'
 import { RailData, Room } from '../rail/types'
 import Dijkstra from 'rot-js/lib/path/dijkstra'
 import { getRailTexture } from '../rail/util'
@@ -18,6 +18,8 @@ export enum Tile {
 	Floor,
 	Wall,
 	Rail,
+	HoldShift,
+	Empty,
 }
 
 export type TileData = {
@@ -29,6 +31,7 @@ export type TileData = {
 	solid: boolean
 	rail?: RailData
 	tint?: number
+	ignoreFOV?: boolean
 	revealed: number
 }
 
@@ -60,16 +63,28 @@ export class Level {
 				texture = TextureID.Wall
 				tint = 0x584563
 			}
-			tile.sprite = createSprite(texture)
-			tile.sprite.x = tile.x * TILE_SIZE
-			tile.sprite.y = tile.y * TILE_SIZE
-			if (!DEBUG_VISIBILITY) tile.sprite.alpha = 0
-			tile.sprite.tint = tile.tint ?? tint
-			if (tile.type === Tile.Rail) {
-				const railSprite = createSprite(getRailTexture(tile.rail!))
-				tile.sprite.addChild(railSprite)
+			if (tile.type === Tile.HoldShift) {
+				texture = TextureID.HoldShift
+				tile.ignoreFOV = true
 			}
-			this.container.addChild(tile.sprite)
+			if (tile.type !== Tile.Empty) {
+				tile.sprite = createSprite(texture)
+				tile.sprite.x = tile.x * TILE_SIZE
+				tile.sprite.y = tile.y * TILE_SIZE
+				if (!DEBUG_VISIBILITY) tile.sprite.alpha = 0
+				tile.sprite.tint = tile.tint ?? tint
+				if (tile.type === Tile.Rail) {
+					const railSprite = createSprite(getRailTexture(tile.rail!))
+					tile.sprite.addChild(railSprite)
+				}
+				if (tile.type === Tile.HoldShift) {
+					tile.sprite.name = GlobalSprite.HoldShift
+					tile.sprite.x += 32
+					this.container.addChild(tile.sprite)
+				} else {
+					this.container.addChildAt(tile.sprite, 0)
+				}
+			}
 		})
 		// for (let i = 0; i < 8; i++) {
 		// 	const rt = createSprite(TextureID.RailUpRightGoLeft + i)

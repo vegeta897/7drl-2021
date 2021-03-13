@@ -93,17 +93,17 @@ const sheetDefinition = {
 		},
 		{
 			key: TextureID.Player,
-			x: 34,
+			x: 0,
 			y: 17,
 		},
 		{
 			key: TextureID.Enemy,
-			x: 68,
+			x: 17,
 			y: 17,
 		},
 		{
 			key: TextureID.Dummy,
-			x: 51,
+			x: 34,
 			y: 17,
 		},
 		{
@@ -220,24 +220,24 @@ const sheetDefinition = {
 		},
 		{
 			key: TextureID.RailBoostUp,
-			x: 17,
+			x: 68,
 			y: 17,
 		},
 		{
 			key: TextureID.RailBoostDown,
-			x: 17,
+			x: 68,
 			y: 17,
 			rotate: 2,
 		},
 		{
 			key: TextureID.RailBoostLeft,
-			x: 17,
+			x: 68,
 			y: 17,
 			rotate: 1,
 		},
 		{
 			key: TextureID.RailBoostRight,
-			x: 17,
+			x: 68,
 			y: 17,
 			rotate: 3,
 		},
@@ -307,7 +307,7 @@ const sheetDefinition = {
 			key: TextureID.HoldShift,
 			x: 0,
 			y: 153,
-			w: 38,
+			w: 43,
 			h: 31,
 		},
 	],

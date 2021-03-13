@@ -67,6 +67,7 @@ export default class FOVSystem extends System {
 			// Update static tiles
 			level.tiles.forEach((tile, gridKey) => {
 				if (!tile.sprite) return
+				if (tile.ignoreFOV) return
 				if (
 					!this.prevVisibilityMap.has(gridKey) &&
 					!newVisibilityMap.has(gridKey)

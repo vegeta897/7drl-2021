@@ -18,7 +18,6 @@ function createEnemyComponents(
 	player: Entity
 ): IComponentConfigValObject {
 	const sprite = createSprite(TextureID.Enemy)
-	sprite.tint = 0xf5edba
 	if (!DEBUG_VISIBILITY) sprite.alpha = 0
 	container.addChild(sprite)
 	const health = RNG.getUniformInt(2, 4)

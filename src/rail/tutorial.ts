@@ -1,12 +1,17 @@
 import { Tile } from '../core/level'
 import { RailData, Room } from './types'
 import { TileMap } from '../util'
-import { createFloorTile, createRailTile, createWallTile } from './util'
+import {
+	createFloorTile,
+	createRailTile,
+	createTile,
+	createWallTile,
+} from './util'
 
 export function getTutorialRoom(xOff = 0, yOff = 0): Room {
 	const charMap: Map<
 		string,
-		{ type: Tile; flow?: RailData['flowMap'] }
+		{ type: Tile; flow?: RailData['flowMap']; solid?: boolean }
 	> = new Map()
 	charMap.set('█', { type: Tile.Wall })
 	charMap.set('░', { type: Tile.Floor })
@@ -16,6 +21,8 @@ export function getTutorialRoom(xOff = 0, yOff = 0): Room {
 	charMap.set('╗', { type: Tile.Rail, flow: [2, undefined, undefined, 1] })
 	charMap.set('╝', { type: Tile.Rail, flow: [undefined, 2, undefined, 0] })
 	charMap.set('╚', { type: Tile.Rail, flow: [undefined, 3, 0, undefined] })
+	charMap.set('H', { type: Tile.HoldShift, solid: true })
+	charMap.set('S', { type: Tile.Floor, solid: true })
 
 	const tutorialTiles = new TileMap()
 	tileCharMap.forEach((row, y) => {
@@ -31,6 +38,8 @@ export function getTutorialRoom(xOff = 0, yOff = 0): Room {
 					flowMap: tileInfo.flow!,
 					booster: false,
 				})
+			if (tileInfo.solid)
+				tile = createTile(x + xOff, y + yOff, tileInfo.type, true, true)
 			if (tile) tutorialTiles.addTile(tile)
 		})
 	})
@@ -55,25 +64,25 @@ export const DummyLocations = [
 ]
 
 const tileCharMap = [
-	'████░█',
-	'█░░╔╗█',
-	'█░░░║███████',
-	'█░░░░═════░█ ███',
-	'██████████║█ █║█',
-	'     █╔═░═╝███║█████',
-	'     █░█████░░║░░═╗█',
-	'     █░░░░░█░█║███║██',
-	'     █░░░░░█░█║█╔░╚═█',
-	'     █░░░░░░░███║█████',
-	'     █░░░░░███ █║██╔╗█',
-	'     ███████   █╚░═╝║█',
-	'              ██████░██████',
-	'              █░══════════█',
-	'              █║███████░███',
-	'              █║██░░░░░░█',
-	'         ██████║██░░░████',
-	'         █░░░█░░░█░░░█',
-	'         █░░░░░░░█████',
-	'         █░░░█░░░█',
-	'         █████████',
+	' █████░█',
+	'H█SSS╔╗█',
+	' █SSS░║███████',
+	' █████░═════░█ ███',
+	'     ███████║█ █║█',
+	'       █╔═░═╝███║█████',
+	'       █░█████░░║░░═╗█',
+	'       █░░░░░█░█║███║██',
+	'       █░░░░░█░█║█╔░╚═█',
+	'       █░░░░░░░███║█████',
+	'       █░░░░░███ █║██╔╗█',
+	'       ███████   █╚░═╝║█',
+	'                ██████░██████',
+	'                █░══════════█',
+	'                █║███████░███',
+	'                █║██░░░░░░█',
+	'           ██████║██░░░████',
+	'           █░░░█░░░█░░░█',
+	'           █░░░░░░░█████',
+	'           █░░░█░░░█',
+	'           █████████',
 ]

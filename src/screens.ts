@@ -2,103 +2,37 @@ import { createSprite, TextureID, TILE_SIZE } from './core/sprites'
 import { Container } from 'pixi.js'
 import { GlobalSprite } from './types'
 
-const deadRails: (TextureID | undefined)[][] = [
-	[
-		TextureID.RailDownRight,
-		TextureID.RailLeftRight,
-		TextureID.RailDownLeft,
-		undefined,
-		undefined,
-		TextureID.RailDownRight,
-		TextureID.RailLeftRight,
-		TextureID.RailLeftRight,
-		undefined,
-		TextureID.RailDownRight,
-		TextureID.RailLeftRight,
-		TextureID.RailDownLeft,
-		undefined,
-		TextureID.RailDownRight,
-		TextureID.RailLeftRight,
-		TextureID.RailDownLeft,
-		undefined,
-	],
-	[
-		TextureID.RailUpDown,
-		undefined,
-		TextureID.RailUpRight,
-		TextureID.RailDownLeft,
-		undefined,
-		TextureID.RailUpDown,
-		undefined,
-		undefined,
-		undefined,
-		TextureID.RailUpDown,
-		undefined,
-		TextureID.RailUpDown,
-		undefined,
-		TextureID.RailUpDown,
-		undefined,
-		TextureID.RailUpRight,
-		TextureID.RailDownLeft,
-	],
-	[
-		TextureID.RailUpDown,
-		undefined,
-		undefined,
-		TextureID.RailUpDown,
-		undefined,
-		TextureID.RailUpDownRight,
-		TextureID.RailLeftRight,
-		undefined,
-		undefined,
-		TextureID.RailUpDownRight,
-		TextureID.RailLeftRight,
-		TextureID.RailUpDownLeft,
-		undefined,
-		TextureID.RailUpDown,
-		undefined,
-		undefined,
-		TextureID.RailUpDown,
-	],
-	[
-		TextureID.RailUpDown,
-		undefined,
-		undefined,
-		TextureID.RailUpDown,
-		undefined,
-		TextureID.RailUpDown,
-		undefined,
-		undefined,
-		undefined,
-		TextureID.RailUpDown,
-		undefined,
-		TextureID.RailUpDown,
-		undefined,
-		TextureID.RailUpDown,
-		undefined,
-		undefined,
-		TextureID.RailUpDown,
-	],
-	[
-		TextureID.RailUpRight,
-		TextureID.RailLeftRight,
-		TextureID.RailLeftRight,
-		TextureID.RailUpLeft,
-		undefined,
-		TextureID.RailUpRight,
-		TextureID.RailLeftRight,
-		TextureID.RailLeftRight,
-		undefined,
-		TextureID.RailUpDown,
-		undefined,
-		TextureID.RailUpDown,
-		undefined,
-		TextureID.RailUpRight,
-		TextureID.RailLeftRight,
-		TextureID.RailLeftRight,
-		TextureID.RailUpLeft,
-	],
+const deadRails: string[] = [
+	'╔═╗  ╔══ ╔═╗ ╔═╗ ',
+	'║ ╚╗ ║   ║ ║ ║ ╚╗',
+	'║  ║ ╠═  ╠═╣ ║  ║',
+	'║  ║ ║   ║ ║ ║  ║',
+	'╚══╝ ╚══ ║ ║ ╚══╝',
 ]
+
+const winRails: string[] = [
+	'║ ║ ╔═╗ ║ ║',
+	'╚╦╝ ║ ║ ║ ║',
+	' ║  ║ ║ ║ ║',
+	' ║  ╚═╝ ╚═╝',
+	'           ',
+	'║ ║ ║ ║ ╔╗║',
+	'║ ║ ║ ║ ║║║',
+	'╚╗║╔╝ ║ ║║║',
+	' ╚╩╝  ║ ║╚╝',
+]
+
+const railCharMap: Map<string, TextureID> = new Map()
+railCharMap.set('║', TextureID.RailUpDown)
+railCharMap.set('═', TextureID.RailLeftRight)
+railCharMap.set('╔', TextureID.RailDownRight)
+railCharMap.set('╗', TextureID.RailDownLeft)
+railCharMap.set('╝', TextureID.RailUpLeft)
+railCharMap.set('╚', TextureID.RailUpRight)
+railCharMap.set('╠', TextureID.RailUpDownRight)
+railCharMap.set('╣', TextureID.RailUpDownLeft)
+railCharMap.set('╩', TextureID.RailUpLeftRight)
+railCharMap.set('╦', TextureID.RailDownLeftRight)
 
 export const DeadRailContainer = new Container()
 DeadRailContainer.setTransform(1.5 * TILE_SIZE, 4 * TILE_SIZE - 5)
@@ -109,13 +43,24 @@ pressEnter.tint = 0xc0c741
 pressEnter.setTransform(111, 88)
 DeadRailContainer.addChild(pressEnter)
 
-for (const [lineIndex, line] of deadRails.entries()) {
-	for (const [railIndex, rail] of line.entries()) {
-		if (!rail) continue
-		const railSprite = createSprite(rail)
-		railSprite.x = railIndex * TILE_SIZE
-		railSprite.y = lineIndex * TILE_SIZE
-		railSprite.tint = 0xef1d30
-		DeadRailContainer.addChild(railSprite)
+createRailSprites(DeadRailContainer, deadRails, 0xef1d30)
+
+export const WinRailContainer = new Container()
+WinRailContainer.setTransform(4 * TILE_SIZE + 6, 3 * TILE_SIZE - 3)
+
+createRailSprites(WinRailContainer, winRails, 0x20e741)
+
+function createRailSprites(container, rails, tint) {
+	for (const [lineIndex, line] of rails.entries()) {
+		for (const [railIndex, railChar] of line.split('').entries()) {
+			if (railChar === ' ') continue
+			const textureID = railCharMap.get(railChar)
+			if (!textureID) throw 'invalid railChar ' + railChar
+			const railSprite = createSprite(textureID)
+			railSprite.x = railIndex * TILE_SIZE
+			railSprite.y = lineIndex * TILE_SIZE
+			railSprite.tint = tint
+			container.addChild(railSprite)
+		}
 	}
 }

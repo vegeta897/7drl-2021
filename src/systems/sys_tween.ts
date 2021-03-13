@@ -78,6 +78,9 @@ export default class TweenSystem extends System {
 				}
 			})
 		})
+		this.tweens.forEach((tween) => {
+			if (!tween.isPlaying()) this.tweens.delete(tween)
+		})
 		if (this.tweens.size > 0) {
 			controller.state = ControllerState.Disabled
 		} else {

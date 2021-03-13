@@ -2,9 +2,10 @@ import { Entity, Query, System } from 'ape-ecs'
 import Transform from '../components/com_transform'
 import Move from '../components/com_move'
 import { Level } from '../core/level'
-import { GlobalEntity, Tags } from '../types'
+import { GlobalEntity, GlobalSprite, Tags } from '../types'
 import Tweening from '../components/com_tween'
 import Game from '../components/com_game'
+import { Easing, Tween } from '@tweenjs/tween.js'
 
 // Only affects transforms that aren't being tweened
 export default class TransformSystem extends System {
@@ -36,6 +37,15 @@ export default class TransformSystem extends System {
 					const game = <Game>gameEntity.c.game
 					game.gameOver = true
 					game.win = true
+				}
+				if (transform.x === 51 && transform.y === 6) {
+					new Tween(level.container.getChildByName!(GlobalSprite.HoldShift))
+						.to({ alpha: 1 }, 500)
+						.easing(Easing.Sinusoidal.Out)
+						.start()
+				}
+				if (transform.x > 80) {
+					level.container.getChildByName!(GlobalSprite.HoldShift).alpha = 0
 				}
 			}
 		})
