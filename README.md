@@ -8,7 +8,7 @@ Seeded from [my own RL template](https://github.com/vegeta897/rl-test)
 
 ## TODO
 
-- Remove debug stuff before submitting
+- ~~Remove debug stuff before submitting~~
 - Install only required PIXI modules for a lighter bundle (see [guide](https://medium.com/anvoevodin/how-to-set-up-pixijs-v5-project-with-npm-and-webpack-41c18942c88d))
 
 ## Attribution
