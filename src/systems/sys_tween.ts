@@ -5,7 +5,11 @@ import { ControllerState, GlobalEntity, Grid } from '../types'
 import Grinding, { GrindState } from '../components/com_grinding'
 import Tweening from '../components/com_tween'
 import PixiObject from '../components/com_pixi'
-import { tileToSpritePosition } from '../util'
+import {
+	moveDirectional,
+	reverseDirection,
+	tileToSpritePosition,
+} from '../util'
 import Controller from '../components/com_controller'
 import Game from '../components/com_game'
 import { runMainSystems } from '../core/ecs'
@@ -61,7 +65,7 @@ export default class TweenSystem extends System {
 
 								break
 							case GrindState.End:
-								positionTween.duration(GRIND_SPEED * 1.5)
+								positionTween.duration(GRIND_SPEED * 1.7)
 								positionTween.easing(Easing.Sinusoidal.Out)
 								if (grinding.speed > 0)
 									this.addHop(tweening, pixi.object.pivot, GRIND_SPEED * 1.5, 2)
@@ -75,6 +79,20 @@ export default class TweenSystem extends System {
 						}
 					}
 					positionTween.start()
+				} else if (tweening.tweenType === Tweening.TweenType.Attack) {
+					const offset = moveDirectional(
+						reverseDirection(tweening.direction),
+						0.2 * TILE_SIZE
+					)
+					this.createTween(pixi.object.pivot, tweening)
+						.to(offset, 30)
+						.easing(Easing.Sinusoidal.In)
+						.chain(
+							this.createTween(pixi.object.pivot, tweening)
+								.to({ x: 0, y: 0 }, 70)
+								.easing(Easing.Sinusoidal.In)
+						)
+						.start()
 				}
 			})
 		})

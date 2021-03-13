@@ -80,6 +80,7 @@ export class Level {
 				if (tile.type === Tile.HoldShift) {
 					tile.sprite.name = GlobalSprite.HoldShift
 					tile.sprite.x += 32
+					tile.sprite.tint = 0x34859d
 					this.container.addChild(tile.sprite)
 				} else {
 					this.container.addChildAt(tile.sprite, 0)

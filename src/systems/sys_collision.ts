@@ -6,6 +6,8 @@ import Attack from '../components/com_attack'
 import Game from '../components/com_game'
 import { equalGrid } from '../util'
 import { GrindState } from '../components/com_grinding'
+import { createDeathParticles } from '../core/particles'
+import Follow from '../components/com_follow'
 
 export default class CollisionSystem extends System {
 	private movers!: Query
@@ -27,6 +29,18 @@ export default class CollisionSystem extends System {
 				// Entity collision
 				if (player.c.grinding.state !== GrindState.Start) {
 					// TODO: Particles!
+					createDeathParticles(
+						game.entityContainer,
+						player.c.grinding.direction,
+						destEntity.has(Follow) ? 'bone' : 'dummy',
+						{
+							pos: {
+								x: destEntity.c.pixi.object.position.x,
+								y: destEntity.c.pixi.object.position.y,
+							},
+							addAtBack: false,
+						}
+					)
 					destEntity.destroy()
 				} else {
 					player.removeComponent(player.c.move)
@@ -41,30 +55,29 @@ export default class CollisionSystem extends System {
 		movers.forEach((entity) => {
 			if (entity === player) return // Movers includes player but player updated above
 			if (entity.destroyed) return
-			const destWalkable = game.level.isTileWalkable(
-				entity.c.move.x,
-				entity.c.move.y
-			)
-			if (!entity.c.move.noClip && !destWalkable) {
+			const move = <Move>entity.c.move
+			const destWalkable = game.level.isTileWalkable(move.x, move.y)
+			if (!move.noClip && !destWalkable) {
 				// Wall, cancel move
-				entity.removeComponent(entity.c.move)
+				entity.removeComponent(move)
 			} else {
 				const destEntity =
-					game.level.entityMap.get(entity.c.move.x + ':' + entity.c.move.y) ||
+					game.level.entityMap.get(move.x + ':' + move.y) ||
 					movers.find(
 						(otherMover) =>
 							otherMover !== entity &&
 							otherMover.c.move &&
-							equalGrid(<Transform>otherMover.c.move, <Transform>entity.c.move)
+							equalGrid(<Transform>otherMover.c.move, move)
 					)
 				if (destEntity) {
 					// Entity collision
-					entity.removeComponent(entity.c.move)
+					entity.removeComponent(move)
 					if (destEntity === player) {
 						entity.addComponent({
 							type: Attack.typeName,
 							key: 'attack',
 							target: destEntity,
+							direction: move.direction,
 						})
 					}
 				}

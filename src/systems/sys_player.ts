@@ -13,6 +13,7 @@ export default class PlayerSystem extends System {
 		const { /*transform, */ move, grinding } = <
 			{ transform: Transform; move: Move; grinding: Grinding }
 		>player.c
+
 		if (grinding) {
 			if (grinding.state === GrindState.End) {
 				player.removeComponent(grinding)
@@ -34,6 +35,7 @@ export default class PlayerSystem extends System {
 						type: Attack.typeName,
 						key: 'attack',
 						target: destEntity,
+						direction: move.direction,
 					})
 				}
 			}

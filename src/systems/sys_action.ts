@@ -7,6 +7,8 @@ import { addGrids, moveDirectional } from '../util'
 import Game from '../components/com_game'
 import Transform from '../components/com_transform'
 
+const DEBUG = false
+
 export default class ActionSystem extends System {
 	update(tick) {
 		const { controller } = <{ controller: Controller }>(
@@ -27,13 +29,16 @@ export default class ActionSystem extends System {
 				if (controller.direction !== null) {
 					const moveTo = addGrids(
 						<Transform>player.c.transform,
-						moveDirectional(controller.direction, controller.boost ? 20 : 1)
+						moveDirectional(
+							controller.direction,
+							DEBUG && controller.boost ? 8 : 1
+						)
 					)
 					player.addComponent({
 						type: Move.typeName,
 						key: 'move',
 						...moveTo,
-						noClip: controller.boost,
+						noClip: DEBUG && controller.boost,
 						sneak: controller.sneak,
 						direction: controller.direction,
 					})

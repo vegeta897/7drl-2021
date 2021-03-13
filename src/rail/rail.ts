@@ -22,8 +22,8 @@ import { getTutorialRoom } from './tutorial'
 import { TextureID } from '../core/sprites'
 
 const MAINLINE_DIRECTION = Directions.Right
-const FIRST_SEGMENT_LENGTH = 200
-const TARGET_TOTAL_LENGTH = FIRST_SEGMENT_LENGTH + 800
+const FIRST_SEGMENT_LENGTH = 130
+const TARGET_TOTAL_LENGTH = FIRST_SEGMENT_LENGTH + 500
 const MIN_SEGMENT_LENGTH = 3
 
 export default class MainLine {
@@ -52,8 +52,8 @@ export default class MainLine {
 		this.commitRail(firstSegment)
 		// Create boosted merge rail
 		const mergeDistance = 80
-		// this.playerStart = { x: mergeDistance + 9, y: 22 }
-		this.playerStart = { x: 250, y: 0 }
+		this.playerStart = { x: mergeDistance + 7, y: 22 }
+		// this.playerStart = { x: 250, y: 0 }
 		const mergeTile = firstSegment.railTiles[mergeDistance]
 		mergeTile.rail!.flowMap[Directions.Up] = Directions.Right
 		for (let i = 1; i < 4; i++) {
@@ -68,7 +68,7 @@ export default class MainLine {
 			)
 		}
 		// Create tutorial room
-		const tutorialRoom = getTutorialRoom(mergeDistance - 4, 4)
+		const tutorialRoom = getTutorialRoom(mergeDistance - 6, 4)
 		this.commitRoom(tutorialRoom)
 
 		// Add intermediate segments

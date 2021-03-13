@@ -37,15 +37,15 @@ export default class TransformSystem extends System {
 				if (transform.x < 20) {
 					const game = <Game>gameEntity.c.game
 					game.gameOver = true
-					game.win = true
+					if (player.c.grinding && player.c.grinding.boosted) game.win = true
 				}
-				if (transform.x === 51 && transform.y === 6) {
+				if (transform.x === 79 && transform.y === 6) {
 					new Tween(level.container.getChildByName!(GlobalSprite.HoldShift))
 						.to({ alpha: 1 }, 500)
 						.easing(Easing.Sinusoidal.Out)
 						.start()
 				}
-				if (transform.x > 80) {
+				if (transform.x > 100) {
 					level.container.getChildByName!(GlobalSprite.HoldShift).alpha = 0
 				}
 			}

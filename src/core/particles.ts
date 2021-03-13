@@ -3,13 +3,14 @@ import { Container, Texture } from 'pixi.js'
 import { Directions, Grid } from '../types'
 import { Entity } from 'ape-ecs'
 import Particles from '../components/com_particles'
+import { getBoneTextures, getTexture, TextureID, TILE_SIZE } from './sprites'
 
 export function addSparkComponents(
 	entity: Entity,
 	direction: Directions,
 	container: Container
 ) {
-	const emitterOptions = getEmitterOptions(direction)
+	const emitterOptions = getSparkEmitterOptions(direction)
 	entity.addComponent({
 		type: Particles.typeName,
 		emitter: createSparkEmitter(container, emitterOptions[0]),
@@ -24,7 +25,7 @@ export function updateSparkComponents(
 	particles: Set<Particles>,
 	dir: Directions
 ) {
-	const emitterOptions = getEmitterOptions(dir)
+	const emitterOptions = getSparkEmitterOptions(dir)
 	;[...particles].forEach(({ emitter }, p) => {
 		emitter.updateSpawnPos(emitterOptions[p].pos.x, emitterOptions[p].pos.y)
 		emitter.addAtBack = emitterOptions[p].addAtBack
@@ -36,7 +37,7 @@ type EmitterOptions = {
 	addAtBack: boolean
 }
 
-function getEmitterOptions(dir: Directions): EmitterOptions[] {
+function getSparkEmitterOptions(dir: Directions): EmitterOptions[] {
 	switch (dir) {
 		case Directions.Up:
 			return [
@@ -120,4 +121,55 @@ export function createSparkEmitter(
 		...options,
 		spawnType: 'point',
 	})
+}
+
+export function createDeathParticles(
+	container: Container,
+	direction: Directions,
+	particleType: 'bone' | 'dummy',
+	options: EmitterOptions
+) {
+	let angleModifier = 0
+	if (direction === Directions.Right) angleModifier = 40
+	if (direction === Directions.Left) angleModifier = -40
+	return new Emitter(
+		container,
+		particleType === 'bone'
+			? getBoneTextures()
+			: getTexture(TextureID.DummyBit),
+		{
+			emit: true,
+			autoUpdate: true,
+			scale: { start: 1.2, end: 0.2 },
+			acceleration: {
+				x: 0,
+				y: 400,
+			},
+			speed: {
+				start: 140,
+				end: 0,
+				minimumSpeedMultiplier: 1.2,
+			},
+			maxSpeed: 0,
+			startRotation: {
+				min: 220 + angleModifier,
+				max: 320 + angleModifier,
+			},
+			rotationSpeed: {
+				min: -1000,
+				max: 1000,
+			},
+			lifetime: {
+				min: 0.05,
+				max: 0.5,
+			},
+			blendMode: 'normal',
+			frequency: 0.001,
+			emitterLifetime: 0.05,
+			maxParticles: 20,
+			spawnType: 'rect',
+			spawnRect: { h: TILE_SIZE, w: TILE_SIZE - 2, x: 1, y: 0 },
+			...options,
+		}
+	)
 }

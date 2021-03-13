@@ -22,7 +22,6 @@ const { view, stage } = new Application({
 	sharedTicker: true,
 })
 view.id = 'viewport'
-view.addEventListener('contextmenu', (e) => e.preventDefault())
 document.body.appendChild(view)
 
 Ticker.shared.add(() => {

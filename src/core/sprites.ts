@@ -47,6 +47,13 @@ export enum TextureID {
 	PressEnter,
 	HoldShift,
 	Exit,
+	Bone1,
+	Bone2,
+	Bone3,
+	Bone4,
+	Bone5,
+	Bone6,
+	DummyBit,
 }
 
 const textures = <Texture[]>[]
@@ -76,6 +83,23 @@ export function createSprite(textureID: TextureID): Sprite {
 
 export function changeSpriteTexture(sprite: Sprite, textureName: TextureID) {
 	sprite.texture = textures[textureName]
+}
+
+export function getTexture(textureID: TextureID): Texture {
+	return textures[textureID]
+}
+
+export function getBoneTextures(): Texture[] {
+	return [
+		textures[
+			(TextureID.Bone1,
+			TextureID.Bone2,
+			TextureID.Bone3,
+			TextureID.Bone4,
+			TextureID.Bone5,
+			TextureID.Bone6)
+		],
+	]
 }
 
 const sheetDefinition = {
@@ -309,6 +333,55 @@ const sheetDefinition = {
 			y: 153,
 			w: 43,
 			h: 31,
+		},
+		{
+			key: TextureID.Bone1,
+			x: 51,
+			y: 17,
+			w: 5,
+			h: 1,
+		},
+		{
+			key: TextureID.Bone2,
+			x: 51,
+			y: 19,
+			w: 7,
+			h: 3,
+		},
+		{
+			key: TextureID.Bone3,
+			x: 51,
+			y: 23,
+			w: 4,
+			h: 3,
+		},
+		{
+			key: TextureID.Bone4,
+			x: 51,
+			y: 27,
+			w: 4,
+			h: 4,
+		},
+		{
+			key: TextureID.Bone5,
+			x: 51,
+			y: 32,
+			w: 3,
+			h: 2,
+		},
+		{
+			key: TextureID.Bone6,
+			x: 61,
+			y: 17,
+			w: 4,
+			h: 3,
+		},
+		{
+			key: TextureID.DummyBit,
+			x: 40,
+			y: 18,
+			w: 2,
+			h: 2,
 		},
 	],
 }

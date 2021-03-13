@@ -12,7 +12,7 @@ import {
 	addSparkComponents,
 	intensifySparks,
 	updateSparkComponents,
-} from '../rail/particles'
+} from '../core/particles'
 import { Tween } from '@tweenjs/tween.js'
 import { GRIND_SPEED } from './sys_tween'
 // import { DEFAULT_ZOOM } from '../index'
