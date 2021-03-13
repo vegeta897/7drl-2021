@@ -1,5 +1,4 @@
 const path = require('path')
-const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const HtmlWebPackPlugin = require('html-webpack-plugin')
 const { ProgressPlugin } = require('webpack')
 
@@ -43,7 +42,6 @@ module.exports = {
 	},
 	plugins: [
 		new ProgressPlugin(),
-		new CleanWebpackPlugin(),
 		new HtmlWebPackPlugin({
 			title: 'Dungeon Grinder',
 		}),
