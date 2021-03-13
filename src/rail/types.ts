@@ -25,3 +25,9 @@ export type Room = {
 	tiles: TileMap
 	noEnemies?: boolean
 }
+
+export type TileCheck = (
+	x: number,
+	y: number,
+	lastTile: boolean
+) => { cancel?: boolean; extend?: boolean }

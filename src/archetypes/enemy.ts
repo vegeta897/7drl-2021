@@ -43,18 +43,19 @@ function createEnemyComponents(
 export function spawnEnemies(world: World) {
 	const { level } = <Game>world.getEntity(GlobalEntity.Game)!.c.game
 	if (level.rooms.length === 0) return
-	const minimum = 60
-	let spawned = 0
 	const floorTiles: TileData[] = []
 	level.rooms.forEach(
 		(room) => !room.noEnemies && floorTiles.push(...room.tiles.data.values())
 	)
+	const minimum = Math.floor(floorTiles.length * 0.02)
+	let spawned = 0
 	do {
 		const spawnTile = RNG.getItem(floorTiles)!
-		if (level.entityMap.has(spawnTile.x + ':' + spawnTile.y)) return
+		if (level.entityMap.has(spawnTile.x + ':' + spawnTile.y)) continue
 		spawnEnemy(world, spawnTile.x, spawnTile.y)
 		spawned++
 	} while (spawned < minimum)
+	console.log('spawned', spawned, 'enemies')
 }
 
 function spawnEnemy(world, x, y) {

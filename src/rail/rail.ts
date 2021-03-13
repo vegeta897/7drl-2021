@@ -11,7 +11,7 @@ import {
 	TileMap,
 	turnClockwise,
 } from '../util'
-import { RailData, RailSegment, Room } from './types'
+import { RailData, RailSegment, Room, TileCheck } from './types'
 import {
 	createFloorTile,
 	createRailTile,
@@ -21,7 +21,7 @@ import {
 import { getTutorialRoom } from './tutorial'
 import { TextureID } from '../core/sprites'
 
-const FIRST_SEGMENT_DIRECTION = Directions.Right
+const MAINLINE_DIRECTION = Directions.Right
 const FIRST_SEGMENT_LENGTH = 200
 const TARGET_TOTAL_LENGTH = FIRST_SEGMENT_LENGTH + 800
 const MIN_SEGMENT_LENGTH = 3
@@ -46,15 +46,14 @@ export default class MainLine {
 		this.currentGrid = { x: 0, y: 0 }
 		this.valid = true
 		// Create first segment
-		const firstSegment = this.runRail(
-			FIRST_SEGMENT_DIRECTION,
-			FIRST_SEGMENT_LENGTH
-		)
+		const firstSegment = this.runRail(MAINLINE_DIRECTION, FIRST_SEGMENT_LENGTH)
 		if (!firstSegment) return this.generate()
 
 		this.commitRail(firstSegment)
 		// Create boosted merge rail
 		const mergeDistance = 80
+		// this.playerStart = { x: mergeDistance + 9, y: 22 }
+		this.playerStart = { x: 250, y: 0 }
 		const mergeTile = firstSegment.railTiles[mergeDistance]
 		mergeTile.rail!.flowMap[Directions.Up] = Directions.Right
 		for (let i = 1; i < 4; i++) {
@@ -68,8 +67,6 @@ export default class MainLine {
 				})
 			)
 		}
-		// this.playerStart = { x: mergeDistance + 9, y: 22 }
-		this.playerStart = { x: 220, y: 0 }
 		// Create tutorial room
 		const tutorialRoom = getTutorialRoom(mergeDistance - 4, 4)
 		this.commitRoom(tutorialRoom)
@@ -81,9 +78,9 @@ export default class MainLine {
 				turnClockwise(prevSegment.direction),
 				turnClockwise(prevSegment.direction, 3),
 			]
-			if (RNG.getUniform() > 0.8) {
+			if (RNG.getUniform() > 0.6) {
 				// Prioritize moving away from start
-				if (possibleDirections[0] === FIRST_SEGMENT_DIRECTION)
+				if (possibleDirections[0] === MAINLINE_DIRECTION)
 					possibleDirections.reverse()
 			} else if (RNG.getUniform() > 0.5) possibleDirections.reverse()
 
@@ -95,11 +92,22 @@ export default class MainLine {
 					MIN_SEGMENT_LENGTH * 2,
 					MIN_SEGMENT_LENGTH
 				)
-				let tileCheck = (x, y, lastTile) => x >= FIRST_SEGMENT_LENGTH - 1
-				if (this.totalLength + segmentLength >= TARGET_TOTAL_LENGTH) {
-					tileCheck = (x, y, lastTile) =>
-						!lastTile ||
-						!checkCollisionInRadius([...this.tiles.data.values()], { x, y }, 5)
+				let tileCheck: TileCheck = (x, y, lastTile) => ({
+					cancel: x < FIRST_SEGMENT_LENGTH - 1,
+				})
+				if (
+					direction === MAINLINE_DIRECTION &&
+					this.totalLength + segmentLength >= TARGET_TOTAL_LENGTH
+				) {
+					tileCheck = (x, y, lastTile) => ({
+						extend:
+							lastTile &&
+							checkCollisionInRadius(
+								[...this.tiles.data.values()],
+								{ x, y },
+								12
+							),
+					})
 				}
 				segment = this.runRail(direction, segmentLength, tileCheck)
 			} while (!segment && possibleDirections.length > 0)
@@ -134,7 +142,9 @@ export default class MainLine {
 			)
 			this.commitRoom(room)
 			this.commitRail(segment)
-			this.complete = this.totalLength >= TARGET_TOTAL_LENGTH
+			this.complete =
+				this.totalLength >= TARGET_TOTAL_LENGTH &&
+				segment.direction === MAINLINE_DIRECTION
 		} while (!this.complete)
 
 		// Set last tile of final segment to booster
@@ -162,14 +172,20 @@ export default class MainLine {
 	runRail(
 		railDir: Directions,
 		railLength: number,
-		tileCheck?: (x: number, y: number, last: boolean) => boolean
+		tileCheck?: TileCheck
 	): RailSegment | false {
 		const railTiles: TileData[] = []
 		const prevSegment = this.segments[this.segments.length - 1]
 		const railStartGrid = { ...this.currentGrid }
 		for (let i = 0; i < railLength; i++) {
 			const { x, y } = addGrids(railStartGrid, moveDirectional(railDir, i))
-			if (tileCheck && !tileCheck(x, y, i === railLength - 1)) return false
+			let lastTile = i === railLength - 1
+			const checkedTile = tileCheck && tileCheck(x, y, lastTile)
+			if (checkedTile?.cancel) return false
+			if (checkedTile?.extend) {
+				railLength++
+				lastTile = false
+			}
 			const railTile = this.tiles.get(x, y)
 			const flowMap: RailData['flowMap'] = []
 			flowMap[railDir] = railDir
@@ -194,7 +210,7 @@ export default class MainLine {
 						flowMap[turnClockwise(railDir)] = turnClockwise(railDir)
 						flowMap[turnClockwise(railDir, 3)] = turnClockwise(railDir, 3)
 						// Extend past intersection if not too long
-						if (i === railLength - 1 && railLength++ > FIRST_SEGMENT_LENGTH / 4)
+						if (lastTile && railLength++ > FIRST_SEGMENT_LENGTH / 4)
 							return false
 					}
 				}
