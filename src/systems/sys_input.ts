@@ -23,33 +23,28 @@ export default class InputSystem extends System {
 			case 'KeyW':
 			case 'KeyK':
 			case 'ArrowUp':
-			case 'Numpad8':
 				// Up
 				direction = Directions.Up
 				break
 			case 'KeyS':
 			case 'KeyJ':
 			case 'ArrowDown':
-			case 'Numpad2':
 				// Down
 				direction = Directions.Down
 				break
 			case 'KeyA':
 			case 'KeyH':
 			case 'ArrowLeft':
-			case 'Numpad4':
 				// Left
 				direction = Directions.Left
 				break
 			case 'KeyD':
 			case 'KeyL':
 			case 'ArrowRight':
-			case 'Numpad6':
 				// Right
 				direction = Directions.Right
 				break
 			case 'Space':
-			case 'Numpad5':
 				// Wait
 				wait = true
 				break
@@ -104,15 +99,10 @@ const gameKeys = [
 	'ArrowDown',
 	'ArrowLeft',
 	'ArrowRight',
-	'Numpad8',
-	'Numpad2',
-	'Numpad4',
-	'Numpad6',
 	'ShiftLeft',
 	'ShiftRight',
 	'ControlLeft',
 	'ControlRight',
 	'Space',
-	'Numpad5',
 	'Enter',
 ]
